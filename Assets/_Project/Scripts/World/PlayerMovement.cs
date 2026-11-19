@@ -1,9 +1,11 @@
+using ALotOfDamage.Core;
+using ALotOfDamage.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace ALotOfDamage.World
 {
-    // Movimento relativo à câmera isométrica (WASD/setas/gamepad)
+    // Movimento relativo à câmera isométrica (WASD/setas/gamepad/joystick de toque)
     [RequireComponent(typeof(CharacterController))]
     public class PlayerMovement : MonoBehaviour
     {
@@ -20,6 +22,14 @@ namespace ALotOfDamage.World
         {
             controller = GetComponent<CharacterController>();
             if (!cameraTransform && Camera.main) cameraTransform = Camera.main.transform;
+
+            // Volta ao ponto onde a batalha começou
+            if (EncounterState.HasReturnPosition)
+            {
+                controller.enabled = false;
+                transform.position = EncounterState.ReturnPosition;
+                controller.enabled = true;
+            }
         }
 
         void Update()
@@ -50,6 +60,7 @@ namespace ALotOfDamage.World
                 if (k.aKey.isPressed || k.leftArrowKey.isPressed) v.x -= 1;
             }
             if (Gamepad.current != null) v += Gamepad.current.leftStick.ReadValue();
+            v += VirtualJoystick.Value;
             return Vector2.ClampMagnitude(v, 1f);
         }
     }

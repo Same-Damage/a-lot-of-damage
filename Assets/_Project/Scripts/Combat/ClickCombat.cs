@@ -44,9 +44,43 @@ namespace ALotOfDamage.Combat
         readonly List<Popup> popups = new List<Popup>();
         float shake;
 
+        // Encontro vindo do mapa
+        string enemyName = "Inimigo";
+        string banner;
+        float bannerUntil, clickLockUntil, autoStartAt, returnAt = -1;
+
         struct Popup { public string text; public Vector2 pos; public float t; public Color color; public int size; }
 
-        void Start() => SpawnEnemy();
+        void Start()
+        {
+            if (EncounterState.Active)
+            {
+                enemyName = EncounterState.EnemyName;
+                baseEnemyHp *= EncounterState.HpMultiplier;
+            }
+            SpawnEnemy();
+
+            if (!EncounterState.Active) return;
+            switch (EncounterState.Advantage)
+            {
+                case Advantage.Preemptive:
+                    ShowBanner("ATAQUE PREVENTIVO!");
+                    ult = 100;
+                    Hit(clickDamage * 20, true, new Color(0.4f, 1f, 0.5f), 48);
+                    break;
+                case Advantage.Ambush:
+                    ShowBanner("EMBOSCADA!");
+                    clickLockUntil = Time.time + 1.5f;
+                    autoStartAt = Time.time + 2.5f;
+                    break;
+            }
+        }
+
+        void ShowBanner(string text)
+        {
+            banner = text;
+            bannerUntil = Time.time + 1.8f;
+        }
 
         void SpawnEnemy()
         {
@@ -58,8 +92,21 @@ namespace ALotOfDamage.Combat
         {
             float now = Time.time;
 
+            // Vitória: espera um pouco e volta ao mapa
+            if (returnAt > 0)
+            {
+                if (now >= returnAt) EncounterState.Finish(true);
+                return;
+            }
+
+            if (EncounterState.Active && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                EncounterState.Finish(false);
+                return;
+            }
+
             autoTimer += Time.deltaTime;
-            if (autoTimer >= autoInterval) { autoTimer = 0; Hit(autoDamage, false, Color.white, 22); }
+            if (now >= autoStartAt && autoTimer >= autoInterval) { autoTimer = 0; Hit(autoDamage, false, Color.white, 22); }
 
             if (combo > 0 && now - lastClick > comboTimeout) combo = 0;
 
@@ -80,6 +127,8 @@ namespace ALotOfDamage.Combat
 
         void OnClick(float now)
         {
+            if (now < clickLockUntil) return;
+
             // Limite anti-autoclicker
             while (clickTimes.Count > 0 && now - clickTimes.Peek() > 1f) clickTimes.Dequeue();
             if (clickTimes.Count >= maxClicksPerSecond) return;
@@ -108,6 +157,8 @@ namespace ALotOfDamage.Combat
 
         void Hit(double dmg, bool fromClick, Color color, int size)
         {
+            if (returnAt > 0) return;
+            dmg *= PlayerProgress.DamageMultiplier;
             enemyHp -= dmg;
             if (fromClick) shake = 0.08f;
 
@@ -118,7 +169,17 @@ namespace ALotOfDamage.Combat
                 t = 0, color = color, size = size
             });
 
-            if (enemyHp <= 0)
+            if (enemyHp <= 0 && EncounterState.Active)
+            {
+                double reward = enemyMaxHp * 0.5;
+                PlayerProgress.Gold += reward;
+                PlayerProgress.Kills++;
+                // Provisório: cada vitória fortalece até existir forja/upgrades
+                PlayerProgress.DamageMultiplier *= 1.25;
+                ShowBanner($"VITÓRIA!  +{NumberFormatter.Format(reward)} ouro");
+                returnAt = Time.time + 1.5f;
+            }
+            else if (enemyHp <= 0)
             {
                 gold += enemyMaxHp * 0.5;
                 stage++;
@@ -131,7 +192,20 @@ namespace ALotOfDamage.Combat
         void OnGUI()
         {
             var big = new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold };
-            GUI.Label(new Rect(20, 20, 600, 30), $"Estágio {stage}   Ouro {NumberFormatter.Format(gold)}", big);
+            if (EncounterState.Active)
+            {
+                GUI.Label(new Rect(20, 20, 600, 30), $"{enemyName}   Ouro {NumberFormatter.Format(PlayerProgress.Gold)}", big);
+                if (returnAt < 0 && GUI.Button(new Rect(Screen.width - 140, 20, 120, 40), "Fugir (Esc)"))
+                    EncounterState.Finish(false);
+            }
+            else
+            {
+                GUI.Label(new Rect(20, 20, 600, 30), $"Estágio {stage}   Ouro {NumberFormatter.Format(gold)}", big);
+            }
+
+            if (Time.time < bannerUntil || returnAt > 0)
+                GUI.Label(new Rect(Screen.width * 0.5f - 250, Screen.height * 0.25f, 500, 60), banner,
+                    new GUIStyle(big) { fontSize = 40, alignment = TextAnchor.MiddleCenter });
 
             float w = Screen.width * 0.5f;
             Rect bar = new Rect(Screen.width * 0.25f, 70, w, 24);
