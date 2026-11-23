@@ -1,6 +1,6 @@
 # A Lot of Damage
 
-RPG clicker online para mobile (Android/iOS) e desktop, feito em Unity. Visual com personagens pintados em estilo anime (direção de arte do Legend Online) dentro de cenários 3D com pós-processamento HD-2D (como Octopath Traveler), câmera isométrica que se move pouco (como Lost Ark), campanha infinita com o mapa mudando conforme se avança (como AFK Journey) e encontros vistos no mapa que levam a uma arena de batalha (como Clair Obscur: Expedition 33). O centro do jogo é o combate clicker com números gigantes (como Cookie Clicker e Clicker Heroes). O documento de design completo está em `docs/roteiro.pdf`.
+RPG clicker online para mobile (Android/iOS) e desktop, feito em Unity. Visual com personagens pintados em estilo anime (direção de arte do Legend Online) dentro de cenários 3D com pós-processamento HD-2D (como Octopath Traveler), câmera isométrica que se move pouco (como Lost Ark), campanha infinita com o mapa mudando conforme se avança (como AFK Journey) e encontros vistos no mapa que levam a uma arena de batalha (como Clair Obscur: Expedition 33). O centro do jogo é o combate clicker com números gigantes (como Cookie Clicker e Clicker Heroes). O documento de design completo está em `docs/roteiro.md` (fonte, editar este) e `docs/roteiro.pdf` (gerado dele).
 
 ## Repositório
 
@@ -49,7 +49,7 @@ Repositório privado `Same-Damage/a-lot-of-damage`, branch principal `main`. Bin
 - Durante o trabalho, rode só os testes do assembly alterado (filtro `-testFilter`). A suíte inteira roda só no final.
 - Não rode build de player a cada passo, só antes do PR.
 - Não leia nem busque em `Library/`, `Temp/`, `Logs/`, `UserSettings/`, `obj/`, `Build/`, arquivos `.unity`, `.prefab`, `.asset` grandes, nem em arte e áudio.
-- Leia `docs/roteiro.pdf` só quando a mudança envolver design do jogo (regras, sistemas, balanceamento).
+- Leia `docs/roteiro.md` só quando a mudança envolver design do jogo (regras, sistemas, balanceamento).
 
 ### Problemas encontrados de passagem
 - Se aparecer algo instável ou suspeito que não tem a ver com a mudança em andamento (um teste que falha e depois passa, um aviso estranho, um bug de outra cena), não corrija nesse PR: anote em `pontos-instaveis-para-verificar-depois.md`, na raiz, com onde apareceu, o que se viu, a suspeita e o próximo passo.
