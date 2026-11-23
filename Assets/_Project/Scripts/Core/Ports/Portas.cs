@@ -16,6 +16,8 @@ namespace ALotOfDamage.Core
         IReadOnlyList<DefinicaoDeItem> Itens { get; }
         IReadOnlyList<DefinicaoDeMonstro> Monstros { get; }
         ParametrosDoBestiario Bestiario { get; }
+        IReadOnlyList<DefinicaoDeClasse> Classes { get; }
+        IReadOnlyList<DefinicaoDeFollower> Followers { get; }
     }
 
     // Número aleatório em [0, 1), para o teste controlar a sorte
@@ -35,6 +37,9 @@ namespace ALotOfDamage.Core
         public static DefinicaoDeUpgrade Upgrade(this ICatalogo c, string id) => Buscar(c.Upgrades, u => u.Id == id);
         public static DefinicaoDeItem Item(this ICatalogo c, string id) => Buscar(c.Itens, i => i.Id == id);
         public static DefinicaoDeMonstro Monstro(this ICatalogo c, string id) => Buscar(c.Monstros, m => m.Id == id);
+
+        public static DefinicaoDeClasse Classe(this ICatalogo c, string id) => Buscar(c.Classes, x => x.Id == id);
+        public static DefinicaoDeFollower Follower(this ICatalogo c, string id) => Buscar(c.Followers, x => x.Id == id);
 
         public static string NomeDoMaterial(this ICatalogo c, string materialId) =>
             Buscar(c.Monstros, m => m.MaterialId == materialId)?.NomeDoMaterial ?? materialId;

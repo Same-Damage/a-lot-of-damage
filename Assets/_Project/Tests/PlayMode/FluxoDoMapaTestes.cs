@@ -32,6 +32,24 @@ namespace ALotOfDamage.Testes
         }
 
         [UnityTest]
+        public IEnumerator Follower_acompanha_o_jogador_no_mapa()
+        {
+            yield return Carregar(FluxoDeEncontro.CenaDoMapa);
+            var follower = Object.FindAnyObjectByType<SeguidorNoMapa>();
+            Assert.IsNotNull(follower);
+
+            // Alvo de teste longe do ponto inicial (o jogador tem CharacterController e não pode ser teletransportado assim)
+            follower.alvo = new GameObject("alvo de teste").transform;
+            follower.alvo.position = follower.transform.position + new Vector3(10, 0, 0);
+            float limite = Time.realtimeSinceStartup + 3f;
+            while (Time.realtimeSinceStartup < limite) yield return null;
+
+            Vector3 d = follower.transform.position - follower.alvo.position;
+            d.y = 0;
+            Assert.Less(d.magnitude, follower.distancia + 0.5f);
+        }
+
+        [UnityTest]
         public IEnumerator Atacar_monstro_leva_para_a_batalha_e_a_vitoria_volta_ao_mapa()
         {
             yield return Carregar(FluxoDeEncontro.CenaDoMapa);

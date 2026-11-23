@@ -20,6 +20,8 @@ namespace ALotOfDamage.Infrastructure
         public IReadOnlyList<DefinicaoDeItem> Itens { get; }
         public IReadOnlyList<DefinicaoDeMonstro> Monstros { get; }
         public ParametrosDoBestiario Bestiario { get; }
+        public IReadOnlyList<DefinicaoDeClasse> Classes { get; }
+        public IReadOnlyList<DefinicaoDeFollower> Followers { get; }
 
         public CatalogoDeBalanceamento()
         {
@@ -28,6 +30,9 @@ namespace ALotOfDamage.Infrastructure
             Itens = BalanceamentoDaForja.Carregar().itens;
             Monstros = bestiario.monstros;
             Bestiario = bestiario.parametros;
+            var personagens = BalanceamentoDePersonagens.Carregar();
+            Classes = personagens.classes;
+            Followers = personagens.followers;
         }
     }
 

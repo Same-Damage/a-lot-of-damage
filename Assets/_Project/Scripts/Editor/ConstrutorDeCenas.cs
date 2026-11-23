@@ -40,6 +40,7 @@ namespace ALotOfDamage.Ferramentas
             CriarAssetSeFaltar<BalanceamentoDeUpgrades>();
             CriarAssetSeFaltar<BalanceamentoDaForja>();
             CriarAssetSeFaltar<BalanceamentoDoBestiario>();
+            CriarAssetSeFaltar<BalanceamentoDePersonagens>();
             AssetDatabase.SaveAssets();
         }
 
@@ -95,6 +96,10 @@ namespace ALotOfDamage.Ferramentas
             sprite.AddComponent<Billboard>();
             Pintar(sprite, new Color(0.3f, 0.5f, 1f));
 
+            // Follower (Pip, o falcão) acompanhando o jogador
+            var follower = CriarFollower(new Vector3(-1.6f, 2.8f, 0));
+            follower.AddComponent<SeguidorNoMapa>().alvo = jogador.transform;
+
             // Monstros: id, nome, multiplicador de vida, cor, escala, quantidade, distância do início
             CriarInimigos("slime", "Slime", 1, new Color(0.3f, 0.9f, 0.3f), 0.8f, 4, 12f);
             CriarInimigos("lobo", "Lobo", 4, new Color(0.6f, 0.6f, 0.65f), 1f, 3, 20f);
@@ -113,6 +118,19 @@ namespace ALotOfDamage.Ferramentas
             janelas.AddComponent<JanelaDoBestiario>();
             new GameObject("Painel de Poder").AddComponent<PainelDePoder>();
             Salvar(cena, "Mapa");
+        }
+
+        // Placeholder do follower: um quad pequeno virado para a câmera
+        static GameObject CriarFollower(Vector3 posicao)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = "Follower (placeholder)";
+            Object.DestroyImmediate(go.GetComponent<Collider>());
+            go.transform.position = posicao;
+            go.transform.localScale = Vector3.one * 0.6f;
+            go.AddComponent<Billboard>();
+            Pintar(go, new Color(0.85f, 0.55f, 0.25f));
+            return go;
         }
 
         static void CriarInimigos(string id, string nome, double vida, Color cor, float escala, int quantidade, float distancia)
@@ -217,6 +235,8 @@ namespace ALotOfDamage.Ferramentas
             raiz.transform.position = new Vector3(0, 1, 0);
             var corpo = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             corpo.transform.SetParent(raiz.transform, false);
+
+            CriarFollower(new Vector3(-1.8f, 2.2f, -1f));
 
             var combate = new GameObject("Combate").AddComponent<CombateClicker>();
             combate.visualDoInimigo = corpo.transform;

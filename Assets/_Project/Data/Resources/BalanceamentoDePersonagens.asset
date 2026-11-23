@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c9d14a7456936c489a56be869bcdf56, type: 3}
+  m_Name: BalanceamentoDePersonagens
+  m_EditorClassIdentifier: ALotOfDamage.Infraestrutura::ALotOfDamage.Infrastructure.BalanceamentoDePersonagens
+  classes:
+  - Id: guerreiro
+    Nome: Guerreiro
+    NomeDaPassiva: "F\xFAria"
+    BonusDeFuriaPorAcumulo: 0.05
+    CombosPorAcumulo: 10
+    MaximoDeAcumulos: 10
+    NomeDaUltimate: Golpe Devastador
+    MultiplicadorDaUltimate: 50
+  followers:
+  - Id: pip
+    Nome: Pip
+    Descricao: "Falc\xE3o que ataca junto e marca o ponto fraco"
+    FracaoDoAutoAtaque: 0.2
+    IntervaloDeAtaque: 1.5
+    BonusNaJanelaDoPontoFraco: 0.3

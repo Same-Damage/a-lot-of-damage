@@ -13,6 +13,9 @@ namespace ALotOfDamage.Core
         public double DanoDoClick;
         public double DanoAutomatico;
         public double ChanceCritica;
+        public DefinicaoDeClasse Classe;        // null se o catálogo não tiver a classe do jogador
+        public DefinicaoDeFollower Follower;    // null sem follower ativo
+        public double DanoDoFollower;
     }
 
     public struct ResultadoDaVitoria
@@ -113,11 +116,16 @@ namespace ALotOfDamage.Core
             var p = repositorio.Carregar();
             double Valor(string id) => catalogo.Upgrade(id) is DefinicaoDeUpgrade d ? p.Valor(d) : 0;
             double Mult(AlvoDoItem alvo) => p.MultiplicadorDeDano(alvo, tipoDoMonstro, catalogo.Itens, catalogo.Bestiario);
+            double automatico = Valor(IdsDosUpgrades.Automatico) * Mult(AlvoDoItem.Automatico);
+            var follower = catalogo.Follower(p.FollowerAtivoId);
             return new AtributosDeCombate
             {
                 DanoDoClick = Valor(IdsDosUpgrades.Forca) * Mult(AlvoDoItem.Click),
-                DanoAutomatico = Valor(IdsDosUpgrades.Automatico) * Mult(AlvoDoItem.Automatico),
+                DanoAutomatico = automatico,
                 ChanceCritica = Valor(IdsDosUpgrades.Precisao),
+                Classe = catalogo.Classe(p.ClasseId),
+                Follower = follower,
+                DanoDoFollower = RegrasDePersonagem.DanoDoFollower(follower, automatico),
             };
         }
     }

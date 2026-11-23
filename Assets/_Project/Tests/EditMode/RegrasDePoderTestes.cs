@@ -20,6 +20,17 @@ namespace ALotOfDamage.Testes
             Assert.AreEqual(8, RegrasDePoder.Poder(a, 5), 1e-9);
         }
 
+        [Test]
+        public void Follower_soma_o_dano_por_segundo_dele()
+        {
+            var a = new AtributosDeCombate
+            {
+                DanoDoClick = 3, DanoAutomatico = 5, DanoDoFollower = 3,
+                Follower = new DefinicaoDeFollower { IntervaloDeAtaque = 1.5f },
+            };
+            Assert.AreEqual(10, RegrasDePoder.Poder(a, 5), 1e-9);
+        }
+
         [TestCase(100, 138, "+38%")]
         [TestCase(100, 100.4, "+0,4%")]
         [TestCase(100, 400, "×4")]
