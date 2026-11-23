@@ -26,7 +26,59 @@ namespace ALotOfDamage.Testes
 
             Assert.Less(a.PernaFrente * a.PernaTras, 0, "uma perna para cada lado");
             Assert.Less(a.PernaFrente * b.PernaFrente, 0, "meio passo depois inverte");
-            Assert.Greater(System.Math.Abs(a.PernaFrente), 10);
+            Assert.Greater(System.Math.Abs(a.PernaFrente), 6);
+        }
+
+        // O desenho é de frente: o passo é a perna subindo, não girando para o lado como um compasso
+        [Test]
+        public void Andando_as_pernas_sobem_alternadas()
+        {
+            float ciclo = RegrasDeAnimacao.CicloDoPasso;
+            var a = RegrasDeAnimacao.Pose(EstadoDoBoneco.Andando, ciclo * 0.25f, 0);
+            var b = RegrasDeAnimacao.Pose(EstadoDoBoneco.Andando, ciclo * 0.75f, 0);
+            Assert.Greater(a.PernaFrenteSobe, 0.05f);
+            Assert.AreEqual(0, a.PernaTrasSobe, 1e-4);
+            Assert.Greater(b.PernaTrasSobe, 0.05f);
+            Assert.AreEqual(0, b.PernaFrenteSobe, 1e-4);
+        }
+
+        [Test]
+        public void Andando_o_corpo_balanca_para_o_lado_da_perna_de_apoio()
+        {
+            float ciclo = RegrasDeAnimacao.CicloDoPasso;
+            var a = RegrasDeAnimacao.Pose(EstadoDoBoneco.Andando, ciclo * 0.25f, 0);
+            var b = RegrasDeAnimacao.Pose(EstadoDoBoneco.Andando, ciclo * 0.75f, 0);
+            Assert.Greater(System.Math.Abs(a.Balanco), 2);
+            Assert.Less(a.Balanco * b.Balanco, 0);
+        }
+
+        [Test]
+        public void Parado_nao_balanca_nem_levanta_as_pernas()
+        {
+            var p = RegrasDeAnimacao.Pose(EstadoDoBoneco.Parado, 1.3f, 0);
+            Assert.AreEqual(0, p.Balanco, 1e-4);
+            Assert.AreEqual(0, p.PernaFrenteSobe, 1e-4);
+        }
+
+        // Virar de lado gira o corpo como um papel: a largura vai de 1 a -1 passando por 0, sem estalo
+        [Test]
+        public void Virada_passa_pela_largura_zero()
+        {
+            Assert.AreEqual(1, RegrasDeAnimacao.EscalaDaVirada(0), 1e-4);
+            Assert.AreEqual(0, RegrasDeAnimacao.EscalaDaVirada(0.5f), 1e-4);
+            Assert.AreEqual(-1, RegrasDeAnimacao.EscalaDaVirada(1), 1e-4);
+            Assert.AreEqual(-1, RegrasDeAnimacao.EscalaDaVirada(3), 1e-4);
+        }
+
+        [Test]
+        public void Gira_o_corpo_para_onde_anda_de_lado_e_fica_de_frente_indo_reto()
+        {
+            Assert.Greater(RegrasDeAnimacao.Guinada(1, 0), 20);
+            Assert.Greater(RegrasDeAnimacao.Guinada(0.7f, 0.7f), 8);
+            Assert.Less(RegrasDeAnimacao.Guinada(0.7f, 0.7f), RegrasDeAnimacao.Guinada(1, 0));
+            Assert.AreEqual(0, RegrasDeAnimacao.Guinada(0, 1), 1e-4);
+            Assert.AreEqual(0, RegrasDeAnimacao.Guinada(0, 0), 1e-4);
+            Assert.AreEqual(RegrasDeAnimacao.Guinada(1, 0), RegrasDeAnimacao.Guinada(-1, 0), 1e-4);
         }
 
         // Regressão: o ciclo usava o relógio global e o passo começava numa fase qualquer, com tranco

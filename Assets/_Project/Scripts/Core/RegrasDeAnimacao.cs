@@ -12,6 +12,8 @@ namespace ALotOfDamage.Core
         public float BracoTras, AntebracoTras;
         public float PernaFrente, PernaTras;
         public float Elevacao;   // sobe e desce do corpo, em unidades
+        public float PernaFrenteSobe, PernaTrasSobe;   // perna levantada no passo, em unidades
+        public float Balanco;    // corpo inteiro inclinando de lado sobre a perna de apoio, em graus
     }
 
     // Ângulos das peças de uma ave voando (graus, anti-horário), a partir do desenho de asas abertas
@@ -62,6 +64,19 @@ namespace ALotOfDamage.Core
                 Cauda = 6 * Sen(Tau * tempo / CicloDaBatida - 1f),
                 Elevacao = 0.06f * batida,
             };
+        }
+
+        public const float DuracaoDaVirada = 0.18f;
+
+        // Largura do corpo durante a virada de lado (progresso 0..1): de 1 a -1 passando por 0, como girar um papel
+        public static float EscalaDaVirada(float progresso) =>
+            (float)Math.Cos(Math.PI * Math.Max(0, Math.Min(1, progresso)));
+
+        // Quanto o corpo gira em direção ao movimento (graus): bastante andando de lado, nada indo reto para cima ou para baixo
+        public static float Guinada(float x, float y)
+        {
+            float total = Math.Abs(x) + Math.Abs(y);
+            return total < 0.01f ? 0 : 28 * Math.Abs(x) / total;
         }
 
         public const float CicloDoPulo = 0.55f;
@@ -136,6 +151,8 @@ namespace ALotOfDamage.Core
                 BracoTras = L(a.BracoTras, b.BracoTras), AntebracoTras = L(a.AntebracoTras, b.AntebracoTras),
                 PernaFrente = L(a.PernaFrente, b.PernaFrente), PernaTras = L(a.PernaTras, b.PernaTras),
                 Elevacao = L(a.Elevacao, b.Elevacao),
+                PernaFrenteSobe = L(a.PernaFrenteSobe, b.PernaFrenteSobe), PernaTrasSobe = L(a.PernaTrasSobe, b.PernaTrasSobe),
+                Balanco = L(a.Balanco, b.Balanco),
             };
         }
 
@@ -167,8 +184,12 @@ namespace ALotOfDamage.Core
                     float fase = Tau * tempo / CicloDoPasso;
                     float passo = Sen(fase);
                     float ritmo = (float)Math.Cos(2 * fase);   // duas batidas por ciclo, uma por pé
-                    p.PernaFrente = 24 * passo;
-                    p.PernaTras = -24 * passo;
+                    // o desenho é de frente: a perna sobe e gira só um pouco, em vez de abrir como um compasso
+                    p.PernaFrente = 8 * passo;
+                    p.PernaTras = -8 * passo;
+                    p.PernaFrenteSobe = 0.09f * Math.Max(0, passo);
+                    p.PernaTrasSobe = 0.09f * Math.Max(0, -passo);
+                    p.Balanco = -3.5f * passo;
                     p.BracoFrente = -14 * passo;
                     p.BracoTras = 14 * passo;
                     p.AntebracoFrente = -6 - 4 * passo;

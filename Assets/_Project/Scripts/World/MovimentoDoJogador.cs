@@ -64,6 +64,7 @@ namespace ALotOfDamage.World
             if (!boneco) return;
             // pela velocidade real: o joystick parado com ruído não fica ligando e desligando o andar
             boneco.Andando = velocidadeAtual.sqrMagnitude > 0.25f;
+            boneco.Guinada = RegrasDeAnimacao.Guinada(entrada.x, entrada.y);
             if (Mathf.Abs(entrada.x) > 0.1f) boneco.OlhandoParaDireita = entrada.x > 0;
         }
 

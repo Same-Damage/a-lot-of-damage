@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace ALotOfDamage.Visual
 {
-    // Monstro low-poly provisÃ³rio (gosma, quadrÃºpede ou golem), feito por cÃ³digo e animado por RegrasDeAnimacao.Monstro.
-    // Fica no lugar da arte pintada atÃ© ela chegar; o dono sÃ³ liga Andando e diz para onde olhar.
+    // Monstro low-poly provisório (gosma, quadrúpede ou golem), feito por código e animado por RegrasDeAnimacao.Monstro.
+    // Fica no lugar da arte pintada até ela chegar; o dono só liga Andando e diz para onde olhar.
     public class MonstroLowPoly : MonoBehaviour
     {
         public Material materialBase;   // URP Lit
@@ -25,14 +25,14 @@ namespace ALotOfDamage.Visual
         float desfase;
         Quaternion olhando = Quaternion.identity;
 
-        // comeÃ§a olhando para onde a cena deixou
+        // começa olhando para onde a cena deixou
         void Awake() => olhando = transform.localRotation;
 
         public void Montar(FormaDoMonstro formaDoMonstro, Color cor)
         {
             Limpar();
             forma = formaDoMonstro;
-            // cada monstro comeÃ§a o ciclo num ponto diferente, para o bando nÃ£o andar sincronizado
+            // cada monstro começa o ciclo num ponto diferente, para o bando não andar sincronizado
             desfase = Ruido.Valor(Mathf.RoundToInt(transform.position.x * 10), Mathf.RoundToInt(transform.position.z * 10)) * 3;
             materiais = new[]
             {
@@ -96,7 +96,7 @@ namespace ALotOfDamage.Visual
             return m;
         }
 
-        // PeÃ§a com malha prÃ³pria, para poder girar sozinha
+        // Peça com malha própria, para poder girar sozinha
         Transform Peca(string nome, Transform pai, Vector3 posicao, System.Action<Malhas> desenhar)
         {
             var go = new GameObject(nome, typeof(MeshFilter), typeof(MeshRenderer));
@@ -124,7 +124,7 @@ namespace ALotOfDamage.Visual
 
         void Gosma()
         {
-            // pivÃ´ na base, para amassar contra o chÃ£o
+            // pivô na base, para amassar contra o chão
             corpo = Peca("Corpo", transform, Vector3.zero, m =>
             {
                 m.Bolha(Pele, new Vector3(0, 0.5f, 0), new Vector3(0.62f, 0.5f, 0.62f), 11, 0.05f, 5, 10);
@@ -155,7 +155,7 @@ namespace ALotOfDamage.Visual
                 float x = i % 2 == 0 ? -0.22f : 0.22f, z = i < 2 ? 0.45f : -0.45f;
                 var perna = Peca("Perna", corpo, new Vector3(x, -0.15f, z), m =>
                     m.Cilindro(Detalhe, new Vector3(0, -0.63f, 0), 0.09f, 0.12f, 0.63f, 5));
-                // diagonais andam juntas: frente-esquerda com trÃ¡s-direita
+                // diagonais andam juntas: frente-esquerda com trás-direita
                 (i == 0 || i == 3 ? pernasA : pernasB).Add(perna);
             }
         }
