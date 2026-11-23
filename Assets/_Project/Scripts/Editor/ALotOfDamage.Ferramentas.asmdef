@@ -1,0 +1,14 @@
+{
+    "name": "ALotOfDamage.Ferramentas",
+    "rootNamespace": "",
+    "references": ["ALotOfDamage.Core", "ALotOfDamage.Combat", "ALotOfDamage.World", "ALotOfDamage.UI", "Unity.InputSystem", "UnityEngine.UI"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
