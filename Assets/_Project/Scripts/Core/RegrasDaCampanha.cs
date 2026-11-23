@@ -20,7 +20,7 @@ namespace ALotOfDamage.Core
     {
         public string Nome;
         public List<string> Monstros = new List<string>();   // ids de DefinicaoDeMonstro que aparecem no mapa
-        public string CorDoChao = "#598C4C";
+        public VisualDaRegiao Visual = new VisualDaRegiao();   // cores, luz e objetos do mapa nesta região
     }
 
     public struct ProgressoDaCampanha
