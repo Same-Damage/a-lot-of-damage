@@ -62,23 +62,46 @@ namespace ALotOfDamage.Testes
 
         // Virar de lado gira o corpo como um papel: a largura vai de 1 a -1 passando por 0, sem estalo
         [Test]
-        public void Virada_passa_pela_largura_zero()
+        public void Virada_nunca_fica_fina_como_papel()
         {
-            Assert.AreEqual(1, RegrasDeAnimacao.EscalaDaVirada(0), 1e-4);
-            Assert.AreEqual(0, RegrasDeAnimacao.EscalaDaVirada(0.5f), 1e-4);
-            Assert.AreEqual(-1, RegrasDeAnimacao.EscalaDaVirada(1), 1e-4);
-            Assert.AreEqual(-1, RegrasDeAnimacao.EscalaDaVirada(3), 1e-4);
+            for (float t = 0; t <= 1.01f; t += 0.05f)
+                Assert.GreaterOrEqual(RegrasDeAnimacao.EscalaDaVirada(t), 0.8f);
+            Assert.Less(RegrasDeAnimacao.EscalaDaVirada(0), 1);
+            Assert.AreEqual(1, RegrasDeAnimacao.EscalaDaVirada(1), 1e-4);
+            Assert.AreEqual(1, RegrasDeAnimacao.EscalaDaVirada(3), 1e-4);
+        }
+
+        [Test]
+        public void Virada_da_um_pulinho_de_altura_e_volta_ao_normal()
+        {
+            Assert.Greater(RegrasDeAnimacao.AlturaDaVirada(0), 1);
+            Assert.AreEqual(1, RegrasDeAnimacao.AlturaDaVirada(1), 1e-4);
+            Assert.AreEqual(1, RegrasDeAnimacao.AlturaDaVirada(3), 1e-4);
         }
 
         [Test]
         public void Gira_o_corpo_para_onde_anda_de_lado_e_fica_de_frente_indo_reto()
         {
-            Assert.Greater(RegrasDeAnimacao.Guinada(1, 0), 20);
-            Assert.Greater(RegrasDeAnimacao.Guinada(0.7f, 0.7f), 8);
+            Assert.Greater(RegrasDeAnimacao.Guinada(1, 0), 4);
+            // giro grande em Y mostra que o desenho é chapado
+            Assert.LessOrEqual(RegrasDeAnimacao.Guinada(1, 0), 10);
+            Assert.Greater(RegrasDeAnimacao.Guinada(0.7f, 0.7f), 2);
             Assert.Less(RegrasDeAnimacao.Guinada(0.7f, 0.7f), RegrasDeAnimacao.Guinada(1, 0));
             Assert.AreEqual(0, RegrasDeAnimacao.Guinada(0, 1), 1e-4);
             Assert.AreEqual(0, RegrasDeAnimacao.Guinada(0, 0), 1e-4);
             Assert.AreEqual(RegrasDeAnimacao.Guinada(1, 0), RegrasDeAnimacao.Guinada(-1, 0), 1e-4);
+        }
+
+        // Regressão: com o braço comprido do Guerreiro, balanço grande jogava a espada para os lados
+        [Test]
+        public void Andar_balanca_o_braco_menos_que_a_perna_e_a_capa_fica_perto_do_corpo()
+        {
+            for (float t = 0; t < RegrasDeAnimacao.CicloDoPasso; t += 0.02f)
+            {
+                var p = RegrasDeAnimacao.Pose(EstadoDoBoneco.Andando, t, 0);
+                Assert.LessOrEqual(System.Math.Abs(p.BracoFrente), System.Math.Abs(p.PernaFrente) * 0.6f + 1e-3f);
+                Assert.LessOrEqual(System.Math.Abs(p.Capa), 10);
+            }
         }
 
         // Regressão: o ciclo usava o relógio global e o passo começava numa fase qualquer, com tranco

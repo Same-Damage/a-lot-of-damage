@@ -22,7 +22,7 @@ namespace ALotOfDamage.Visual
         float desde, duracao;
         Vector3 posicaoDoTronco, posicaoDaPernaFrente, posicaoDaPernaTras;
         Core.Pose atual, deOnde;
-        float larguraDoCorpo = 1, viradaDesde = -10, sinalAntesDaVirada = 1;
+        float larguraDoCorpo = 1, alturaDoCorpo = 1, viradaDesde = -10;
         float guinadaAlvo, guinadaAtual;
 
         // Graus que o corpo gira em direção ao movimento (RegrasDeAnimacao.Guinada)
@@ -45,8 +45,6 @@ namespace ALotOfDamage.Visual
             set
             {
                 if (value == olhandoParaDireita) return;
-                // vira girando como um papel, em vez de espelhar de uma vez
-                sinalAntesDaVirada = SinalAtual();
                 viradaDesde = Time.unscaledTime;
                 olhandoParaDireita = value;
             }
@@ -57,7 +55,7 @@ namespace ALotOfDamage.Visual
             if (tronco) posicaoDoTronco = tronco.localPosition;
             if (pernaFrente) posicaoDaPernaFrente = pernaFrente.localPosition;
             if (pernaTras) posicaoDaPernaTras = pernaTras.localPosition;
-            if (corpo) larguraDoCorpo = Mathf.Abs(corpo.localScale.x);
+            if (corpo) { larguraDoCorpo = Mathf.Abs(corpo.localScale.x); alturaDoCorpo = corpo.localScale.y; }
         }
 
         float SinalAtual() => RegrasDeAnimacao.EscalaHorizontal(desenhoOlhaParaDireita, olhandoParaDireita);
@@ -68,9 +66,9 @@ namespace ALotOfDamage.Visual
             if (!corpo) return;
             float sinal = SinalAtual();
             float t = (Time.unscaledTime - viradaDesde) / RegrasDeAnimacao.DuracaoDaVirada;
-            float x = t < 1 ? sinalAntesDaVirada * RegrasDeAnimacao.EscalaDaVirada(t) : sinal;
             var s = corpo.localScale;
-            s.x = larguraDoCorpo * x;
+            s.x = larguraDoCorpo * sinal * RegrasDeAnimacao.EscalaDaVirada(t);
+            s.y = alturaDoCorpo * RegrasDeAnimacao.AlturaDaVirada(t);
             corpo.localScale = s;
 
             guinadaAtual = Mathf.Lerp(guinadaAtual, guinadaAlvo, 1 - Mathf.Exp(-10 * Time.unscaledDeltaTime));
