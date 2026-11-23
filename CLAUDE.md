@@ -153,7 +153,7 @@ $proj  = "C:\Users\vitor\Downloads\Profile\ALotOfDamage"
 & $unity -batchmode -quit -projectPath $proj -executeMethod ALotOfDamage.Ferramentas.ExportadorDeBalanceamento.CriarTudo -logFile -
 ```
 
-**CI (a fazer):** criar um GitHub Actions com o GameCI (`game-ci/unity-test-runner`) que rode EditMode e PlayMode em todo PR e bloqueie o merge se falhar, com a licença da Unity nos secrets do repositório. Assim ninguém precisa rodar a suíte na máquina a cada mudança. Até lá, os testes continuam sendo rodados localmente com os comandos acima.
+**CI:** o workflow `.github/workflows/testes.yml` (GameCI, `game-ci/unity-test-runner`) roda EditMode e PlayMode em todo PR para a `main` e a cada push nela, com cache da `Library`. O resultado aparece como check no PR, e os relatórios ficam nos artefatos da execução. Ele precisa dos secrets `UNITY_LICENSE`, `UNITY_EMAIL` e `UNITY_PASSWORD` no repositório. Com o CI ativo, rode localmente só os testes do assembly alterado e deixe a suíte inteira para o CI. Para o merge ficar bloqueado quando os testes falharem, exija os checks na proteção da `main`.
 
 A planilha `docs/balanceamento.csv` é gerada pelas mesmas fórmulas do jogo (`RegrasDeUpgrade`). Ao mudar fórmula ou valor de balanceamento, gere de novo e commite junto.
 
