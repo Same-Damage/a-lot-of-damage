@@ -64,25 +64,21 @@ namespace ALotOfDamage.Ferramentas
             new GameObject("Escopo da Cena").AddComponent<EscopoDaCena>();
             Random.InitState(42);
 
-            var chao = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            chao.name = "Chao";
-            chao.transform.localScale = new Vector3(10, 1, 10);
-            Pintar(chao, Color.white);
-            chao.AddComponent<AparenciaDaRegiao>();
-
-            // Obstáculos longe do ponto inicial para perceber o movimento da câmera
-            for (int i = 0; i < 25; i++)
-            {
-                Vector3 p;
-                do p = new Vector3(Random.Range(-40, 40), 0.5f, Random.Range(-40, 40)); while (p.magnitude < 6);
-                var c = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                c.name = "Obstaculo";
-                c.transform.position = p;
-                Pintar(c, new Color(0.5f, 0.45f, 0.4f));
-                var modificador = c.AddComponent<NavMeshModifier>();
-                modificador.overrideArea = true;
-                modificador.area = NavMesh.GetAreaFromName("Not Walkable");
-            }
+            // Ilha flutuante: o relevo da borda e os objetos mudam por região em tempo de jogo (CenarioDaRegiao);
+            // a forma base fica salva aqui para o colisor e o NavMesh
+            var parametrosDaIlha = new ParametrosDaIlha();
+            var ilha = new GameObject("Ilha", typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider));
+            var malhaDaIlha = SalvarAsset(MalhaDaIlha.Criar(parametrosDaIlha, 0), $"{Pasta}/Mapa/Ilha.asset");
+            ilha.GetComponent<MeshFilter>().sharedMesh = malhaDaIlha;
+            ilha.GetComponent<MeshCollider>().sharedMesh = malhaDaIlha;
+            var materialDoCenario = MaterialDoMapa("Cenario", "Universal Render Pipeline/Lit");
+            ilha.GetComponent<MeshRenderer>().sharedMaterials = new[] { materialDoCenario, materialDoCenario };
+            var cenario = ilha.AddComponent<CenarioDaRegiao>();
+            cenario.ilha = parametrosDaIlha;
+            cenario.materialBase = materialDoCenario;
+            cenario.materialDasNuvens = MaterialDoMapa("Nuvens", "Universal Render Pipeline/Unlit");
+            cenario.materialDasParticulas = MaterialDoMapa("Particulas", "Universal Render Pipeline/2D/Sprite-Unlit-Default");
+            CriarMuralha(parametrosDaIlha);
 
             var jogador = new GameObject("Jogador") { tag = "Player" };
             jogador.transform.position = new Vector3(0, 1, 0);
@@ -123,8 +119,11 @@ namespace ALotOfDamage.Ferramentas
             cam.fieldOfView = 24f;
             iso.alvo = jogador.transform;
             movimento.camera_ = cam.transform;
+            cenario.camera_ = cam;
+            cenario.jogador = jogador.transform;
+            cenario.sol = Object.FindAnyObjectByType<Light>();
 
-            AssarNavMesh(chao);
+            AssarNavMesh(ilha);
             CriarControlesDeToque();
             var janelas = new GameObject("Janelas");
             janelas.AddComponent<JanelaDeUpgrades>();
@@ -321,6 +320,45 @@ namespace ALotOfDamage.Ferramentas
             e.idDoInimigo = id;
             e.indiceDoPonto = indice;
             e.pontoDoChefe = chefe;
+        }
+
+        // Parede invisível na beira da área andável: os morros e o penhasco ficam só de cenário
+        static void CriarMuralha(ParametrosDaIlha p)
+        {
+            var muralha = new GameObject("Muralha");
+            const int pedacos = 48;
+            float raio = p.RaioAndavel + 0.5f;
+            float largura = 2 * Mathf.PI * raio / pedacos + 0.5f;
+            for (int i = 0; i < pedacos; i++)
+            {
+                float ang = i * 360f / pedacos;
+                var parte = new GameObject("Parede", typeof(BoxCollider));
+                parte.transform.SetParent(muralha.transform, false);
+                parte.transform.SetPositionAndRotation(Quaternion.Euler(0, ang, 0) * new Vector3(0, 2, raio), Quaternion.Euler(0, ang, 0));
+                parte.GetComponent<BoxCollider>().size = new Vector3(largura, 6, 1);
+                var modificador = parte.AddComponent<NavMeshModifier>();
+                modificador.overrideArea = true;
+                modificador.area = NavMesh.GetAreaFromName("Not Walkable");
+            }
+        }
+
+        static Material MaterialDoMapa(string nome, string shader)
+        {
+            string caminho = $"Assets/_Project/Art/Mapa/{nome}.mat";
+            var material = AssetDatabase.LoadAssetAtPath<Material>(caminho);
+            if (material) return material;
+            if (!AssetDatabase.IsValidFolder("Assets/_Project/Art/Mapa")) AssetDatabase.CreateFolder("Assets/_Project/Art", "Mapa");
+            material = new Material(Shader.Find(shader)) { enableInstancing = true };
+            AssetDatabase.CreateAsset(material, caminho);
+            return material;
+        }
+
+        static T SalvarAsset<T>(T asset, string caminho) where T : Object
+        {
+            if (!AssetDatabase.IsValidFolder($"{Pasta}/Mapa")) AssetDatabase.CreateFolder(Pasta, "Mapa");
+            AssetDatabase.DeleteAsset(caminho);
+            AssetDatabase.CreateAsset(asset, caminho);
+            return asset;
         }
 
         // Gera o NavMesh do chão (obstáculos ficam como não andáveis) e salva ao lado da cena

@@ -25,14 +25,74 @@ MonoBehaviour:
     Monstros:
     - slime
     - lobo
-    CorDoChao: '#598C4C'
+    Visual:
+      CorDaGrama: '#6FA34F'
+      CorDaTerra: '#9C7A4E'
+      CorDaRocha: '#8A7E6C'
+      CorDaFolhagem: '#4F8A3C'
+      CorDoTronco: '#6B4A2E'
+      CorDoCristal: '#5FD8FF'
+      CorDoSol: '#FFE9C4'
+      CorDoCeu: '#9CC8F0'
+      CorDaNevoa: '#C9DDEB'
+      CorDasNuvens: '#F4F1EC'
+      IntensidadeDoSol: 1.25
+      DensidadeDaNevoa: 0.003
+      Arvores: 70
+      Pinheiros: 30
+      Pedras: 35
+      Cristais: 8
+      Ruinas: 4
+      Arbustos: 80
+      Grama: 900
+      Particulas: 1
   - Nome: Bosque Sombrio
     Monstros:
     - lobo
     - golem
-    CorDoChao: '#2F4A33'
+    Visual:
+      CorDaGrama: '#4C7A3E'
+      CorDaTerra: '#5C4632'
+      CorDaRocha: '#6A6E6C'
+      CorDaFolhagem: '#2C5A36'
+      CorDoTronco: '#4A3424'
+      CorDoCristal: '#9B7CFF'
+      CorDoSol: '#FFE2C2'
+      CorDoCeu: '#8A9BC4'
+      CorDaNevoa: '#8C9AB4'
+      CorDasNuvens: '#B8BFD6'
+      IntensidadeDoSol: 1.05
+      DensidadeDaNevoa: 0.005
+      Arvores: 45
+      Pinheiros: 110
+      Pedras: 30
+      Cristais: 14
+      Ruinas: 0
+      Arbustos: 110
+      Grama: 900
+      Particulas: 2
   - Nome: "Ru\xEDnas Antigas"
     Monstros:
     - slime
     - golem
-    CorDoChao: '#7A6E5A'
+    Visual:
+      CorDaGrama: '#A9A46C'
+      CorDaTerra: '#C8B48A'
+      CorDaRocha: '#CFC4AE'
+      CorDaFolhagem: '#7E8A45'
+      CorDoTronco: '#6E5236'
+      CorDoCristal: '#FFB347'
+      CorDoSol: '#FFF0D8'
+      CorDoCeu: '#E9D6B4'
+      CorDaNevoa: '#E6D8BE'
+      CorDasNuvens: '#FBEBD3'
+      IntensidadeDoSol: 1.25
+      DensidadeDaNevoa: 0.004
+      Arvores: 18
+      Pinheiros: 0
+      Pedras: 60
+      Cristais: 6
+      Ruinas: 30
+      Arbustos: 60
+      Grama: 500
+      Particulas: 3
