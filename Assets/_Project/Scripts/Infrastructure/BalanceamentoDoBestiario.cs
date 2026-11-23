@@ -13,9 +13,9 @@ namespace ALotOfDamage.Infrastructure
 
         public static List<DefinicaoDeMonstro> Padrao() => new List<DefinicaoDeMonstro>
         {
-            new DefinicaoDeMonstro { Id = "slime", Nome = "Slime", MaterialId = "gosma", NomeDoMaterial = "Gosma", MaterialPorVitoria = 2 },
-            new DefinicaoDeMonstro { Id = "lobo", Nome = "Lobo", MaterialId = "presa", NomeDoMaterial = "Presa", MaterialPorVitoria = 2 },
-            new DefinicaoDeMonstro { Id = "golem", Nome = "Golem", MaterialId = "pedra_runica", NomeDoMaterial = "Pedra Rúnica", MaterialPorVitoria = 3 },
+            new DefinicaoDeMonstro { Id = "slime", Nome = "Slime", MaterialId = "gosma", NomeDoMaterial = "Gosma", MaterialPorVitoria = 2, MultiplicadorDeVida = 1, Cor = "#4CE64C", Escala = 0.8f },
+            new DefinicaoDeMonstro { Id = "lobo", Nome = "Lobo", MaterialId = "presa", NomeDoMaterial = "Presa", MaterialPorVitoria = 2, MultiplicadorDeVida = 4, Cor = "#9999A6", Escala = 1f },
+            new DefinicaoDeMonstro { Id = "golem", Nome = "Golem", MaterialId = "pedra_runica", NomeDoMaterial = "Pedra Rúnica", MaterialPorVitoria = 3, MultiplicadorDeVida = 20, Cor = "#8C5933", Escala = 1.6f },
         };
     }
 }

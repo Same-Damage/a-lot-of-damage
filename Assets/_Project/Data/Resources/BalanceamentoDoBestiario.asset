@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d497890409a564f4dae19e547abf33db, type: 3}
   m_Name: BalanceamentoDoBestiario
-  m_EditorClassIdentifier: ALotOfDamage.Core::ALotOfDamage.Core.BalanceamentoDoBestiario
+  m_EditorClassIdentifier: ALotOfDamage.Infraestrutura::ALotOfDamage.Infrastructure.BalanceamentoDoBestiario
   parametros:
     PrimeiroMarco: 10
     FatorEntreMarcos: 10
@@ -23,13 +23,22 @@ MonoBehaviour:
     MaterialId: gosma
     NomeDoMaterial: Gosma
     MaterialPorVitoria: 2
+    MultiplicadorDeVida: 1
+    Cor: '#4CE64C'
+    Escala: 0.8
   - Id: lobo
     Nome: Lobo
     MaterialId: presa
     NomeDoMaterial: Presa
     MaterialPorVitoria: 2
+    MultiplicadorDeVida: 4
+    Cor: '#9999A6'
+    Escala: 1
   - Id: golem
     Nome: Golem
     MaterialId: pedra_runica
     NomeDoMaterial: "Pedra R\xFAnica"
     MaterialPorVitoria: 3
+    MultiplicadorDeVida: 20
+    Cor: '#8C5933'
+    Escala: 1.6

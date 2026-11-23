@@ -1,54 +1,65 @@
 using ALotOfDamage.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 using VContainer;
 
 namespace ALotOfDamage.UI
 {
-    // Tela provisória da forja (OnGUI) até existir o kit de interface
-    public class JanelaDaForja : JanelaProvisoria
+    public class JanelaDaForja : JanelaDoJogo
     {
-        const float AlturaItem = 90;
-
         protected override string Titulo => "Forja";
         protected override Key Tecla => Key.J;
         protected override int Ordem => 1;
-        protected override float AlturaDoConteudo => catalogo.Itens.Count * AlturaItem;
+        protected override int Linhas => catalogo.Itens.Count;
+        protected override float AlturaDaLinha => 120;
 
         ForjarItem forjarItem;
+        Text[] nomes, efeitos, custos;
+        Button[] botoes;
 
         [Inject]
         public void Construir(ForjarItem forjarItem) => this.forjarItem = forjarItem;
+
+        protected override void Start()
+        {
+            int n = catalogo.Itens.Count;
+            nomes = new Text[n]; efeitos = new Text[n]; custos = new Text[n]; botoes = new Button[n];
+            base.Start();
+        }
+
+        protected override void MontarLinha(int i, RectTransform linha)
+        {
+            var d = catalogo.Itens[i];
+            nomes[i] = Texto(linha, 24, 10, 28, KitDeInterface.Dourado, negrito: true);
+            efeitos[i] = Texto(linha, 24, 46, 22, KitDeInterface.TextoClaro, 700);
+            custos[i] = Texto(linha, 24, 78, 22, KitDeInterface.TextoClaro, 700);
+            botoes[i] = Botao(linha, "Forjar", 30, 160, () => Forjar(d));
+        }
 
         void Forjar(DefinicaoDeItem d)
         {
             var r = forjarItem.Executar(d.Id);
             if (!r.Forjou) return;
-            MostrarFaixa(r.SucessoCritico
-                ? $"SUCESSO CRÍTICO! {d.Nome} +{r.NovoNivel}"
-                : $"{d.Nome} +{r.NovoNivel}", r.SucessoCritico);
+            faixa.Mostrar(r.SucessoCritico ? $"SUCESSO CRÍTICO! {d.Nome} +{r.NovoNivel}" : $"{d.Nome} +{r.NovoNivel}",
+                r.SucessoCritico ? 2.5f : 1.2f);
         }
 
-        protected override void DesenharConteudo(Rect area)
+        protected override void AtualizarLinha(int i)
         {
-            var itens = catalogo.Itens;
-            for (int i = 0; i < itens.Count; i++)
-            {
-                var d = itens[i];
-                int nivel = Progresso.NivelDoItem(d.Id);
-                float y = area.y + i * AlturaItem;
-                string material = catalogo.NomeDoMaterial(d.MaterialId);
+            var d = catalogo.Itens[i];
+            int nivel = Progresso.NivelDoItem(d.Id);
+            double ouro = RegrasDaForja.CustoEmOuro(d, nivel);
+            int material = RegrasDaForja.CustoEmMaterial(d, nivel);
+            int tem = Progresso.Material(d.MaterialId);
+            bool pode = ouro <= Progresso.Ouro && material <= tem;
 
-                GUI.Label(new Rect(area.x + 16, y, 420, 24), $"{d.Nome} +{nivel}", EstiloTitulo);
-                GUI.Label(new Rect(area.x + 16, y + 26, 460, 22),
-                    $"{d.Descricao}: x{FormatadorDeNumeros.Formatar(RegrasDaForja.Multiplicador(d, nivel))}" +
-                    $"   próximo: x{1 + d.BonusPorNivel:0.##}   crítico {d.ChanceDeSucessoCritico * 100:0}%", EstiloTexto);
-                GUI.Label(new Rect(area.x + 16, y + 48, 460, 22),
-                    $"Custo: {FormatadorDeNumeros.Formatar(RegrasDaForja.CustoEmOuro(d, nivel))} ouro + " +
-                    $"{RegrasDaForja.CustoEmMaterial(d, nivel)} {material} (tem {Progresso.Material(d.MaterialId)})", EstiloTexto);
-
-                if (GUI.Button(new Rect(area.x + area.width - 140, y + 10, 120, 40), "Forjar", EstiloBotao)) Forjar(d);
-            }
+            nomes[i].text = $"{d.Nome} +{nivel}";
+            efeitos[i].text = $"{d.Descricao}: ×{FormatadorDeNumeros.Formatar(RegrasDaForja.Multiplicador(d, nivel))}" +
+                              $"   próximo ×{1 + d.BonusPorNivel:0.##}   crítico {d.ChanceDeSucessoCritico * 100:0}%";
+            custos[i].text = $"Custo: {FormatadorDeNumeros.Formatar(ouro)} ouro + {material} {catalogo.NomeDoMaterial(d.MaterialId)} (tem {tem})";
+            custos[i].color = pode ? KitDeInterface.Verde : KitDeInterface.TextoClaro;
+            botoes[i].interactable = pode;
         }
     }
 }

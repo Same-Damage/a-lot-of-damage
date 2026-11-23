@@ -16,8 +16,7 @@ namespace ALotOfDamage.Infrastructure
         public bool Ativo { get; private set; }
         public string IdDoInimigo { get; private set; }
         public string TipoDoInimigo { get; private set; }
-        public string NomeDoInimigo { get; private set; }
-        public double MultiplicadorDeVida { get; private set; } = 1;
+        public bool Chefe { get; private set; }
         public Vantagem Vantagem { get; private set; }
 
         public bool TemPosicaoDeRetorno { get; private set; }
@@ -33,14 +32,13 @@ namespace ALotOfDamage.Infrastructure
             derrotados.TryGetValue(idDoInimigo, out var momento) &&
             !RegrasDoEncontro.Renasceu(momento, Time.realtimeSinceStartup, SegundosParaRenascer);
 
-        public void Iniciar(string idDoInimigo, string tipo, string nome, double multiplicadorDeVida, Vantagem vantagem, Vector3 posicaoDoJogador)
+        public void Iniciar(string idDoInimigo, string tipo, bool chefe, Vantagem vantagem, Vector3 posicaoDoJogador)
         {
             if (Ativo) return;
             Ativo = true;
             IdDoInimigo = idDoInimigo;
             TipoDoInimigo = tipo;
-            NomeDoInimigo = nome;
-            MultiplicadorDeVida = multiplicadorDeVida;
+            Chefe = chefe;
             Vantagem = vantagem;
             PosicaoDeRetorno = posicaoDoJogador;
             TemPosicaoDeRetorno = true;

@@ -11,30 +11,22 @@ namespace ALotOfDamage.World
     public class AtaqueNoMapa : MonoBehaviour
     {
         FluxoDeEncontro encontro;
-        IRepositorioDeProgresso repositorio;
 
         [Inject]
-        public void Construir(FluxoDeEncontro encontro, IRepositorioDeProgresso repositorio)
-        {
-            this.encontro = encontro;
-            this.repositorio = repositorio;
-        }
+        public void Construir(FluxoDeEncontro encontro) => this.encontro = encontro;
 
         public float alcance = 2f;
         public float recarga = 0.4f;
 
         float proximoAtaque;
-        float golpeVisivel;
 
         void Update()
         {
             if (encontro.Ativo) return;
-            if (golpeVisivel > 0) golpeVisivel -= Time.deltaTime;
 
             if (AtaquePedido() && Time.time >= proximoAtaque)
             {
                 proximoAtaque = Time.time + recarga;
-                golpeVisivel = 0.15f;
                 TentarAcertar();
             }
         }
@@ -60,17 +52,5 @@ namespace ALotOfDamage.World
             if (maisPerto) maisPerto.Enfrentar(RegrasDoEncontro.AoAtacar(maisPerto.Perseguindo));
         }
 
-        void OnGUI()
-        {
-            var estilo = new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold };
-            var pequeno = new GUIStyle(estilo) { fontSize = 14, fontStyle = FontStyle.Normal };
-            GUI.Label(new Rect(20, 20, 700, 30),
-                $"Ouro {FormatadorDeNumeros.Formatar(repositorio.Carregar().Ouro)}   Vitórias {repositorio.Carregar().Vitorias}   [U] Upgrades  [J] Forja  [B] Bestiário", estilo);
-            GUI.Label(new Rect(20, 50, 700, 30), "F / Espaço: atacar (acerte antes de ser visto = ataque preventivo)", pequeno);
-            if (encontro.EmProtecao)
-                GUI.Label(new Rect(20, 75, 400, 30), "Protegido...", pequeno);
-            if (golpeVisivel > 0)
-                GUI.Label(new Rect(Screen.width * 0.5f - 30, Screen.height * 0.5f - 60, 100, 40), "GOLPE!", estilo);
-        }
     }
 }

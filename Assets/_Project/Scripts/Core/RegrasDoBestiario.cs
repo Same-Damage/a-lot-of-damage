@@ -20,6 +20,9 @@ namespace ALotOfDamage.Core
         public string MaterialId;
         public string NomeDoMaterial;
         public int MaterialPorVitoria = 1;
+        public double MultiplicadorDeVida = 1;
+        public string Cor = "#4CE64C";   // placeholder no mapa até chegar o sprite
+        public float Escala = 1;
     }
 
     // Bestiário: derrotar um tipo 10, 100, 1.000... vezes dá bônus permanente contra ele e no geral

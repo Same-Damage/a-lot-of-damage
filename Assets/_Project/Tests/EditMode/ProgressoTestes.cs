@@ -97,6 +97,34 @@ namespace ALotOfDamage.Testes
         }
 
         [Test]
+        public void Exportar_e_importar_mantem_tudo()
+        {
+            progresso.ReceberOuro(1234.5);
+            progresso.Comprar(Forca, 1);
+            progresso.AdicionarMaterial("presa", 7);
+            progresso.RegistrarVitoria(new DefinicaoDeMonstro { Id = "lobo" }, Bestiario);
+            progresso.AvancarCampanha(new ParametrosDaCampanha { VitoriasParaAvancar = 1 }, false);
+
+            var copia = Progresso.Importar(progresso.Exportar());
+            Assert.AreEqual(progresso.Ouro, copia.Ouro, 1e-9);
+            Assert.AreEqual(2, copia.Nivel(Forca.Id));
+            Assert.AreEqual(7, copia.Material("presa"));
+            Assert.AreEqual(1, copia.Derrotas("lobo"));
+            Assert.AreEqual(1, copia.Vitorias);
+            Assert.AreEqual(2, copia.Estagio);
+        }
+
+        [Test]
+        public void Importar_dados_invalidos_volta_a_valores_seguros()
+        {
+            var p = Progresso.Importar(new DadosDoProgresso { Ouro = -5, Estagio = 0, Niveis = null });
+            Assert.AreEqual(0, p.Ouro, 1e-9);
+            Assert.AreEqual(1, p.Estagio);
+            Assert.AreEqual(Progresso.ClassePadrao, p.ClasseId);
+            Assert.AreEqual(0, Progresso.Importar(null).Ouro, 1e-9);
+        }
+
+        [Test]
         public void Balanceamento_padrao_tem_os_tres_upgrades_do_prototipo()
         {
             var b = BalanceamentoDeUpgrades.Padrao();

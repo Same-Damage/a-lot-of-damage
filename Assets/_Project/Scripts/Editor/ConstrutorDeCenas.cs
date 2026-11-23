@@ -41,6 +41,7 @@ namespace ALotOfDamage.Ferramentas
             CriarAssetSeFaltar<BalanceamentoDaForja>();
             CriarAssetSeFaltar<BalanceamentoDoBestiario>();
             CriarAssetSeFaltar<BalanceamentoDePersonagens>();
+            CriarAssetSeFaltar<BalanceamentoDaCampanha>();
             AssetDatabase.SaveAssets();
         }
 
@@ -65,7 +66,8 @@ namespace ALotOfDamage.Ferramentas
             var chao = GameObject.CreatePrimitive(PrimitiveType.Plane);
             chao.name = "Chao";
             chao.transform.localScale = new Vector3(10, 1, 10);
-            Pintar(chao, new Color(0.35f, 0.55f, 0.3f));
+            Pintar(chao, Color.white);
+            chao.AddComponent<AparenciaDaRegiao>();
 
             // Obstáculos longe do ponto inicial para perceber o movimento da câmera
             for (int i = 0; i < 25; i++)
@@ -100,10 +102,14 @@ namespace ALotOfDamage.Ferramentas
             var follower = CriarFollower(new Vector3(-1.6f, 2.8f, 0));
             follower.AddComponent<SeguidorNoMapa>().alvo = jogador.transform;
 
-            // Monstros: id, nome, multiplicador de vida, cor, escala, quantidade, distância do início
-            CriarInimigos("slime", "Slime", 1, new Color(0.3f, 0.9f, 0.3f), 0.8f, 4, 12f);
-            CriarInimigos("lobo", "Lobo", 4, new Color(0.6f, 0.6f, 0.65f), 1f, 3, 20f);
-            CriarInimigos("golem", "Golem", 20, new Color(0.55f, 0.35f, 0.2f), 1.6f, 2, 30f);
+            // Pontos de monstro: o tipo de cada um vem da região atual da campanha
+            for (int i = 0; i < 9; i++)
+            {
+                float ang = Random.Range(0f, Mathf.PI * 2);
+                float distancia = 12f + i * 2.2f;
+                CriarPontoDeMonstro($"ponto_{i + 1}", i, false, new Vector3(Mathf.Cos(ang) * distancia, 1, Mathf.Sin(ang) * distancia));
+            }
+            CriarPontoDeMonstro("chefe", 0, true, new Vector3(0, 1, 32));
 
             var cam = Camera.main;
             var iso = cam.gameObject.AddComponent<CameraIsometrica>();
@@ -116,7 +122,7 @@ namespace ALotOfDamage.Ferramentas
             janelas.AddComponent<JanelaDeUpgrades>();
             janelas.AddComponent<JanelaDaForja>();
             janelas.AddComponent<JanelaDoBestiario>();
-            new GameObject("Painel de Poder").AddComponent<PainelDePoder>();
+            new GameObject("HUD do Mapa").AddComponent<HudDoMapa>();
             Salvar(cena, "Mapa");
         }
 
@@ -133,28 +139,21 @@ namespace ALotOfDamage.Ferramentas
             return go;
         }
 
-        static void CriarInimigos(string id, string nome, double vida, Color cor, float escala, int quantidade, float distancia)
+        static void CriarPontoDeMonstro(string id, int indice, bool chefe, Vector3 posicao)
         {
-            for (int i = 0; i < quantidade; i++)
-            {
-                float ang = Random.Range(0f, Mathf.PI * 2);
-                var go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                Object.DestroyImmediate(go.GetComponent<Collider>());
-                go.name = $"{nome} {i + 1}";
-                go.transform.position = new Vector3(Mathf.Cos(ang) * distancia, escala, Mathf.Sin(ang) * distancia);
-                go.transform.localScale = Vector3.one * escala;
-                Pintar(go, cor);
+            var go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            Object.DestroyImmediate(go.GetComponent<Collider>());
+            go.name = chefe ? "Ponto do Chefe" : $"Ponto de Monstro {indice + 1}";
+            go.transform.position = posicao;
+            Pintar(go, Color.white);
 
-                var agente = go.AddComponent<NavMeshAgent>();
-                agente.baseOffset = escala;
-                agente.radius = 0.5f;
-                agente.acceleration = 20f;
-                var e = go.AddComponent<InimigoDoMapa>();
-                e.idDoInimigo = $"{id}_{i + 1}";
-                e.tipo = id;
-                e.nome = nome;
-                e.multiplicadorDeVida = vida;
-            }
+            var agente = go.AddComponent<NavMeshAgent>();
+            agente.radius = 0.5f;
+            agente.acceleration = 20f;
+            var e = go.AddComponent<InimigoDoMapa>();
+            e.idDoInimigo = id;
+            e.indiceDoPonto = indice;
+            e.pontoDoChefe = chefe;
         }
 
         // Gera o NavMesh do chão (obstáculos ficam como não andáveis) e salva ao lado da cena
