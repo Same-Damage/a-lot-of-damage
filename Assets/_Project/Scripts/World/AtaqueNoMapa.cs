@@ -52,7 +52,7 @@ namespace ALotOfDamage.World
             var estilo = new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold };
             var pequeno = new GUIStyle(estilo) { fontSize = 14, fontStyle = FontStyle.Normal };
             GUI.Label(new Rect(20, 20, 700, 30),
-                $"Ouro {FormatadorDeNumeros.Formatar(ProgressoDoJogador.Ouro)}   Dano x{FormatadorDeNumeros.Formatar(ProgressoDoJogador.MultiplicadorDeDano)}   Vitórias {ProgressoDoJogador.Vitorias}", estilo);
+                $"Ouro {FormatadorDeNumeros.Formatar(ProgressoDoJogador.Ouro)}   Vitórias {ProgressoDoJogador.Vitorias}   [U] Upgrades", estilo);
             GUI.Label(new Rect(20, 50, 700, 30), "F / Espaço: atacar (acerte antes de ser visto = ataque preventivo)", pequeno);
             if (EstadoDoEncontro.EmProtecao)
                 GUI.Label(new Rect(20, 75, 400, 30), "Protegido...", pequeno);

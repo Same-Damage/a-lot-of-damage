@@ -1,4 +1,5 @@
 using ALotOfDamage.Combat;
+using ALotOfDamage.Core;
 using ALotOfDamage.UI;
 using ALotOfDamage.World;
 using UnityEditor;
@@ -19,6 +20,7 @@ namespace ALotOfDamage.Ferramentas
         [MenuItem("A Lot of Damage/Recriar todas as cenas")]
         public static void CriarTodas()
         {
+            CriarBalanceamento();
             CriarBatalha();
             CriarMapa();
             EditorBuildSettings.scenes = new[]
@@ -26,6 +28,20 @@ namespace ALotOfDamage.Ferramentas
                 new EditorBuildSettingsScene($"{Pasta}/Mapa.unity", true),
                 new EditorBuildSettingsScene($"{Pasta}/Batalha.unity", true),
             };
+        }
+
+        // Cria o asset de balanceamento com os valores padrão, se ainda não existir
+        [MenuItem("A Lot of Damage/Criar balanceamento de upgrades")]
+        public static void CriarBalanceamento()
+        {
+            const string pasta = "Assets/_Project/Data/Resources";
+            string caminho = $"{pasta}/{nameof(BalanceamentoDeUpgrades)}.asset";
+            if (AssetDatabase.LoadAssetAtPath<BalanceamentoDeUpgrades>(caminho)) return;
+
+            if (!AssetDatabase.IsValidFolder("Assets/_Project/Data")) AssetDatabase.CreateFolder("Assets/_Project", "Data");
+            if (!AssetDatabase.IsValidFolder(pasta)) AssetDatabase.CreateFolder("Assets/_Project/Data", "Resources");
+            AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<BalanceamentoDeUpgrades>(), caminho);
+            AssetDatabase.SaveAssets();
         }
 
         [MenuItem("A Lot of Damage/Criar cena: Mapa")]
@@ -76,6 +92,7 @@ namespace ALotOfDamage.Ferramentas
             movimento.camera_ = cam.transform;
 
             CriarControlesDeToque();
+            new GameObject("Janela de Upgrades").AddComponent<JanelaDeUpgrades>();
             Salvar(cena, "Mapa");
         }
 
