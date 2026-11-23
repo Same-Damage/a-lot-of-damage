@@ -1,9 +1,12 @@
 using ALotOfDamage.Core;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace ALotOfDamage.World
 {
-    // Monstro visível no mapa: vaga, persegue ao ver o jogador e inicia a batalha ao encostar
+    // Monstro visível no mapa: vaga, persegue ao ver o jogador e inicia a batalha ao encostar.
+    // Anda pelo NavMesh para desviar dos obstáculos.
+    [RequireComponent(typeof(NavMeshAgent))]
     public class InimigoDoMapa : MonoBehaviour
     {
         public string idDoInimigo = "inimigo";
@@ -27,11 +30,14 @@ namespace ALotOfDamage.World
         Transform jogador;
         Vector3 origem, destino;
         float espera;
+        NavMeshAgent agente;
         bool escondido;
         Renderer[] visuais;
 
         void Start()
         {
+            agente = GetComponent<NavMeshAgent>();
+            agente.updateRotation = false;
             origem = transform.position;
             EscolherDestino();
             var j = GameObject.FindWithTag("Player");
@@ -51,10 +57,10 @@ namespace ALotOfDamage.World
         {
             if (escondido)
             {
-                if (EstadoDoEncontro.EstaDerrotado(idDoInimigo)) return;
+                if (EstadoDoEncontro.EstaDerrotado(idDoInimigo)) { Parar(); return; }
                 Mostrar(true);
             }
-            if (!jogador || EstadoDoEncontro.Ativo) return;
+            if (!jogador || EstadoDoEncontro.Ativo) { Parar(); return; }
 
             Vector3 ateJogador = jogador.position - transform.position;
             ateJogador.y = 0f;
@@ -84,20 +90,32 @@ namespace ALotOfDamage.World
         {
             if (espera > 0) { espera -= Time.deltaTime; return; }
             MoverPara(destino, velocidadeVagando);
-            Vector3 d = destino - transform.position; d.y = 0f;
-            if (d.sqrMagnitude < 0.05f) { espera = Random.Range(1f, 3f); EscolherDestino(); }
+            if (agente.isOnNavMesh && !agente.pathPending && agente.remainingDistance < 0.3f)
+            {
+                espera = Random.Range(1f, 3f);
+                EscolherDestino();
+            }
+        }
+
+        void Parar()
+        {
+            if (agente.isOnNavMesh) agente.isStopped = true;
         }
 
         void MoverPara(Vector3 alvo, float velocidade)
         {
-            alvo.y = transform.position.y;
-            transform.position = Vector3.MoveTowards(transform.position, alvo, velocidade * Time.deltaTime);
+            if (!agente.isOnNavMesh) return;
+            agente.isStopped = false;
+            agente.speed = velocidade;
+            agente.SetDestination(alvo);
         }
 
         void EscolherDestino()
         {
             Vector2 r = Random.insideUnitCircle * raioDeVagar;
             destino = origem + new Vector3(r.x, 0f, r.y);
+            // Ponto sorteado em cima de um obstáculo vira o ponto andável mais próximo
+            if (NavMesh.SamplePosition(destino, out var ponto, raioDeVagar, NavMesh.AllAreas)) destino = ponto.position;
         }
 
         void OnDrawGizmosSelected()

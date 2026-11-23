@@ -4,7 +4,9 @@ using ALotOfDamage.UI;
 using ALotOfDamage.World;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using Unity.AI.Navigation;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
@@ -71,6 +73,9 @@ namespace ALotOfDamage.Ferramentas
                 c.name = "Obstaculo";
                 c.transform.position = p;
                 Pintar(c, new Color(0.5f, 0.45f, 0.4f));
+                var modificador = c.AddComponent<NavMeshModifier>();
+                modificador.overrideArea = true;
+                modificador.area = NavMesh.GetAreaFromName("Not Walkable");
             }
 
             var jogador = new GameObject("Jogador") { tag = "Player" };
@@ -98,6 +103,7 @@ namespace ALotOfDamage.Ferramentas
             iso.alvo = jogador.transform;
             movimento.camera_ = cam.transform;
 
+            AssarNavMesh(chao);
             CriarControlesDeToque();
             var janelas = new GameObject("Janelas");
             janelas.AddComponent<JanelaDeUpgrades>();
@@ -118,12 +124,33 @@ namespace ALotOfDamage.Ferramentas
                 go.transform.localScale = Vector3.one * escala;
                 Pintar(go, cor);
 
+                var agente = go.AddComponent<NavMeshAgent>();
+                agente.baseOffset = escala;
+                agente.radius = 0.5f;
+                agente.acceleration = 20f;
                 var e = go.AddComponent<InimigoDoMapa>();
                 e.idDoInimigo = $"{id}_{i + 1}";
                 e.tipo = id;
                 e.nome = nome;
                 e.multiplicadorDeVida = vida;
             }
+        }
+
+        // Gera o NavMesh do chão (obstáculos ficam como não andáveis) e salva ao lado da cena
+        static void AssarNavMesh(GameObject chao)
+        {
+            var superficie = chao.AddComponent<NavMeshSurface>();
+            superficie.collectObjects = CollectObjects.All;
+            // Só colisores contam; monstros não têm colisor e o jogador fica de fora
+            superficie.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
+            GameObject.FindWithTag("Player").AddComponent<NavMeshModifier>().ignoreFromBuild = true;
+            superficie.BuildNavMesh();
+
+            string pasta = $"{Pasta}/Mapa";
+            if (!AssetDatabase.IsValidFolder(pasta)) AssetDatabase.CreateFolder(Pasta, "Mapa");
+            string caminho = $"{pasta}/NavMesh.asset";
+            AssetDatabase.DeleteAsset(caminho);
+            AssetDatabase.CreateAsset(superficie.navMeshData, caminho);
         }
 
         static void CriarControlesDeToque()
