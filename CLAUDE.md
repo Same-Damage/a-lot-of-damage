@@ -153,6 +153,8 @@ $proj  = "C:\Users\vitor\Downloads\Profile\ALotOfDamage"
 & $unity -batchmode -quit -projectPath $proj -executeMethod ALotOfDamage.Ferramentas.ExportadorDeBalanceamento.CriarTudo -logFile -
 ```
 
+**CI (a fazer):** criar um GitHub Actions com o GameCI (`game-ci/unity-test-runner`) que rode EditMode e PlayMode em todo PR e bloqueie o merge se falhar, com a licença da Unity nos secrets do repositório. Assim ninguém precisa rodar a suíte na máquina a cada mudança. Até lá, os testes continuam sendo rodados localmente com os comandos acima.
+
 A planilha `docs/balanceamento.csv` é gerada pelas mesmas fórmulas do jogo (`RegrasDeUpgrade`). Ao mudar fórmula ou valor de balanceamento, gere de novo e commite junto.
 
 Com o editor aberto, use **Window → General → Test Runner**.
