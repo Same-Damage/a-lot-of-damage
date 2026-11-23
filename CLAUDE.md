@@ -132,7 +132,7 @@ Decisões já tomadas. Mudar qualquer uma delas é decisão de design, não de i
 
 ### Stack
 - Unity 6000.6.10f1 + URP + C#
-- Input System, VContainer (injeção de dependência), uGUI (controles de toque); a UI de jogo definitiva ainda vai ser escolhida (UI Toolkit ou uGUI). O HUD em `OnGUI` é provisório.
+- Input System, VContainer (injeção de dependência), uGUI (interface montada por código pelo `KitDeInterface` e controles de toque).
 - Unity Test Framework (NUnit), EditMode e PlayMode
 
 ### Comandos
@@ -187,16 +187,16 @@ O cliente segue a arquitetura hexagonal (portas e adaptadores). O domínio fica 
 
 | Camada | Onde | O que tem |
 |---|---|---|
-| Domínio | `Core/` | Regras puras (`RegrasDeUpgrade`, `RegrasDaForja`, `RegrasDoBestiario`, `RegrasDoClick`, `RegrasDoEncontro`, `RegrasDePoder`, `RegrasDePersonagem`, `FormatadorDeNumeros`...), definições (`DefinicaoDeUpgrade`...) e a entidade `Progresso` |
+| Domínio | `Core/` | Regras puras (`RegrasDeUpgrade`, `RegrasDaForja`, `RegrasDoBestiario`, `RegrasDoClick`, `RegrasDoEncontro`, `RegrasDePoder`, `RegrasDePersonagem`, `RegrasDaCampanha`, `RegrasDeFeedback`, `FormatadorDeNumeros`...), definições (`DefinicaoDeUpgrade`...) e a entidade `Progresso` |
 | Portas | `Core/Ports/` | `IRepositorioDeProgresso`, `ICatalogo`, `ISorteio` |
-| Casos de uso | `Core/UseCases/` | `ComprarUpgrade`, `ForjarItem`, `RegistrarVitoria`, `CalcularAtributos`, `CalcularPoder`: carregam o progresso, aplicam a regra e salvam |
-| Adaptadores de saída | `Infrastructure/` | `RepositorioDeProgressoEmMemoria`, `CatalogoDeBalanceamento` (lê os ScriptableObjects), `SorteioDaUnity`, `FluxoDeEncontro` (troca de cena) |
+| Casos de uso | `Core/UseCases/` | `ComprarUpgrade`, `ForjarItem`, `RegistrarVitoria`, `CalcularAtributos`, `CalcularPoder`, `CalcularInimigo`, `ConsultarCampanha`, `ListarPendencias`: carregam o progresso, aplicam a regra e salvam |
+| Adaptadores de saída | `Infrastructure/` | `RepositorioDeProgressoEmArquivo` (save em JSON), `RepositorioDeProgressoEmMemoria`, `CatalogoDeBalanceamento` (lê os ScriptableObjects), `SorteioDaUnity`, `FluxoDeEncontro` (troca de cena) |
 | Adaptadores de entrada | `Combat/`, `World/`, `UI/` | `MonoBehaviour`s: leem input, chamam casos de uso, desenham |
 | Composição | `Infrastructure/EscopoDoJogo`, `EscopoDaCena` | VContainer monta tudo |
 
 Regras:
 - O sentido das dependências é sempre para dentro. `Core` não referencia nenhuma assembly e tem `noEngineReferences: true`: o compilador recusa `UnityEngine` ali.
-- `Infraestrutura` → `Core`. `Combat` e `World` → `Core`, `Infraestrutura` e `UI` (que tem o `TemaVisual` das telas). `UI` → só `Core`. `Core` nunca conhece quem está fora.
+- `Infraestrutura` → `Core`. `Combat` e `World` → `Core`, `Infraestrutura` e `UI`. `UI` → só `Core`. `Core` nunca conhece quem está fora.
 - Toda dependência externa (salvar, assets, aleatoriedade, tempo, rede) entra no domínio por uma porta, para o teste trocar por um fake.
 - Uma ação nova do jogador vira um caso de uso em `Core/UseCases`, testado em EditMode com fakes das portas. O `MonoBehaviour` só chama o caso de uso; nada de regra de negócio nele.
 - Estado do jogo mora na entidade `Progresso`, acessada pelo `IRepositorioDeProgresso`. Nada de classe estática com estado global nem de singletons (`.Instance`) para serviços.
@@ -205,10 +205,18 @@ Regras:
   - Cada cena tem um `EscopoDaCena` (o `ConstrutorDeCenas` coloca), que injeta os `MonoBehaviour`s do jogo da cena.
   - `MonoBehaviour` recebe dependências por um método `[Inject] public void Construir(...)` e só as usa a partir do `Start`, nunca no `Awake`.
   - Serviço novo é registrado no `EscopoDoJogo`.
-- Valores de balanceamento ficam em assets de `Data/Resources` com o nome da classe (`BalanceamentoDeUpgrades`, `BalanceamentoDaForja`, `BalanceamentoDoBestiario`, `BalanceamentoDePersonagens`), herdando de `Balanceamento<T>`. O jogo os lê só pelo `ICatalogo`.
+- Valores de balanceamento ficam em assets de `Data/Resources` com o nome da classe (`BalanceamentoDeUpgrades`, `BalanceamentoDaForja`, `BalanceamentoDoBestiario`, `BalanceamentoDePersonagens`, `BalanceamentoDaCampanha`), herdando de `Balanceamento<T>`. O jogo os lê só pelo `ICatalogo`.
 - Quando chegar o servidor (Nakama), entram adaptadores novos para as mesmas portas (ex.: `RepositorioDeProgressoNoServidor`) e os casos de uso viram as ações que o cliente envia. O domínio não muda.
 - Nível de upgrade começa em 1; item da forja começa em +0.
-- Telas provisórias em OnGUI herdam de `JanelaProvisoria` (uma aberta por vez) até chegar o kit de interface.
+- Save: o `EscopoDoJogo` usa `RepositorioDeProgressoEmArquivo` (`progresso.json` em `Application.persistentDataPath`; no editor, `progresso-editor.json`). Rodando com `-runTests`, usa o repositório em memória para os testes não mexerem no save. Campo novo no `Progresso` entra também em `DadosDoProgresso`, com valor seguro no `Importar` para saves antigos.
+- Campo novo numa definição de balanceamento (`DefinicaoDeMonstro`...) não pega o valor do `Padrao()` em assets que já existem: ajuste o asset ou apague-o para o `ConstrutorDeCenas` recriar.
+
+### Interface
+- Toda a interface do jogo é uGUI montada por código com o `KitDeInterface` (painel escuro com moldura dourada, texto com sombra, botão, barra), na direção de arte do Legend Online. Nada de `OnGUI`.
+- Molduras, botões e fundos de barra são sprites fatiados (9-slice) gerados por código no `TemaVisual` (moldura dourada com cravos, couro, bronze); a fonte é serifada do sistema, com a padrão como reserva. Arte de verdade entra trocando esses sprites.
+- Janelas do mapa herdam de `JanelaDoJogo` (botão na coluna da direita, tecla de atalho, uma aberta por vez); a `Faixa` de destaque é uma por canvas; números de dano usam o pool de `NumerosFlutuantes`.
+- Texto só é reescrito quando o valor muda, e nada é criado ou destruído por frame (pense no celular).
+- Feedback de golpe (hit stop, tremor, partículas, som) segue a intensidade de `RegrasDeFeedback`; os sons são gerados por código até chegar o áudio de verdade.
 
 ### Arte HD-2D
 - Personagens, followers e monstros: sprites em pixel art (48–64 px de altura) como billboard no 3D, filtro **Point (Nearest)**, sem compressão que borre.

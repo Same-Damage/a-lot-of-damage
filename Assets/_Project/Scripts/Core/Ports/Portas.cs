@@ -18,6 +18,8 @@ namespace ALotOfDamage.Core
         ParametrosDoBestiario Bestiario { get; }
         IReadOnlyList<DefinicaoDeClasse> Classes { get; }
         IReadOnlyList<DefinicaoDeFollower> Followers { get; }
+        ParametrosDaCampanha Campanha { get; }
+        IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
     }
 
     // Número aleatório em [0, 1), para o teste controlar a sorte

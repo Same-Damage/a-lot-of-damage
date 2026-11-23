@@ -4,9 +4,10 @@
     "references": [
         "ALotOfDamage.Core",
         "ALotOfDamage.Infraestrutura",
-        "ALotOfDamage.UI",
         "VContainer",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "ALotOfDamage.UI",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

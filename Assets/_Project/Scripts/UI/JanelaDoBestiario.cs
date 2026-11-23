@@ -1,44 +1,53 @@
-using System.Linq;
 using ALotOfDamage.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 namespace ALotOfDamage.UI
 {
-    // Tela provisória do bestiário (OnGUI) até existir o kit de interface
-    public class JanelaDoBestiario : JanelaProvisoria
+    public class JanelaDoBestiario : JanelaDoJogo
     {
-        const float AlturaItem = 70;
-
         protected override string Titulo => "Bestiário";
         protected override Key Tecla => Key.B;
         protected override int Ordem => 2;
-        protected override float AlturaDoConteudo => (catalogo.Monstros.Count + 1) * AlturaItem;
+        // Linha 0 é o bônus geral; as outras, um monstro cada
+        protected override int Linhas => catalogo.Monstros.Count + 1;
+        protected override float AlturaDaLinha => 90;
 
-        protected override void DesenharConteudo(Rect area)
+        Text[] textos, detalhes;
+        Barra[] barras;
+
+        protected override void Start()
         {
-            var monstros = catalogo.Monstros;
+            int n = catalogo.Monstros.Count + 1;
+            textos = new Text[n]; detalhes = new Text[n]; barras = new Barra[n];
+            base.Start();
+        }
+
+        protected override void MontarLinha(int i, RectTransform linha)
+        {
+            textos[i] = Texto(linha, 24, 10, 26, i == 0 ? KitDeInterface.Verde : KitDeInterface.Dourado, 900, true);
+            if (i == 0) return;
+            barras[i] = Barra(linha, 24, 52, 360, KitDeInterface.Azul);
+            detalhes[i] = Texto(linha, 400, 46, 20, KitDeInterface.TextoClaro, 560);
+        }
+
+        protected override void AtualizarLinha(int i)
+        {
             var p = catalogo.Bestiario;
-
-            double geral = RegrasDoBestiario.MultiplicadorGeral(p, monstros.Select(m => Progresso.Derrotas(m.Id)));
-            GUI.Label(new Rect(area.x + 16, area.y, 600, 24), $"Bônus geral de dano: x{geral:0.##}", EstiloTitulo);
-
-            for (int i = 0; i < monstros.Count; i++)
+            if (i == 0)
             {
-                var m = monstros[i];
-                int derrotas = Progresso.Derrotas(m.Id);
-                long proximo = RegrasDoBestiario.ProximoMarco(p, derrotas);
-                float y = area.y + (i + 1) * AlturaItem;
-                Separador(new Rect(area.x + 6, y - 6, area.width - 12, AlturaItem - 6));
-                TemaVisual.Slot(new Rect(area.x + 16, y - 2, 52, 52), TemaVisual.Inicial(m.Nome), TemaVisual.Ciano);
-
-                GUI.Label(new Rect(area.x + 86, y, 600, 24),
-                    $"{m.Nome}   {derrotas} derrotados   contra ele: x{RegrasDoBestiario.MultiplicadorContraTipo(p, derrotas):0.##}", EstiloTitulo);
-                long anterior = proximo / p.FatorEntreMarcos;
-                if (derrotas < p.PrimeiroMarco) anterior = 0;
-                Barra(new Rect(area.x + 86, y + 30, 300, 14), (float)(derrotas - anterior) / (proximo - anterior), TemaVisual.Ciano);
-                GUI.Label(new Rect(area.x + 394, y + 26, 400, 22), $"próximo marco: {proximo}   drop: {m.NomeDoMaterial}", EstiloTexto);
+                textos[0].text = $"Bônus geral de dano: ×{RegrasDoBestiario.MultiplicadorGeral(p, Progresso.TodasAsDerrotas):0.##}";
+                return;
             }
+
+            var m = catalogo.Monstros[i - 1];
+            int derrotas = Progresso.Derrotas(m.Id);
+            long proximo = RegrasDoBestiario.ProximoMarco(p, derrotas);
+            long anterior = derrotas < p.PrimeiroMarco ? 0 : proximo / p.FatorEntreMarcos;
+            textos[i].text = $"{m.Nome}   {derrotas} derrotados   contra ele: ×{RegrasDoBestiario.MultiplicadorContraTipo(p, derrotas):0.##}";
+            barras[i].Definir((float)(derrotas - anterior) / (proximo - anterior));
+            detalhes[i].text = $"próximo marco: {proximo}   drop: {m.NomeDoMaterial}";
         }
     }
 }

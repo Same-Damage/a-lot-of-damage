@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace ALotOfDamage.Core
@@ -14,6 +15,9 @@ namespace ALotOfDamage.Core
         // Por enquanto só existe o Guerreiro e um follower; a escolha e o gacha vêm depois
         public string ClasseId { get; private set; } = ClassePadrao;
         public string FollowerAtivoId { get; private set; } = FollowerPadrao;
+
+        public int Estagio { get; private set; } = 1;
+        public int VitoriasNoEstagio { get; private set; }
 
         readonly Dictionary<string, int> niveis = new Dictionary<string, int>();
         readonly Dictionary<string, int> niveisDosItens = new Dictionary<string, int>();
@@ -72,6 +76,52 @@ namespace ALotOfDamage.Core
             return RegrasDoBestiario.AtingiuMarco(p, antes, antes + 1);
         }
 
+        public ProgressoDaCampanha AvancarCampanha(ParametrosDaCampanha p, bool chefe)
+        {
+            var r = RegrasDaCampanha.AposVitoria(p, Estagio, VitoriasNoEstagio, chefe);
+            Estagio = r.Estagio;
+            VitoriasNoEstagio = r.VitoriasNoEstagio;
+            return r;
+        }
+
+        // Cópia simples de tudo, para salvar em arquivo ou mandar ao servidor
+        public DadosDoProgresso Exportar() => new DadosDoProgresso
+        {
+            Ouro = Ouro, Vitorias = Vitorias, ClasseId = ClasseId, FollowerAtivoId = FollowerAtivoId,
+            Estagio = Estagio, VitoriasNoEstagio = VitoriasNoEstagio,
+            Niveis = Pares(niveis), NiveisDosItens = Pares(niveisDosItens), Materiais = Pares(materiais), Derrotas = Pares(derrotas),
+        };
+
+        public static Progresso Importar(DadosDoProgresso d)
+        {
+            var p = new Progresso();
+            if (d == null) return p;
+            p.Ouro = Math.Max(0, d.Ouro);
+            p.Vitorias = Math.Max(0, d.Vitorias);
+            if (!string.IsNullOrEmpty(d.ClasseId)) p.ClasseId = d.ClasseId;
+            if (!string.IsNullOrEmpty(d.FollowerAtivoId)) p.FollowerAtivoId = d.FollowerAtivoId;
+            p.Estagio = Math.Max(1, d.Estagio);
+            p.VitoriasNoEstagio = Math.Max(0, d.VitoriasNoEstagio);
+            Preencher(p.niveis, d.Niveis);
+            Preencher(p.niveisDosItens, d.NiveisDosItens);
+            Preencher(p.materiais, d.Materiais);
+            Preencher(p.derrotas, d.Derrotas);
+            return p;
+        }
+
+        static List<ParDeValor> Pares(Dictionary<string, int> d)
+        {
+            var lista = new List<ParDeValor>(d.Count);
+            foreach (var kv in d) lista.Add(new ParDeValor { Id = kv.Key, Valor = kv.Value });
+            return lista;
+        }
+
+        static void Preencher(Dictionary<string, int> d, List<ParDeValor> pares)
+        {
+            if (pares == null) return;
+            foreach (var par in pares) if (!string.IsNullOrEmpty(par.Id)) d[par.Id] = par.Valor;
+        }
+
         // Forja × bestiário contra o tipo × bestiário geral: as fontes se multiplicam
         public double MultiplicadorDeDano(AlvoDoItem alvo, string tipo, IEnumerable<DefinicaoDeItem> itens, ParametrosDoBestiario p)
         {
@@ -81,5 +131,31 @@ namespace ALotOfDamage.Core
             m *= RegrasDoBestiario.MultiplicadorContraTipo(p, Derrotas(tipo));
             return m * RegrasDoBestiario.MultiplicadorGeral(p, derrotas.Values);
         }
+    }
+}
+
+namespace ALotOfDamage.Core
+{
+    [Serializable]
+    public class ParDeValor
+    {
+        public string Id;
+        public int Valor;
+    }
+
+    // Formato salvo do progresso (campos públicos para o serializador de JSON)
+    [Serializable]
+    public class DadosDoProgresso
+    {
+        public double Ouro;
+        public int Vitorias;
+        public string ClasseId;
+        public string FollowerAtivoId;
+        public int Estagio = 1;
+        public int VitoriasNoEstagio;
+        public List<ParDeValor> Niveis = new List<ParDeValor>();
+        public List<ParDeValor> NiveisDosItens = new List<ParDeValor>();
+        public List<ParDeValor> Materiais = new List<ParDeValor>();
+        public List<ParDeValor> Derrotas = new List<ParDeValor>();
     }
 }

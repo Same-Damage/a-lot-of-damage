@@ -16,6 +16,10 @@ namespace ALotOfDamage.Testes
     {
         static IEnumerator Carregar(string cena)
         {
+            // O EscopoDoJogo sobrevive entre os testes: um encontro deixado aberto por outro teste é fechado aqui
+            var fluxo = EscopoDoJogo.Instancia ? EscopoDoJogo.Instancia.Container.Resolve<FluxoDeEncontro>() : null;
+            if (fluxo != null && fluxo.Ativo) fluxo.Encerrar(false);
+            yield return null;
             SceneManager.LoadScene(cena);
             yield return null;
             yield return null;
@@ -29,6 +33,20 @@ namespace ALotOfDamage.Testes
             Assert.IsNotNull(EscopoDoJogo.Instancia);
             Assert.IsNotNull(EscopoDoJogo.Instancia.Container.Resolve<IRepositorioDeProgresso>());
             Assert.IsNotNull(Object.FindAnyObjectByType<AtaqueNoMapa>());
+        }
+
+        // Regressão: um caso de uso sem registro no EscopoDoJogo quebrava o HUD do mapa
+        [UnityTest]
+        public IEnumerator Todos_os_casos_de_uso_estao_registrados()
+        {
+            yield return Carregar(FluxoDeEncontro.CenaDoMapa);
+            var container = EscopoDoJogo.Instancia.Container;
+            foreach (var tipo in typeof(CasoDeUso).Assembly.GetTypes())
+            {
+                bool ehCasoDeUso = typeof(CasoDeUso).IsAssignableFrom(tipo) || tipo == typeof(CalcularPoder);
+                if (!ehCasoDeUso || tipo.IsAbstract) continue;
+                Assert.IsNotNull(container.Resolve(tipo), tipo.Name);
+            }
         }
 
         [UnityTest]
@@ -57,7 +75,7 @@ namespace ALotOfDamage.Testes
             var repositorio = EscopoDoJogo.Instancia.Container.Resolve<IRepositorioDeProgresso>();
             double ouroAntes = repositorio.Carregar().Ouro;
 
-            var monstro = System.Array.Find(Object.FindObjectsByType<InimigoDoMapa>(FindObjectsSortMode.None), m => m.tipo == "slime");
+            var monstro = System.Array.Find(Object.FindObjectsByType<InimigoDoMapa>(FindObjectsSortMode.None), m => m.Tipo == "slime");
             monstro.Enfrentar(Vantagem.Preventivo);
             yield return null;
             yield return null;

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace ALotOfDamage.Core
 {
     // Ids dos upgrades que o combate usa
@@ -25,6 +27,25 @@ namespace ALotOfDamage.Core
         public int MaterialGanho;
         public bool AtingiuMarcoDoBestiario;
         public int Derrotas;
+        public bool AvancouEstagio;
+        public int Estagio;
+    }
+
+    public struct InimigoDaBatalha
+    {
+        public string Nome;
+        public double Vida;
+        public double Ouro;
+        public bool Chefe;
+    }
+
+    public struct SituacaoDaCampanha
+    {
+        public int Estagio;
+        public int VitoriasNoEstagio;
+        public int VitoriasParaAvancar;
+        public bool EstagioDeChefe;
+        public DefinicaoDeRegiao Regiao;
     }
 
     // Base dos casos de uso: carregar o progresso, aplicar a regra, salvar
@@ -77,12 +98,14 @@ namespace ALotOfDamage.Core
         public RegistrarVitoria(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
 
         // tipoDoMonstro pode ser null (ex.: cena de Batalha aberta direto, sem encontro)
-        public ResultadoDaVitoria Executar(string tipoDoMonstro, double ouro)
+        public ResultadoDaVitoria Executar(string tipoDoMonstro, bool chefe)
         {
             var p = repositorio.Carregar();
             var monstro = tipoDoMonstro == null ? null : catalogo.Monstro(tipoDoMonstro);
+            double ouro = CalcularInimigo.Para(p, catalogo, monstro, chefe).Ouro;
             p.ReceberOuro(ouro);
             bool marco = p.RegistrarVitoria(monstro, catalogo.Bestiario);
+            var campanha = p.AvancarCampanha(catalogo.Campanha, chefe);
             repositorio.Salvar(p);
             return new ResultadoDaVitoria
             {
@@ -91,6 +114,47 @@ namespace ALotOfDamage.Core
                 MaterialGanho = monstro?.MaterialPorVitoria ?? 0,
                 AtingiuMarcoDoBestiario = marco,
                 Derrotas = monstro == null ? 0 : p.Derrotas(monstro.Id),
+                AvancouEstagio = campanha.Avancou,
+                Estagio = campanha.Estagio,
+            };
+        }
+    }
+
+    // Vida e recompensa do inimigo conforme o estágio atual da campanha
+    public class CalcularInimigo : CasoDeUso
+    {
+        public CalcularInimigo(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public InimigoDaBatalha Executar(string tipoDoMonstro, bool chefe) =>
+            Para(repositorio.Carregar(), catalogo, tipoDoMonstro == null ? null : catalogo.Monstro(tipoDoMonstro), chefe);
+
+        internal static InimigoDaBatalha Para(Progresso p, ICatalogo c, DefinicaoDeMonstro m, bool chefe)
+        {
+            double vida = RegrasDaCampanha.VidaDoInimigo(c.Campanha, p.Estagio, m?.MultiplicadorDeVida ?? 1, chefe);
+            return new InimigoDaBatalha
+            {
+                Nome = (chefe ? "Chefe " : "") + (m?.Nome ?? "Inimigo"),
+                Vida = vida,
+                Ouro = RegrasDaCampanha.Ouro(c.Campanha, vida),
+                Chefe = chefe,
+            };
+        }
+    }
+
+    public class ConsultarCampanha : CasoDeUso
+    {
+        public ConsultarCampanha(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public SituacaoDaCampanha Executar()
+        {
+            var p = repositorio.Carregar();
+            return new SituacaoDaCampanha
+            {
+                Estagio = p.Estagio,
+                VitoriasNoEstagio = p.VitoriasNoEstagio,
+                VitoriasParaAvancar = catalogo.Campanha.VitoriasParaAvancar,
+                EstagioDeChefe = RegrasDaCampanha.EhEstagioDeChefe(catalogo.Campanha, p.Estagio),
+                Regiao = RegrasDaCampanha.Regiao(catalogo.Campanha, catalogo.Regioes, p.Estagio),
             };
         }
     }
@@ -127,6 +191,56 @@ namespace ALotOfDamage.Core
                 Follower = follower,
                 DanoDoFollower = RegrasDePersonagem.DanoDoFollower(follower, automatico),
             };
+        }
+    }
+}
+
+namespace ALotOfDamage.Core
+{
+    public enum TipoDePendencia { Upgrade, Forja, Bestiario, Chefe }
+
+    public struct Pendencia
+    {
+        public TipoDePendencia Tipo;
+        public string Texto;
+    }
+
+    // Coisas prontas para o jogador fazer agora: o painel lateral que puxa de volta para o jogo
+    public class ListarPendencias : CasoDeUso
+    {
+        const double PertoDoMarco = 0.8;
+
+        public ListarPendencias(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public void Executar(List<Pendencia> saida)
+        {
+            saida.Clear();
+            var p = repositorio.Carregar();
+
+            if (RegrasDaCampanha.EhEstagioDeChefe(catalogo.Campanha, p.Estagio))
+                saida.Add(new Pendencia { Tipo = TipoDePendencia.Chefe, Texto = $"Chefe do estágio {p.Estagio} apareceu!" });
+
+            foreach (var u in catalogo.Upgrades)
+            {
+                int nivel = p.Nivel(u.Id);
+                if (RegrasDeUpgrade.NoMaximo(u, nivel) || RegrasDeUpgrade.Custo(u, nivel) > p.Ouro) continue;
+                saida.Add(new Pendencia { Tipo = TipoDePendencia.Upgrade, Texto = $"Upgrade pronto: {u.Nome}" });
+            }
+
+            foreach (var i in catalogo.Itens)
+            {
+                int nivel = p.NivelDoItem(i.Id);
+                if (RegrasDaForja.CustoEmOuro(i, nivel) > p.Ouro || RegrasDaForja.CustoEmMaterial(i, nivel) > p.Material(i.MaterialId)) continue;
+                saida.Add(new Pendencia { Tipo = TipoDePendencia.Forja, Texto = $"Forja pronta: {i.Nome} +{nivel + 1}" });
+            }
+
+            foreach (var m in catalogo.Monstros)
+            {
+                int derrotas = p.Derrotas(m.Id);
+                long marco = RegrasDoBestiario.ProximoMarco(catalogo.Bestiario, derrotas);
+                if (derrotas == 0 || derrotas < marco * PertoDoMarco) continue;
+                saida.Add(new Pendencia { Tipo = TipoDePendencia.Bestiario, Texto = $"Bestiário: {m.Nome} {derrotas}/{marco}" });
+            }
         }
     }
 }

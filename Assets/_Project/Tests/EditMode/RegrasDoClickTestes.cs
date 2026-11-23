@@ -62,14 +62,4 @@ namespace ALotOfDamage.Testes
             Assert.IsTrue(l.Registrar(1.01f));
         }
     }
-
-    public class CurvaDoInimigoTestes
-    {
-        [Test]
-        public void Vida_cresce_por_estagio()
-        {
-            Assert.AreEqual(100, RegrasDoClick.VidaDoInimigo(100, 1.5, 1), 1e-9);
-            Assert.AreEqual(225, RegrasDoClick.VidaDoInimigo(100, 1.5, 3), 1e-9);
-        }
-    }
 }

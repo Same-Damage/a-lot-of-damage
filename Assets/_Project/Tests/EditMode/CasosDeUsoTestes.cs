@@ -15,6 +15,14 @@ namespace ALotOfDamage.Testes
             public ParametrosDoBestiario Bestiario { get; set; } = new ParametrosDoBestiario();
             public IReadOnlyList<DefinicaoDeClasse> Classes { get; set; } = new List<DefinicaoDeClasse>();
             public IReadOnlyList<DefinicaoDeFollower> Followers { get; set; } = new List<DefinicaoDeFollower>();
+            public ParametrosDaCampanha Campanha { get; set; } = new ParametrosDaCampanha
+            {
+                VidaBase = 100, CrescimentoPorEstagio = 2, OuroPorVida = 0.5, VitoriasParaAvancar = 2, ChefeACada = 5, MultiplicadorDeVidaDoChefe = 10,
+            };
+            public IReadOnlyList<DefinicaoDeRegiao> Regioes { get; set; } = new List<DefinicaoDeRegiao>
+            {
+                new DefinicaoDeRegiao { Nome = "Campos" },
+            };
         }
 
         class RepositorioQueConta : IRepositorioDeProgresso
@@ -96,7 +104,7 @@ namespace ALotOfDamage.Testes
         [Test]
         public void Vitoria_da_ouro_material_e_conta_no_bestiario()
         {
-            var r = new RegistrarVitoria(repositorio, catalogo).Executar("lobo", 50);
+            var r = new RegistrarVitoria(repositorio, catalogo).Executar("lobo", false);
             Assert.AreEqual(50, repositorio.Progresso.Ouro, 1e-9);
             Assert.AreEqual(2, repositorio.Progresso.Material("presa"));
             Assert.AreEqual(1, r.Derrotas);
@@ -107,9 +115,9 @@ namespace ALotOfDamage.Testes
         [Test]
         public void Vitoria_sem_tipo_so_da_ouro()
         {
-            var r = new RegistrarVitoria(repositorio, catalogo).Executar(null, 7);
+            var r = new RegistrarVitoria(repositorio, catalogo).Executar(null, false);
             Assert.IsNull(r.Monstro);
-            Assert.AreEqual(7, repositorio.Progresso.Ouro, 1e-9);
+            Assert.AreEqual(50, repositorio.Progresso.Ouro, 1e-9);
         }
 
         [Test]
@@ -155,6 +163,73 @@ namespace ALotOfDamage.Testes
             repositorio.Progresso.ReceberOuro(10);
             new ComprarUpgrade(repositorio, catalogo).Executar(IdsDosUpgrades.Forca, 1);
             Assert.AreEqual(11 * 1.2, poder.Executar(), 1e-9);
+        }
+
+        [Test]
+        public void Vitorias_avancam_a_campanha_e_o_inimigo_fica_mais_forte()
+        {
+            var vitoria = new RegistrarVitoria(repositorio, catalogo);
+            var inimigo = new CalcularInimigo(repositorio, catalogo);
+            Assert.AreEqual(100, inimigo.Executar("lobo", false).Vida, 1e-9);
+
+            Assert.IsFalse(vitoria.Executar("lobo", false).AvancouEstagio);
+            var r = vitoria.Executar("lobo", false);
+            Assert.IsTrue(r.AvancouEstagio);
+            Assert.AreEqual(2, r.Estagio);
+            Assert.AreEqual(200, inimigo.Executar("lobo", false).Vida, 1e-9);
+        }
+
+        [Test]
+        public void Chefe_tem_mais_vida_e_da_mais_ouro()
+        {
+            var chefe = new CalcularInimigo(repositorio, catalogo).Executar("lobo", true);
+            Assert.AreEqual(1000, chefe.Vida, 1e-9);
+            Assert.AreEqual(500, chefe.Ouro, 1e-9);
+            Assert.IsTrue(chefe.Chefe);
+        }
+
+        [Test]
+        public void Consultar_campanha_mostra_estagio_e_regiao()
+        {
+            var c = new ConsultarCampanha(repositorio, catalogo).Executar();
+            Assert.AreEqual(1, c.Estagio);
+            Assert.AreEqual(2, c.VitoriasParaAvancar);
+            Assert.AreEqual("Campos", c.Regiao.Nome);
+            Assert.IsFalse(c.EstagioDeChefe);
+        }
+
+        [Test]
+        public void Sem_ouro_nao_ha_pendencias()
+        {
+            var lista = new List<Pendencia>();
+            new ListarPendencias(repositorio, catalogo).Executar(lista);
+            Assert.IsEmpty(lista);
+        }
+
+        [Test]
+        public void Pendencias_mostram_upgrade_forja_e_bestiario_prontos()
+        {
+            repositorio.Progresso.ReceberOuro(10);
+            repositorio.Progresso.AdicionarMaterial("presa", 1);
+            var lobo = catalogo.Monstros[0];
+            for (int i = 0; i < 8; i++) repositorio.Progresso.RegistrarVitoria(lobo, catalogo.Bestiario);
+
+            var lista = new List<Pendencia>();
+            new ListarPendencias(repositorio, catalogo).Executar(lista);
+            var tipos = lista.ConvertAll(x => x.Tipo);
+            CollectionAssert.Contains(tipos, TipoDePendencia.Upgrade);
+            CollectionAssert.Contains(tipos, TipoDePendencia.Forja);
+            CollectionAssert.Contains(tipos, TipoDePendencia.Bestiario);
+            CollectionAssert.DoesNotContain(tipos, TipoDePendencia.Chefe);
+        }
+
+        [Test]
+        public void Estagio_de_chefe_vira_pendencia()
+        {
+            catalogo.Campanha.ChefeACada = 1;
+            var lista = new List<Pendencia>();
+            new ListarPendencias(repositorio, catalogo).Executar(lista);
+            Assert.AreEqual(TipoDePendencia.Chefe, lista[0].Tipo);
         }
 
         [Test]

@@ -1,6 +1,7 @@
 using ALotOfDamage.UI;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ALotOfDamage.Testes.EditMode
 {
@@ -18,23 +19,6 @@ namespace ALotOfDamage.Testes.EditMode
             Assert.Greater(borda.r, borda.b + 0.2f, "moldura deve puxar para o dourado");
             Assert.Less(Brilho(centro), 0.2f, "fundo do painel deve ser escuro");
             Assert.Greater(centro.a, 0.8f);
-        }
-
-        [Test]
-        public void Orbe_e_redondo_com_canto_transparente()
-        {
-            var t = TemaVisual.TexturaDoOrbe;
-            Assert.AreEqual(0f, t.GetPixel(0, 0).a, 0.01f);
-            Assert.Greater(t.GetPixel(t.width / 2, t.height / 2).a, 0.9f);
-        }
-
-        [Test]
-        public void Botao_pressionado_e_mais_escuro_que_o_normal()
-        {
-            var normal = TemaVisual.TexturaDoBotao;
-            var pressionado = TemaVisual.TexturaDoBotaoPressionado;
-            int x = normal.width / 2, y = normal.height / 2;
-            Assert.Less(Brilho(pressionado.GetPixel(x, y)), Brilho(normal.GetPixel(x, y)));
         }
 
         [Test]
@@ -59,17 +43,20 @@ namespace ALotOfDamage.Testes.EditMode
         }
 
         [Test]
-        public void Slot_tem_fundo_mais_escuro_que_a_moldura()
+        public void Botao_pressionado_e_mais_escuro_que_o_normal()
         {
-            var t = TemaVisual.TexturaDoSlot;
-            Assert.Less(Brilho(t.GetPixel(t.width / 2, t.height / 2)), Brilho(t.GetPixel(t.width / 2, 2)));
+            var normal = TemaVisual.TexturaDoBotao;
+            var pressionado = TemaVisual.TexturaDoBotaoPressionado;
+            int x = normal.width / 2, y = normal.height / 2;
+            Assert.Less(Brilho(pressionado.GetPixel(x, y)), Brilho(normal.GetPixel(x, y)));
         }
 
         [Test]
-        public void Suporte_do_orbe_e_vazado_no_meio()
+        public void Sprites_sao_fatiados_para_os_cantos_nao_esticarem()
         {
-            var t = TemaVisual.TexturaDoSuporte;
-            Assert.AreEqual(0f, t.GetPixel(t.width / 2, t.height / 2).a, 0.01f);
+            Assert.Greater(TemaVisual.Painel.border.x, TemaVisual.CentroDoCravo);
+            Assert.Greater(TemaVisual.Botao.border.x, 0);
+            Assert.AreSame(TemaVisual.Painel, TemaVisual.Painel, "o sprite é criado uma vez só");
         }
 
         [Test]
@@ -79,14 +66,25 @@ namespace ALotOfDamage.Testes.EditMode
             Assert.That(TemaVisual.Ruido(3, 7), Is.InRange(0f, 1f));
         }
 
-        [TestCase(0.0, 0f)]
-        [TestCase(0.5, 0.5f)]
-        [TestCase(2.0, 1f)]
-        [TestCase(-1.0, 0f)]
-        [TestCase(double.NaN, 0f)]
-        public void Fracao_da_barra_fica_entre_zero_e_um(double valor, float esperado)
+        [Test]
+        public void Kit_monta_painel_e_botao_com_os_sprites_ornamentados()
         {
-            Assert.AreEqual(esperado, TemaVisual.Fracao(valor), 0.0001f);
+            var raiz = new GameObject("Raiz", typeof(RectTransform));
+            try
+            {
+                var painel = KitDeInterface.Painel("Painel", raiz.transform);
+                Assert.AreSame(TemaVisual.Painel, painel.sprite);
+                Assert.AreEqual(Image.Type.Sliced, painel.type);
+
+                var botao = KitDeInterface.Botao("Botao", raiz.transform, "Ok", () => { });
+                Assert.AreSame(TemaVisual.Botao, ((Image)botao.targetGraphic).sprite);
+                Assert.AreEqual(Selectable.Transition.SpriteSwap, botao.transition);
+                Assert.AreSame(TemaVisual.BotaoPressionado, botao.spriteState.pressedSprite);
+            }
+            finally
+            {
+                Object.DestroyImmediate(raiz);
+            }
         }
     }
 }
