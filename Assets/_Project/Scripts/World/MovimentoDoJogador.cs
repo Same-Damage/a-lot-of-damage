@@ -3,6 +3,7 @@ using ALotOfDamage.Infrastructure;
 using ALotOfDamage.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using ALotOfDamage.Visual;
 using VContainer;
 
 namespace ALotOfDamage.World
@@ -19,6 +20,7 @@ namespace ALotOfDamage.World
         public float velocidade = 6f;
         public float gravidade = -20f;
         public Transform camera_;
+        public BonecoDeRecorte boneco;
 
         CharacterController controle;
         float velocidadeVertical;
@@ -53,6 +55,10 @@ namespace ALotOfDamage.World
 
             velocidadeVertical = controle.isGrounded ? -1f : velocidadeVertical + gravidade * Time.deltaTime;
             controle.Move((movimento * velocidade + Vector3.up * velocidadeVertical) * Time.deltaTime);
+
+            if (!boneco) return;
+            boneco.Andando = entrada.sqrMagnitude > 0.01f;
+            if (Mathf.Abs(entrada.x) > 0.1f) boneco.OlhandoParaDireita = entrada.x > 0;
         }
 
         static Vector2 LerEntrada()

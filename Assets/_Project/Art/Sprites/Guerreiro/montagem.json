@@ -1,0 +1,115 @@
+{
+  "PixelsPorUnidade": 280,
+  "Pecas": [
+    {
+      "Nome": "tronco",
+      "Pai": "",
+      "Ordem": 5,
+      "PivoX": 72.0,
+      "PivoY": 194.0,
+      "Largura": 146,
+      "Altura": 263,
+      "EncaixeX": 0,
+      "EncaixeY": 0
+    },
+    {
+      "Nome": "capa",
+      "Pai": "tronco",
+      "Ordem": 0,
+      "PivoX": 131.5,
+      "PivoY": 12.0,
+      "Largura": 263,
+      "Altura": 353,
+      "EncaixeX": 72.0,
+      "EncaixeY": 21.5
+    },
+    {
+      "Nome": "perna_tras",
+      "Pai": "tronco",
+      "Ordem": 1,
+      "PivoX": 46.0,
+      "PivoY": 8.5,
+      "Largura": 113,
+      "Altura": 308,
+      "EncaixeX": 94.5,
+      "EncaixeY": 194.0
+    },
+    {
+      "Nome": "braco_tras",
+      "Pai": "tronco",
+      "Ordem": 2,
+      "PivoX": 10.0,
+      "PivoY": 25.0,
+      "Largura": 77,
+      "Altura": 102,
+      "EncaixeX": 122.0,
+      "EncaixeY": 34.0
+    },
+    {
+      "Nome": "antebraco_tras",
+      "Pai": "braco_tras",
+      "Ordem": 3,
+      "PivoX": 24.5,
+      "PivoY": 8.0,
+      "Largura": 57,
+      "Altura": 136,
+      "EncaixeX": 48.5,
+      "EncaixeY": 92.5
+    },
+    {
+      "Nome": "perna_frente",
+      "Pai": "tronco",
+      "Ordem": 4,
+      "PivoX": 36.0,
+      "PivoY": 10.0,
+      "Largura": 72,
+      "Altura": 305,
+      "EncaixeX": 47.0,
+      "EncaixeY": 194.0
+    },
+    {
+      "Nome": "cabeca",
+      "Pai": "tronco",
+      "Ordem": 6,
+      "PivoX": 40.0,
+      "PivoY": 75.0,
+      "Largura": 84,
+      "Altura": 78,
+      "EncaixeX": 72.0,
+      "EncaixeY": 10.0
+    },
+    {
+      "Nome": "espada",
+      "Pai": "antebraco_frente",
+      "Ordem": 7,
+      "PivoX": 43.0,
+      "PivoY": 91.0,
+      "Largura": 86,
+      "Altura": 410,
+      "EncaixeX": 42.5,
+      "EncaixeY": 114.5
+    },
+    {
+      "Nome": "braco_frente",
+      "Pai": "tronco",
+      "Ordem": 8,
+      "PivoX": 69.5,
+      "PivoY": 25.5,
+      "Largura": 80,
+      "Altura": 101,
+      "EncaixeX": 19.5,
+      "EncaixeY": 34.0
+    },
+    {
+      "Nome": "antebraco_frente",
+      "Pai": "braco_frente",
+      "Ordem": 9,
+      "PivoX": 33.5,
+      "PivoY": 8.0,
+      "Largura": 71,
+      "Altura": 132,
+      "EncaixeX": 39.5,
+      "EncaixeY": 93.0
+    }
+  ]
+}

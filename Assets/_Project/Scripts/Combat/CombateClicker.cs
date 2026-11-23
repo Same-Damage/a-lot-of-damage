@@ -3,6 +3,7 @@ using ALotOfDamage.Infrastructure;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using ALotOfDamage.Visual;
 using VContainer;
 
 namespace ALotOfDamage.Combat
@@ -31,6 +32,7 @@ namespace ALotOfDamage.Combat
         public double multiplicadorDaUltimate = 50;
 
         public Transform visualDoInimigo;
+        public BonecoDeRecorte heroi;
 
         static readonly Color CorDoClick = new Color(1f, 0.85f, 0.3f);
         static readonly Color CorDoPontoFraco = new Color(0.4f, 1f, 1f);
@@ -193,6 +195,7 @@ namespace ALotOfDamage.Combat
             if (pontoFraco) { tipo = TipoDeGolpe.PontoFraco; cor = CorDoPontoFraco; tamanho = 56; ultimate = Mathf.Min(100, ultimate + 10); }
             if (critico) { tipo = TipoDeGolpe.Critico; cor = CorDoCritico; tamanho += 14; }
 
+            if (heroi) heroi.Golpear(1.6f);
             Acertar(dano, tipo, cor, tamanho);
         }
 
@@ -202,6 +205,7 @@ namespace ALotOfDamage.Combat
             var classe = atributos.Classe;
             double multiplicador = classe?.MultiplicadorDaUltimate ?? multiplicadorDaUltimate;
             if (!string.IsNullOrEmpty(classe?.NomeDaUltimate)) hud.Faixa.Mostrar(classe.NomeDaUltimate.ToUpperInvariant() + "!");
+            if (heroi) heroi.Golpear(0.8f);
             Acertar(atributos.DanoDoClick * multiplicador * (1 + combo * bonusDeComboPorHit), TipoDeGolpe.Ultimate, CorDaUltimate, 84);
         }
 
