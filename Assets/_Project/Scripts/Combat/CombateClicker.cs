@@ -33,7 +33,7 @@ namespace ALotOfDamage.Combat
 
         public Transform visualDoInimigo;
         public MonstroLowPoly modeloDoInimigo;
-        public BonecoDeRecorte heroi;
+        public PersonagemVisual heroi;
 
         static readonly Color CorDoClick = new Color(1f, 0.85f, 0.3f);
         static readonly Color CorDoPontoFraco = new Color(0.4f, 1f, 1f);

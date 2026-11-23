@@ -83,6 +83,19 @@ namespace ALotOfDamage.Core
             return total < 0.01f ? 0 : 8 * Math.Abs(x) / total;
         }
 
+        // Abaixo disto (unidades/s) o personagem 3D conta como parado: evita pisar no lugar com ruído do joystick
+        public const float LimiarDeMovimento = 0.5f;
+
+        // Parâmetro da árvore de locomoção do personagem 3D: 0 parado, 0,5 andando, 1 correndo
+        public static float Locomocao(float velocidade, float velocidadeMaxima)
+        {
+            if (velocidadeMaxima <= 0 || velocidade < LimiarDeMovimento) return 0;
+            return Limitar01(velocidade / velocidadeMaxima);
+        }
+
+        // Ângulo (graus, em torno do eixo vertical) para o personagem olhar na direção do movimento; 0 é +z, 90 é +x
+        public static float Rumo(float x, float z) => (float)(Math.Atan2(x, z) * 180 / Math.PI);
+
         public const float CicloDoPulo = 0.55f;
         public const float CicloDoTrote = 0.42f;
         public const float CicloDoGolem = 0.95f;

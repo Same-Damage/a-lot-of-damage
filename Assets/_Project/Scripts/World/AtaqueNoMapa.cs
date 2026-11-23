@@ -18,7 +18,7 @@ namespace ALotOfDamage.World
 
         public float alcance = 2f;
         public float recarga = 0.4f;
-        public BonecoDeRecorte boneco;
+        public PersonagemVisual boneco;
 
         float proximoAtaque;
 

@@ -26,6 +26,7 @@ namespace ALotOfDamage.Ferramentas
         {
             CriarBalanceamento();
             CriarBatalha();
+            CriarComparacao();
             CriarMapa();
             EditorBuildSettings.scenes = new[]
             {
@@ -86,13 +87,9 @@ namespace ALotOfDamage.Ferramentas
             var movimento = jogador.AddComponent<MovimentoDoJogador>();
             jogador.AddComponent<AtaqueNoMapa>();
 
-            // Guerreiro pintado, animado por recorte, com os pés na base do CharacterController
-            var boneco = CriarBoneco("Guerreiro", jogador.transform, new Vector3(0, -1f, 0));
-            // Virado de frente para a câmera, com os pés como eixo: fica em pé e em tamanho cheio
-            boneco.gameObject.AddComponent<Billboard>().lockVertical = false;
-            boneco.transform.localScale = Vector3.one * EscalaNoMapa;
-            // Um pouco para trás (na direção em que a câmera olha) para ficar embaixo dos pés do desenho inclinado
-            CriarSombra(jogador.transform, new Vector3(0.2f, -0.98f, 0.2f), 1.1f, 0.45f, 0.65f);
+            // Arqueira 3D com shader pintado, com os pés na base do CharacterController
+            var boneco = ConstrutorDePersonagens3D.Criar("Arqueira", jogador.transform, new Vector3(0, -1f, 0), AlturaDoPersonagem3D);
+            CriarSombra(jogador.transform, new Vector3(0, -0.98f, 0), 0.9f, 0.5f, 0.6f);
             movimento.boneco = boneco;
             jogador.GetComponent<AtaqueNoMapa>().boneco = boneco;
 
@@ -448,8 +445,9 @@ namespace ALotOfDamage.Ferramentas
 
             CriarFollower(new Vector3(-1.6f, 2.4f, -1.2f));
 
-            var heroi = CriarBoneco("Guerreiro", null, new Vector3(-2.4f, 0, -0.6f));
-            heroi.olhandoParaDireita = true;
+            var heroi = ConstrutorDePersonagens3D.Criar("Arqueira", null, new Vector3(-2.4f, 0, -0.6f), 1.8f);
+            // de três quartos, virada para o inimigo e um pouco para a câmera
+            heroi.transform.rotation = Quaternion.LookRotation(new Vector3(1, 0, -0.6f));
 
             var combate = new GameObject("Combate").AddComponent<CombateClicker>();
             combate.visualDoInimigo = corpo.transform;
@@ -459,6 +457,43 @@ namespace ALotOfDamage.Ferramentas
             Salvar(cena, "Batalha");
         }
 
+
+        // Altura no mapa dos personagens 3D, parecida com a do boneco de recorte para comparar
+        const float AlturaDoPersonagem3D = 2.3f;
+
+        // Cena só para avaliar a direção de arte: o Guerreiro de recorte ao lado da Arqueira 3D, com a câmera do mapa.
+        // Não entra no build.
+        [MenuItem("A Lot of Damage/Criar cena: Comparação de personagens")]
+        public static void CriarComparacao()
+        {
+            var cena = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+            new GameObject("Escopo da Cena").AddComponent<EscopoDaCena>();
+
+            var chao = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            chao.name = "Chao";
+            chao.GetComponent<MeshRenderer>().sharedMaterial = MaterialDoMapa("Cenario", "Universal Render Pipeline/Lit");
+
+            var guerreiro = CriarBoneco("Guerreiro", null, new Vector3(-1.6f, 0, 0));
+            guerreiro.gameObject.AddComponent<Billboard>().lockVertical = false;
+            guerreiro.transform.localScale = Vector3.one * EscalaNoMapa;
+            CriarSombra(guerreiro.transform, new Vector3(0.15f, 0.02f, 0.15f), 0.85f, 0.35f, 0.65f);
+
+            var lugarDaArqueira = new GameObject("Lugar da Arqueira").transform;
+            lugarDaArqueira.position = new Vector3(1.6f, 0, 0);
+            var arqueira = ConstrutorDePersonagens3D.Criar("Arqueira", lugarDaArqueira, Vector3.zero, AlturaDoPersonagem3D);
+            arqueira.transform.rotation = Quaternion.LookRotation(new Vector3(-0.4f, 0, -1));
+            CriarSombra(lugarDaArqueira, new Vector3(0, 0.02f, 0), 0.9f, 0.5f, 0.6f);
+
+            var cam = Camera.main;
+            var foco = new GameObject("Foco").transform;
+            foco.position = new Vector3(0, 1, 0);
+            var iso = cam.gameObject.AddComponent<CameraIsometrica>();
+            iso.inclinacao = 32f;
+            iso.distancia = 30f;
+            cam.fieldOfView = 24f;
+            iso.alvo = foco;
+            Salvar(cena, "Comparacao");
+        }
 
         static void Salvar(UnityEngine.SceneManagement.Scene cena, string nome)
         {
