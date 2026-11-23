@@ -44,11 +44,14 @@ namespace ALotOfDamage.Combat
         string faixa;
         float faixaAte, cliquesTravadosAte, automaticoComecaEm, voltarEm = -1;
 
-        // Dano e crítico vêm dos upgrades comprados
+        // Dano: upgrades × forja × bestiário (as fontes se multiplicam)
         static double ValorDoUpgrade(string id) =>
             ProgressoDoJogador.Valor(BalanceamentoDeUpgrades.Atual.Buscar(id));
-        double DanoDoClick => ValorDoUpgrade(BalanceamentoDeUpgrades.IdForca);
-        double DanoAutomatico => ValorDoUpgrade(BalanceamentoDeUpgrades.IdAutomatico);
+        static double Multiplicador(AlvoDoItem alvo) =>
+            ProgressoDoJogador.MultiplicadorDeDano(alvo, EstadoDoEncontro.Ativo ? EstadoDoEncontro.TipoDoInimigo : null,
+                BalanceamentoDaForja.Atual.itens, BalanceamentoDoBestiario.Atual.parametros);
+        double DanoDoClick => ValorDoUpgrade(BalanceamentoDeUpgrades.IdForca) * Multiplicador(AlvoDoItem.Click);
+        double DanoAutomatico => ValorDoUpgrade(BalanceamentoDeUpgrades.IdAutomatico) * Multiplicador(AlvoDoItem.Automatico);
         double ChanceCritica => ValorDoUpgrade(BalanceamentoDeUpgrades.IdPrecisao);
 
         struct Popup { public string texto; public Vector2 pos; public float t; public Color cor; public int tamanho; }
@@ -186,7 +189,17 @@ namespace ALotOfDamage.Combat
                 double recompensa = vidaMaximaDoInimigo * 0.5;
                 ProgressoDoJogador.Ouro += recompensa;
                 ProgressoDoJogador.Vitorias++;
-                MostrarFaixa($"VITÓRIA!  +{FormatadorDeNumeros.Formatar(recompensa)} ouro");
+                string texto = $"VITÓRIA!  +{FormatadorDeNumeros.Formatar(recompensa)} ouro";
+
+                var bestiario = BalanceamentoDoBestiario.Atual;
+                var monstro = bestiario.Buscar(EstadoDoEncontro.TipoDoInimigo);
+                if (monstro != null)
+                {
+                    if (monstro.MaterialPorVitoria > 0) texto += $"  +{monstro.MaterialPorVitoria} {monstro.NomeDoMaterial}";
+                    if (ProgressoDoJogador.RegistrarVitoria(monstro, bestiario.parametros))
+                        texto += $"\nBESTIÁRIO: {monstro.Nome} x{ProgressoDoJogador.Derrotas(monstro.Id)}!";
+                }
+                MostrarFaixa(texto);
                 voltarEm = Time.time + 1.5f;
             }
             else
@@ -214,8 +227,8 @@ namespace ALotOfDamage.Combat
             }
 
             if (Time.time < faixaAte || voltarEm > 0)
-                GUI.Label(new Rect(Screen.width * 0.5f - 250, Screen.height * 0.25f, 500, 60), faixa,
-                    new GUIStyle(grande) { fontSize = 40, alignment = TextAnchor.MiddleCenter });
+                GUI.Label(new Rect(Screen.width * 0.5f - 250, Screen.height * 0.2f, 500, 130), faixa,
+                    new GUIStyle(grande) { fontSize = 32, wordWrap = true, alignment = TextAnchor.MiddleCenter });
 
             float largura = Screen.width * 0.5f;
             Rect barra = new Rect(Screen.width * 0.25f, 70, largura, 24);

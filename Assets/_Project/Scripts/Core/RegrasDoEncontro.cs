@@ -15,5 +15,9 @@ namespace ALotOfDamage.Core
             if (perseguindo) return distancia <= raioDeDesistencia;
             return distancia < raioDeVisao && !emProtecao;
         }
+
+        // Monstro derrotado volta ao mapa depois de um tempo, para o bestiário poder ser completado
+        public static bool Renasceu(float momentoDaDerrota, float agora, float segundosParaRenascer) =>
+            agora - momentoDaDerrota >= segundosParaRenascer;
     }
 }

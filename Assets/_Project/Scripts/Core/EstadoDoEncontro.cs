@@ -23,13 +23,23 @@ namespace ALotOfDamage.Core
         static float protecaoAte;
         public static bool EmProtecao => Time.realtimeSinceStartup < protecaoAte;
 
-        public static readonly HashSet<string> Derrotados = new HashSet<string>();
+        public static string TipoDoInimigo { get; private set; }
 
-        public static void Iniciar(string idDoInimigo, string nome, double multiplicadorDeVida, Vantagem vantagem, Vector3 posicaoDoJogador)
+        public const float SegundosParaRenascer = 30f;
+
+        // Id do monstro no mapa → momento da derrota (tempo real)
+        static readonly Dictionary<string, float> derrotados = new Dictionary<string, float>();
+
+        public static bool EstaDerrotado(string idDoInimigo) =>
+            derrotados.TryGetValue(idDoInimigo, out var momento) &&
+            !RegrasDoEncontro.Renasceu(momento, Time.realtimeSinceStartup, SegundosParaRenascer);
+
+        public static void Iniciar(string idDoInimigo, string tipo, string nome, double multiplicadorDeVida, Vantagem vantagem, Vector3 posicaoDoJogador)
         {
             if (Ativo) return;
             Ativo = true;
             IdDoInimigo = idDoInimigo;
+            TipoDoInimigo = tipo;
             NomeDoInimigo = nome;
             MultiplicadorDeVida = multiplicadorDeVida;
             Vantagem = vantagem;
@@ -40,7 +50,7 @@ namespace ALotOfDamage.Core
 
         public static void Encerrar(bool venceu)
         {
-            if (venceu && IdDoInimigo != null) Derrotados.Add(IdDoInimigo);
+            if (venceu && IdDoInimigo != null) derrotados[IdDoInimigo] = Time.realtimeSinceStartup;
             Ativo = false;
             protecaoAte = Time.realtimeSinceStartup + SegundosDeProtecao;
             SceneManager.LoadScene(CenaDoMapa);

@@ -41,5 +41,12 @@ namespace ALotOfDamage.Testes
             Assert.IsFalse(RegrasDoEncontro.DevePerseguir(true, 11f, 6f, 10f, emProtecao: false));
             Assert.IsTrue(RegrasDoEncontro.DevePerseguir(true, 8f, 6f, 10f, emProtecao: false));
         }
+
+        [Test]
+        public void Monstro_derrotado_renasce_depois_do_tempo()
+        {
+            Assert.IsFalse(RegrasDoEncontro.Renasceu(100f, 129f, 30f));
+            Assert.IsTrue(RegrasDoEncontro.Renasceu(100f, 130f, 30f));
+        }
     }
 }

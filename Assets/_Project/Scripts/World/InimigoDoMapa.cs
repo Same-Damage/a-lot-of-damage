@@ -7,6 +7,8 @@ namespace ALotOfDamage.World
     public class InimigoDoMapa : MonoBehaviour
     {
         public string idDoInimigo = "inimigo";
+        [Tooltip("Id do monstro no BalanceamentoDoBestiario")]
+        public string tipo = "slime";
         public string nome = "Slime";
         public double multiplicadorDeVida = 1;
 
@@ -25,19 +27,33 @@ namespace ALotOfDamage.World
         Transform jogador;
         Vector3 origem, destino;
         float espera;
+        bool escondido;
+        Renderer[] visuais;
 
         void Start()
         {
-            if (EstadoDoEncontro.Derrotados.Contains(idDoInimigo)) { Destroy(gameObject); return; }
-
             origem = transform.position;
             EscolherDestino();
             var j = GameObject.FindWithTag("Player");
             if (j) jogador = j.transform;
+            visuais = GetComponentsInChildren<Renderer>();
+            Mostrar(!EstadoDoEncontro.EstaDerrotado(idDoInimigo));
+        }
+
+        // Derrotado fica escondido até renascer
+        void Mostrar(bool visivel)
+        {
+            escondido = !visivel;
+            foreach (var r in visuais) r.enabled = visivel;
         }
 
         void Update()
         {
+            if (escondido)
+            {
+                if (EstadoDoEncontro.EstaDerrotado(idDoInimigo)) return;
+                Mostrar(true);
+            }
             if (!jogador || EstadoDoEncontro.Ativo) return;
 
             Vector3 ateJogador = jogador.position - transform.position;
@@ -57,9 +73,11 @@ namespace ALotOfDamage.World
             }
         }
 
+        public bool Disponivel => !escondido;
+
         public void Enfrentar(Vantagem vantagem)
         {
-            if (jogador) EstadoDoEncontro.Iniciar(idDoInimigo, nome, multiplicadorDeVida, vantagem, jogador.position);
+            if (jogador && !escondido) EstadoDoEncontro.Iniciar(idDoInimigo, tipo, nome, multiplicadorDeVida, vantagem, jogador.position);
         }
 
         void Vagar()
