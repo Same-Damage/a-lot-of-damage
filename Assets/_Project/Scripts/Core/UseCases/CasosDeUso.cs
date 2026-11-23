@@ -92,6 +92,17 @@ namespace ALotOfDamage.Core
         }
     }
 
+    // Poder Total do jogador, sem bônus contra um tipo específico de monstro
+    public class CalcularPoder
+    {
+        readonly CalcularAtributos calcularAtributos;
+
+        public CalcularPoder(CalcularAtributos calcularAtributos) => this.calcularAtributos = calcularAtributos;
+
+        public double Executar() =>
+            RegrasDePoder.Poder(calcularAtributos.Executar(null), RegrasDePoder.MultiplicadorCriticoPadrao);
+    }
+
     // Dano e crítico do jogador contra um tipo de monstro: upgrades × forja × bestiário
     public class CalcularAtributos : CasoDeUso
     {

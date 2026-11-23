@@ -124,6 +124,18 @@ namespace ALotOfDamage.Testes
         }
 
         [Test]
+        public void Poder_total_sobe_ao_comprar_upgrade()
+        {
+            var poder = new CalcularPoder(new CalcularAtributos(repositorio, catalogo));
+            // click 3 + auto 5, crítico 5% ×5 → fator 1,2
+            Assert.AreEqual(8 * 1.2, poder.Executar(), 1e-9);
+
+            repositorio.Progresso.ReceberOuro(10);
+            new ComprarUpgrade(repositorio, catalogo).Executar(IdsDosUpgrades.Forca, 1);
+            Assert.AreEqual(11 * 1.2, poder.Executar(), 1e-9);
+        }
+
+        [Test]
         public void Repositorio_em_memoria_devolve_o_mesmo_progresso()
         {
             var r = new RepositorioDeProgressoEmMemoria();
