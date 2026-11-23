@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80cd8929ea964484c8e90c0deac82ee7, type: 3}
+  m_Name: BalanceamentoDeUpgrades
+  m_EditorClassIdentifier: ALotOfDamage.Core::ALotOfDamage.Core.BalanceamentoDeUpgrades
+  upgrades:
+  - Id: forca_do_golpe
+    Nome: "For\xE7a do Golpe"
+    Descricao: Dano de cada click
+    CustoBase: 10
+    CrescimentoDoCusto: 1.07
+    ValorBase: 3
+    Tipo: 0
+    ValorPorNivel: 0
+    Teto: 0
+  - Id: ataque_automatico
+    Nome: "Ataque Autom\xE1tico"
+    Descricao: Dano do auto-ataque por segundo
+    CustoBase: 15
+    CrescimentoDoCusto: 1.08
+    ValorBase: 5
+    Tipo: 0
+    ValorPorNivel: 0
+    Teto: 0
+  - Id: precisao
+    Nome: "Precis\xE3o"
+    Descricao: "Chance de cr\xEDtico"
+    CustoBase: 50
+    CrescimentoDoCusto: 1.15
+    ValorBase: 0.05
+    Tipo: 1
+    ValorPorNivel: 0.01
+    Teto: 0.5

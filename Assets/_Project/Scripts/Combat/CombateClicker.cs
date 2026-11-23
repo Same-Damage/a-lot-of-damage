@@ -10,10 +10,7 @@ namespace ALotOfDamage.Combat
     public class CombateClicker : MonoBehaviour
     {
         [Header("Jogador")]
-        public double danoAutomatico = 5;
         public float intervaloAutomatico = 1f;
-        public double danoDoClick = 3;
-        [Range(0, 1)] public float chanceCritica = 0.1f;
         public double multiplicadorCritico = 5;
         public int cliquesPorSegundoMaximo = 15;
 
@@ -37,7 +34,7 @@ namespace ALotOfDamage.Combat
         public Transform visualDoInimigo;
 
         int estagio = 1;
-        double vidaDoInimigo, vidaMaximaDoInimigo, ouroDoModoTeste;
+        double vidaDoInimigo, vidaMaximaDoInimigo;
         int combo;
         float ultimoClick, timerAutomatico, timerPontoFraco, pontoFracoRestante, ultimate, tremor;
         LimitadorDeCliques limitador;
@@ -46,6 +43,13 @@ namespace ALotOfDamage.Combat
         string nomeDoInimigo = "Inimigo";
         string faixa;
         float faixaAte, cliquesTravadosAte, automaticoComecaEm, voltarEm = -1;
+
+        // Dano e crítico vêm dos upgrades comprados
+        static double ValorDoUpgrade(string id) =>
+            ProgressoDoJogador.Valor(BalanceamentoDeUpgrades.Atual.Buscar(id));
+        double DanoDoClick => ValorDoUpgrade(BalanceamentoDeUpgrades.IdForca);
+        double DanoAutomatico => ValorDoUpgrade(BalanceamentoDeUpgrades.IdAutomatico);
+        double ChanceCritica => ValorDoUpgrade(BalanceamentoDeUpgrades.IdPrecisao);
 
         struct Popup { public string texto; public Vector2 pos; public float t; public Color cor; public int tamanho; }
 
@@ -65,7 +69,7 @@ namespace ALotOfDamage.Combat
                 case Vantagem.Preventivo:
                     MostrarFaixa("ATAQUE PREVENTIVO!");
                     ultimate = 100;
-                    Acertar(danoDoClick * 20, true, new Color(0.4f, 1f, 0.5f), 48);
+                    Acertar(DanoDoClick * 20, true, new Color(0.4f, 1f, 0.5f), 48);
                     break;
                 case Vantagem.Emboscada:
                     MostrarFaixa("EMBOSCADA!");
@@ -107,7 +111,7 @@ namespace ALotOfDamage.Combat
             if (agora >= automaticoComecaEm && timerAutomatico >= intervaloAutomatico)
             {
                 timerAutomatico = 0;
-                Acertar(danoAutomatico, false, Color.white, 22);
+                Acertar(DanoAutomatico, false, Color.white, 22);
             }
 
             if (combo > 0 && agora - ultimoClick > tempoDoCombo) combo = 0;
@@ -129,7 +133,7 @@ namespace ALotOfDamage.Combat
 
         ParametrosDoClick Parametros() => new ParametrosDoClick
         {
-            DanoBase = danoDoClick,
+            DanoBase = DanoDoClick,
             BonusDeComboPorHit = bonusDeComboPorHit,
             MultiplicadorCritico = multiplicadorCritico,
             MultiplicadorPontoFraco = multiplicadorPontoFraco,
@@ -144,7 +148,7 @@ namespace ALotOfDamage.Combat
             ultimoClick = agora;
             ultimate = Mathf.Min(100, ultimate + cargaDaUltimatePorClick);
 
-            bool critico = Random.value < chanceCritica;
+            bool critico = Random.value < ChanceCritica;
             bool pontoFraco = pontoFracoRestante > 0;
             double dano = RegrasDoClick.Dano(Parametros(), combo, critico, pontoFraco);
 
@@ -159,13 +163,12 @@ namespace ALotOfDamage.Combat
         void DispararUltimate()
         {
             ultimate = 0;
-            Acertar(danoDoClick * multiplicadorDaUltimate * (1 + combo * bonusDeComboPorHit), true, new Color(0.8f, 0.4f, 1f), 56);
+            Acertar(DanoDoClick * multiplicadorDaUltimate * (1 + combo * bonusDeComboPorHit), true, new Color(0.8f, 0.4f, 1f), 56);
         }
 
         void Acertar(double dano, bool doClick, Color cor, int tamanho)
         {
             if (voltarEm > 0) return;
-            dano *= ProgressoDoJogador.MultiplicadorDeDano;
             vidaDoInimigo -= dano;
             if (doClick) tremor = 0.08f;
 
@@ -183,17 +186,14 @@ namespace ALotOfDamage.Combat
                 double recompensa = vidaMaximaDoInimigo * 0.5;
                 ProgressoDoJogador.Ouro += recompensa;
                 ProgressoDoJogador.Vitorias++;
-                // Provisório: cada vitória fortalece até existir forja/upgrades
-                ProgressoDoJogador.MultiplicadorDeDano *= 1.25;
                 MostrarFaixa($"VITÓRIA!  +{FormatadorDeNumeros.Formatar(recompensa)} ouro");
                 voltarEm = Time.time + 1.5f;
             }
             else
             {
                 // Modo de teste da cena Batalha aberta direto: estágios infinitos
-                ouroDoModoTeste += vidaMaximaDoInimigo * 0.5;
+                ProgressoDoJogador.Ouro += vidaMaximaDoInimigo * 0.5;
                 estagio++;
-                danoAutomatico *= 1.4; danoDoClick *= 1.4;
                 NovoInimigo();
             }
         }
@@ -210,7 +210,7 @@ namespace ALotOfDamage.Combat
             }
             else
             {
-                GUI.Label(new Rect(20, 20, 600, 30), $"Estágio {estagio}   Ouro {FormatadorDeNumeros.Formatar(ouroDoModoTeste)}", grande);
+                GUI.Label(new Rect(20, 20, 600, 30), $"Estágio {estagio}   Ouro {FormatadorDeNumeros.Formatar(ProgressoDoJogador.Ouro)}", grande);
             }
 
             if (Time.time < faixaAte || voltarEm > 0)

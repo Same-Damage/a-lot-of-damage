@@ -149,9 +149,11 @@ $proj  = "C:\Users\vitor\Downloads\Profile\ALotOfDamage"
 # testes PlayMode
 & $unity -batchmode -projectPath $proj -runTests -testPlatform PlayMode -testResults "$env:TEMP\playmode.xml" -logFile -
 
-# recria as cenas de protótipo
-& $unity -batchmode -quit -projectPath $proj -executeMethod ALotOfDamage.Ferramentas.ConstrutorDeCenas.CriarTodas -logFile -
+# recria as cenas de protótipo, o asset de balanceamento (se faltar) e a planilha docs/balanceamento.csv
+& $unity -batchmode -quit -projectPath $proj -executeMethod ALotOfDamage.Ferramentas.ExportadorDeBalanceamento.CriarTudo -logFile -
 ```
+
+A planilha `docs/balanceamento.csv` é gerada pelas mesmas fórmulas do jogo (`RegrasDeUpgrade`). Ao mudar fórmula ou valor de balanceamento, gere de novo e commite junto.
 
 Com o editor aberto, use **Window → General → Test Runner**.
 
@@ -175,8 +177,9 @@ Assets/_Project/
 ```
 
 - Cada pasta de `Scripts/` é um Assembly Definition: `ALotOfDamage.Core`, `ALotOfDamage.Combat`, `ALotOfDamage.World`, `ALotOfDamage.UI` e `ALotOfDamage.Ferramentas` (só editor). Os testes ficam em `ALotOfDamage.Testes.EditMode` (e `ALotOfDamage.Testes.PlayMode`, quando existir).
-- Sentido das dependências: `Core` não depende de ninguém; `Combat` → `Core`; `World` → `Core` e `UI`; `UI` não depende de `World` nem de `Combat`. Assembly nova entra nas referências da assembly de testes.
-- Regras puras ficam em classes próprias, testadas em EditMode: `FormatadorDeNumeros`, `RegrasDoEncontro`, `RegrasDoClick`, `LimitadorDeCliques`. O `MonoBehaviour` correspondente só chama elas.
+- Sentido das dependências: `Core` não depende de ninguém; `Combat` → `Core`; `World` → `Core` e `UI`; `UI` → `Core` (nunca `World` nem `Combat`). Assembly nova entra nas referências da assembly de testes.
+- Regras puras ficam em classes próprias, testadas em EditMode: `FormatadorDeNumeros`, `RegrasDoEncontro`, `RegrasDoClick`, `LimitadorDeCliques`, `RegrasDeUpgrade`. O `MonoBehaviour` correspondente só chama elas.
+- Valores de balanceamento dos upgrades ficam no asset `Data/Resources/BalanceamentoDeUpgrades` (lido por `BalanceamentoDeUpgrades.Atual`). Nível de cada upgrade começa em 1 e fica em `ProgressoDoJogador`.
 - Pastas novas seguem esse padrão; não crie código fora de `Assets/_Project`.
 
 ### Arte HD-2D
