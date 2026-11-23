@@ -66,17 +66,21 @@ namespace ALotOfDamage.Core
             };
         }
 
-        public const float DuracaoDaVirada = 0.18f;
+        public const float DuracaoDaVirada = 0.14f;
 
-        // Largura do corpo durante a virada de lado (progresso 0..1): de 1 a -1 passando por 0, como girar um papel
-        public static float EscalaDaVirada(float progresso) =>
-            (float)Math.Cos(Math.PI * Math.Max(0, Math.Min(1, progresso)));
+        // Ao virar de lado o desenho espelha na hora; para disfarçar, ele começa um pouco mais estreito e mais alto
+        // e volta ao normal (progresso 0..1). Nunca passa pela largura zero, que deixava o personagem fino como papel.
+        public static float EscalaDaVirada(float progresso) => 1 - 0.18f * (1 - Limitar01(progresso));
+
+        public static float AlturaDaVirada(float progresso) => 1 + 0.08f * (1 - Limitar01(progresso));
+
+        static float Limitar01(float v) => Math.Max(0, Math.Min(1, v));
 
         // Quanto o corpo gira em direção ao movimento (graus): bastante andando de lado, nada indo reto para cima ou para baixo
         public static float Guinada(float x, float y)
         {
             float total = Math.Abs(x) + Math.Abs(y);
-            return total < 0.01f ? 0 : 28 * Math.Abs(x) / total;
+            return total < 0.01f ? 0 : 8 * Math.Abs(x) / total;
         }
 
         public const float CicloDoPulo = 0.55f;
@@ -184,22 +188,23 @@ namespace ALotOfDamage.Core
                     float fase = Tau * tempo / CicloDoPasso;
                     float passo = Sen(fase);
                     float ritmo = (float)Math.Cos(2 * fase);   // duas batidas por ciclo, uma por pé
-                    // o desenho é de frente: a perna sobe e gira só um pouco, em vez de abrir como um compasso
-                    p.PernaFrente = 8 * passo;
-                    p.PernaTras = -8 * passo;
-                    p.PernaFrenteSobe = 0.09f * Math.Max(0, passo);
-                    p.PernaTrasSobe = 0.09f * Math.Max(0, -passo);
+                    // o desenho é de frente: a perna sobe um pouco e gira, sem abrir demais como um compasso
+                    p.PernaFrente = 14 * passo;
+                    p.PernaTras = -14 * passo;
+                    p.PernaFrenteSobe = 0.06f * Math.Max(0, passo);
+                    p.PernaTrasSobe = 0.06f * Math.Max(0, -passo);
                     p.Balanco = -3.5f * passo;
-                    p.BracoFrente = -14 * passo;
-                    p.BracoTras = 14 * passo;
-                    p.AntebracoFrente = -6 - 4 * passo;
-                    p.AntebracoTras = -6 + 4 * passo;
-                    p.Espada = EspadaEmRepouso - 4 * passo;
+                    // braço longo com espada: balanço pequeno, senão a espada sai voando
+                     p.BracoFrente = -6 * passo;
+                    p.BracoTras = 6 * passo;
+                    p.AntebracoFrente = -4 - 2 * passo;
+                    p.AntebracoTras = -4 + 2 * passo;
+                    p.Espada = EspadaEmRepouso - 2 * passo;
                     // inclinado para a frente, com um leve balanço a cada pé
                     p.Tronco = -4 + 1.5f * ritmo;
                     p.Cabeca = 2 - 1.5f * ritmo;
                     // a capa fica para trás e ondula atrasada em relação ao corpo
-                    p.Capa = 14 + 5 * Sen(2 * fase - 1.2f);
+                    p.Capa = 6 + 4 * Sen(2 * fase - 1.2f);
                     // mais alto quando as pernas cruzam, mais baixo quando o pé toca
                     p.Elevacao = 0.045f * ritmo;
                     break;
