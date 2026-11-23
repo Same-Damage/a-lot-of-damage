@@ -1,6 +1,7 @@
 using ALotOfDamage.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VContainer;
 
 namespace ALotOfDamage.UI
 {
@@ -12,15 +13,20 @@ namespace ALotOfDamage.UI
         protected override string Titulo => "Upgrades";
         protected override Key Tecla => Key.U;
         protected override int Ordem => 0;
-        protected override float AlturaDoConteudo => BalanceamentoDeUpgrades.Atual.upgrades.Count * AlturaItem;
+        protected override float AlturaDoConteudo => catalogo.Upgrades.Count * AlturaItem;
+
+        ComprarUpgrade comprarUpgrade;
+
+        [Inject]
+        public void Construir(ComprarUpgrade comprarUpgrade) => this.comprarUpgrade = comprarUpgrade;
 
         void Comprar(DefinicaoDeUpgrade d, int quantidade)
         {
-            double antes = ProgressoDoJogador.Valor(d);
-            var r = ProgressoDoJogador.Comprar(d, quantidade);
+            double antes = Progresso.Valor(d);
+            var r = comprarUpgrade.Executar(d.Id, quantidade);
             if (!r.Comprou) return;
 
-            double ganho = ProgressoDoJogador.Valor(d) / antes;
+            double ganho = Progresso.Valor(d) / antes;
             MostrarFaixa(r.AtingiuMarco
                 ? $"MARCO! {d.Nome} x{FormatadorDeNumeros.Formatar(ganho)}"
                 : $"{d.Nome} +{(ganho - 1) * 100:0}%", r.AtingiuMarco);
@@ -28,11 +34,11 @@ namespace ALotOfDamage.UI
 
         protected override void DesenharConteudo(Rect area)
         {
-            var upgrades = BalanceamentoDeUpgrades.Atual.upgrades;
+            var upgrades = catalogo.Upgrades;
             for (int i = 0; i < upgrades.Count; i++)
             {
                 var d = upgrades[i];
-                int nivel = ProgressoDoJogador.Nivel(d.Id);
+                int nivel = Progresso.Nivel(d.Id);
                 float y = area.y + i * AlturaItem;
                 bool linear = d.Tipo == TipoDeUpgrade.Linear;
 

@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+using ALotOfDamage.Core;
 using UnityEngine;
 
-namespace ALotOfDamage.Core
+namespace ALotOfDamage.Infrastructure
 {
     // Itens da forja. O asset fica em Data/Resources/BalanceamentoDaForja.
     [CreateAssetMenu(menuName = "A Lot of Damage/Balanceamento da Forja")]

@@ -21,10 +21,10 @@ Repositório privado `Same-Damage/a-lot-of-damage`, branch principal `main`. Bin
 ### TDD
 - Escreva o teste antes da funcionalidade. O teste falha, o código o faz passar, depois refatore.
 - Todo bug corrigido ganha um teste que reproduz o problema, para ele não voltar.
-- Lógica (fórmulas de dano, custo, vida, marcos, AFK, gacha, combo, formatação de números, regras de encontro) fica em classes C# puras, sem `MonoBehaviour` e sem `UnityEngine` quando possível. O `MonoBehaviour` só lê input, chama a lógica e desenha o resultado.
+- Lógica (fórmulas de dano, custo, vida, marcos, AFK, gacha, combo, formatação de números, regras de encontro) fica no domínio (`Core`), em C# puro, sem `MonoBehaviour` e sem `UnityEngine` (ver Arquitetura hexagonal). O `MonoBehaviour` só lê input, chama a lógica e desenha o resultado.
 - Tempo, aleatoriedade e input entram na lógica por parâmetro ou interface, para o teste controlar (nada de `Time.time` ou `Random` direto dentro da regra).
 - Testes de lógica são **EditMode** (rápidos, sem cena). Fluxos que precisam de cena, física ou troca de cena são **PlayMode**.
-- Cada assembly de código tem a sua de testes ao lado (ver Estrutura).
+- Os testes ficam em `ALotOfDamage.Testes.EditMode` e `ALotOfDamage.Testes.PlayMode`; assembly nova entra nas referências delas.
 
 ### Código
 - Nunca duplique código. Se algo se repete, extraia para o módulo dono ou para `Core`.
@@ -132,7 +132,7 @@ Decisões já tomadas. Mudar qualquer uma delas é decisão de design, não de i
 
 ### Stack
 - Unity 6000.6.10f1 + URP + C#
-- Input System, uGUI (controles de toque); a UI de jogo definitiva ainda vai ser escolhida (UI Toolkit ou uGUI). O HUD em `OnGUI` é provisório.
+- Input System, VContainer (injeção de dependência), uGUI (controles de toque); a UI de jogo definitiva ainda vai ser escolhida (UI Toolkit ou uGUI). O HUD em `OnGUI` é provisório.
 - Unity Test Framework (NUnit), EditMode e PlayMode
 
 ### Comandos
@@ -162,26 +162,53 @@ Com o editor aberto, use **Window → General → Test Runner**.
 ```
 Assets/_Project/
   Scripts/
-    Core/        regras puras e estado compartilhado (números, encontros, progresso)
-    Combat/      combate clicker
-    World/       mapa: movimento, câmera, monstros, ataque no mapa
-    UI/          controles de toque e interface
-    Editor/      ferramentas do editor (ConstrutorDeCenas), assembly ALotOfDamage.Ferramentas
+    Core/            domínio puro, sem UnityEngine (assembly ALotOfDamage.Core)
+      Ports/         interfaces que o domínio precisa (repositório, catálogo, sorteio)
+      UseCases/      casos de uso: uma classe por ação do jogador
+    Infrastructure/  adaptadores da Unity e composição VContainer (assembly ALotOfDamage.Infraestrutura)
+    Combat/          combate clicker (MonoBehaviours)
+    World/           mapa: movimento, câmera, monstros, ataque no mapa
+    UI/              controles de toque e interface
+    Editor/          ferramentas do editor (ConstrutorDeCenas), assembly ALotOfDamage.Ferramentas
   Tests/
-    EditMode/    testes de lógica pura
-    PlayMode/    testes que precisam de cena
-  Scenes/        Mapa (cena inicial) e Batalha
-  Data/          ScriptableObjects de balanceamento
-  Art/           Sprites, Environment, VFX
+    EditMode/        domínio e casos de uso, com fakes das portas
+    PlayMode/        fluxos que precisam de cena (composição, mapa ↔ batalha)
+  Scenes/            Mapa (cena inicial) e Batalha
+  Data/              ScriptableObjects de balanceamento
+  Art/               Sprites, Environment, VFX
   Audio/
 ```
 
-- Cada pasta de `Scripts/` é um Assembly Definition: `ALotOfDamage.Core`, `ALotOfDamage.Combat`, `ALotOfDamage.World`, `ALotOfDamage.UI` e `ALotOfDamage.Ferramentas` (só editor). Os testes ficam em `ALotOfDamage.Testes.EditMode` (e `ALotOfDamage.Testes.PlayMode`, quando existir).
-- Sentido das dependências: `Core` não depende de ninguém; `Combat` → `Core`; `World` → `Core` e `UI`; `UI` → `Core` (nunca `World` nem `Combat`). Assembly nova entra nas referências da assembly de testes.
-- Regras puras ficam em classes próprias, testadas em EditMode: `FormatadorDeNumeros`, `RegrasDoEncontro`, `RegrasDoClick`, `LimitadorDeCliques`, `RegrasDeUpgrade`, `RegrasDaForja`, `RegrasDoBestiario`. O `MonoBehaviour` correspondente só chama elas.
-- Valores de balanceamento ficam em assets de `Data/Resources` com o nome da classe (`BalanceamentoDeUpgrades`, `BalanceamentoDaForja`, `BalanceamentoDoBestiario`), todos herdando de `Balanceamento<T>` e lidos por `.Atual`. Nível de upgrade começa em 1, item da forja começa em +0; níveis, materiais e derrotas ficam em `ProgressoDoJogador`.
+Pastas novas seguem esse padrão; não crie código fora de `Assets/_Project`.
+
+### Arquitetura hexagonal
+
+O cliente segue a arquitetura hexagonal (portas e adaptadores). O domínio fica no centro e não conhece a Unity; a Unity, os assets e (no futuro) o servidor são adaptadores em volta dele. É isso que permite rodar as mesmas regras no servidor.
+
+| Camada | Onde | O que tem |
+|---|---|---|
+| Domínio | `Core/` | Regras puras (`RegrasDeUpgrade`, `RegrasDaForja`, `RegrasDoBestiario`, `RegrasDoClick`, `RegrasDoEncontro`, `FormatadorDeNumeros`...), definições (`DefinicaoDeUpgrade`...) e a entidade `Progresso` |
+| Portas | `Core/Ports/` | `IRepositorioDeProgresso`, `ICatalogo`, `ISorteio` |
+| Casos de uso | `Core/UseCases/` | `ComprarUpgrade`, `ForjarItem`, `RegistrarVitoria`, `CalcularAtributos`: carregam o progresso, aplicam a regra e salvam |
+| Adaptadores de saída | `Infrastructure/` | `RepositorioDeProgressoEmMemoria`, `CatalogoDeBalanceamento` (lê os ScriptableObjects), `SorteioDaUnity`, `FluxoDeEncontro` (troca de cena) |
+| Adaptadores de entrada | `Combat/`, `World/`, `UI/` | `MonoBehaviour`s: leem input, chamam casos de uso, desenham |
+| Composição | `Infrastructure/EscopoDoJogo`, `EscopoDaCena` | VContainer monta tudo |
+
+Regras:
+- O sentido das dependências é sempre para dentro. `Core` não referencia nenhuma assembly e tem `noEngineReferences: true`: o compilador recusa `UnityEngine` ali.
+- `Infraestrutura` → `Core`. `Combat` e `World` → `Core` e `Infraestrutura` (`World` também → `UI`). `UI` → só `Core`. `Core` nunca conhece quem está fora.
+- Toda dependência externa (salvar, assets, aleatoriedade, tempo, rede) entra no domínio por uma porta, para o teste trocar por um fake.
+- Uma ação nova do jogador vira um caso de uso em `Core/UseCases`, testado em EditMode com fakes das portas. O `MonoBehaviour` só chama o caso de uso; nada de regra de negócio nele.
+- Estado do jogo mora na entidade `Progresso`, acessada pelo `IRepositorioDeProgresso`. Nada de classe estática com estado global nem de singletons (`.Instance`) para serviços.
+- Injeção com **VContainer**:
+  - `EscopoDoJogo` é a raiz. Ele é criado antes da primeira cena, fica vivo entre as cenas e registra portas, adaptadores e casos de uso como singletons.
+  - Cada cena tem um `EscopoDaCena` (o `ConstrutorDeCenas` coloca), que injeta os `MonoBehaviour`s do jogo da cena.
+  - `MonoBehaviour` recebe dependências por um método `[Inject] public void Construir(...)` e só as usa a partir do `Start`, nunca no `Awake`.
+  - Serviço novo é registrado no `EscopoDoJogo`.
+- Valores de balanceamento ficam em assets de `Data/Resources` com o nome da classe (`BalanceamentoDeUpgrades`, `BalanceamentoDaForja`, `BalanceamentoDoBestiario`), herdando de `Balanceamento<T>`. O jogo os lê só pelo `ICatalogo`.
+- Quando chegar o servidor (Nakama), entram adaptadores novos para as mesmas portas (ex.: `RepositorioDeProgressoNoServidor`) e os casos de uso viram as ações que o cliente envia. O domínio não muda.
+- Nível de upgrade começa em 1; item da forja começa em +0.
 - Telas provisórias em OnGUI herdam de `JanelaProvisoria` (uma aberta por vez) até chegar o kit de interface.
-- Pastas novas seguem esse padrão; não crie código fora de `Assets/_Project`.
 
 ### Arte HD-2D
 - Personagens, followers e monstros: sprites em pixel art (48–64 px de altura) como billboard no 3D, filtro **Point (Nearest)**, sem compressão que borre.

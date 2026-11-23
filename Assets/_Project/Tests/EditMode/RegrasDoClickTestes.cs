@@ -1,4 +1,4 @@
-using ALotOfDamage.Combat;
+using ALotOfDamage.Core;
 using NUnit.Framework;
 
 namespace ALotOfDamage.Testes

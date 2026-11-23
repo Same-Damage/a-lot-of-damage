@@ -1,5 +1,6 @@
 using ALotOfDamage.Combat;
 using ALotOfDamage.Core;
+using ALotOfDamage.Infrastructure;
 using ALotOfDamage.UI;
 using ALotOfDamage.World;
 using UnityEditor;
@@ -57,6 +58,7 @@ namespace ALotOfDamage.Ferramentas
         public static void CriarMapa()
         {
             var cena = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+            new GameObject("Escopo da Cena").AddComponent<EscopoDaCena>();
             Random.InitState(42);
 
             var chao = GameObject.CreatePrimitive(PrimitiveType.Plane);
@@ -204,6 +206,7 @@ namespace ALotOfDamage.Ferramentas
         public static void CriarBatalha()
         {
             var cena = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+            new GameObject("Escopo da Cena").AddComponent<EscopoDaCena>();
 
             var cam = Camera.main;
             cam.transform.position = new Vector3(0, 2, -6);

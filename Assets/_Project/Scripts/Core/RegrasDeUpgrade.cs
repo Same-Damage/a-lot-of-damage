@@ -15,9 +15,9 @@ namespace ALotOfDamage.Core
         public double ValorBase = 1;
         public TipoDeUpgrade Tipo = TipoDeUpgrade.ComMarcos;
 
-        [UnityEngine.Tooltip("Só para upgrades lineares")]
+        // Só para upgrades lineares
         public double ValorPorNivel;
-        [UnityEngine.Tooltip("Só para upgrades lineares; 0 = sem teto")]
+        // Só para upgrades lineares; 0 = sem teto
         public double Teto;
     }
 

@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+using ALotOfDamage.Core;
 using UnityEngine;
 
-namespace ALotOfDamage.Core
+namespace ALotOfDamage.Infrastructure
 {
     // Monstros, materiais que dropam e bônus do bestiário. O asset fica em Data/Resources/BalanceamentoDoBestiario.
     [CreateAssetMenu(menuName = "A Lot of Damage/Balanceamento do Bestiário")]
@@ -9,11 +10,6 @@ namespace ALotOfDamage.Core
     {
         public ParametrosDoBestiario parametros = new ParametrosDoBestiario();
         public List<DefinicaoDeMonstro> monstros = Padrao();
-
-        public DefinicaoDeMonstro Buscar(string id) => monstros.Find(m => m.Id == id);
-
-        public string NomeDoMaterial(string materialId) =>
-            monstros.Find(m => m.MaterialId == materialId)?.NomeDoMaterial ?? materialId;
 
         public static List<DefinicaoDeMonstro> Padrao() => new List<DefinicaoDeMonstro>
         {

@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using ALotOfDamage.Core;
+using ALotOfDamage.Infrastructure;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VContainer;
 
 namespace ALotOfDamage.Combat
 {
@@ -44,30 +46,43 @@ namespace ALotOfDamage.Combat
         string faixa;
         float faixaAte, cliquesTravadosAte, automaticoComecaEm, voltarEm = -1;
 
-        // Dano: upgrades × forja × bestiário (as fontes se multiplicam)
-        static double ValorDoUpgrade(string id) =>
-            ProgressoDoJogador.Valor(BalanceamentoDeUpgrades.Atual.Buscar(id));
-        static double Multiplicador(AlvoDoItem alvo) =>
-            ProgressoDoJogador.MultiplicadorDeDano(alvo, EstadoDoEncontro.Ativo ? EstadoDoEncontro.TipoDoInimigo : null,
-                BalanceamentoDaForja.Atual.itens, BalanceamentoDoBestiario.Atual.parametros);
-        double DanoDoClick => ValorDoUpgrade(BalanceamentoDeUpgrades.IdForca) * Multiplicador(AlvoDoItem.Click);
-        double DanoAutomatico => ValorDoUpgrade(BalanceamentoDeUpgrades.IdAutomatico) * Multiplicador(AlvoDoItem.Automatico);
-        double ChanceCritica => ValorDoUpgrade(BalanceamentoDeUpgrades.IdPrecisao);
+        FluxoDeEncontro encontro;
+        IRepositorioDeProgresso repositorio;
+        CalcularAtributos calcularAtributos;
+        RegistrarVitoria registrarVitoria;
+
+        // O progresso não muda durante a luta, então os atributos são calculados uma vez
+        AtributosDeCombate atributos;
+        double DanoDoClick => atributos.DanoDoClick;
+        double DanoAutomatico => atributos.DanoAutomatico;
+        double ChanceCritica => atributos.ChanceCritica;
+        double Ouro => repositorio.Carregar().Ouro;
+
+        [Inject]
+        public void Construir(FluxoDeEncontro encontro, IRepositorioDeProgresso repositorio,
+            CalcularAtributos calcularAtributos, RegistrarVitoria registrarVitoria)
+        {
+            this.encontro = encontro;
+            this.repositorio = repositorio;
+            this.calcularAtributos = calcularAtributos;
+            this.registrarVitoria = registrarVitoria;
+        }
 
         struct Popup { public string texto; public Vector2 pos; public float t; public Color cor; public int tamanho; }
 
         void Start()
         {
             limitador = new LimitadorDeCliques(cliquesPorSegundoMaximo);
-            if (EstadoDoEncontro.Ativo)
+            atributos = calcularAtributos.Executar(encontro.Ativo ? encontro.TipoDoInimigo : null);
+            if (encontro.Ativo)
             {
-                nomeDoInimigo = EstadoDoEncontro.NomeDoInimigo;
-                vidaBaseDoInimigo *= EstadoDoEncontro.MultiplicadorDeVida;
+                nomeDoInimigo = encontro.NomeDoInimigo;
+                vidaBaseDoInimigo *= encontro.MultiplicadorDeVida;
             }
             NovoInimigo();
 
-            if (!EstadoDoEncontro.Ativo) return;
-            switch (EstadoDoEncontro.Vantagem)
+            if (!encontro.Ativo) return;
+            switch (encontro.Vantagem)
             {
                 case Vantagem.Preventivo:
                     MostrarFaixa("ATAQUE PREVENTIVO!");
@@ -100,13 +115,13 @@ namespace ALotOfDamage.Combat
 
             if (voltarEm > 0)
             {
-                if (agora >= voltarEm) EstadoDoEncontro.Encerrar(true);
+                if (agora >= voltarEm) encontro.Encerrar(true);
                 return;
             }
 
-            if (EstadoDoEncontro.Ativo && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            if (encontro.Ativo && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
             {
-                EstadoDoEncontro.Encerrar(false);
+                encontro.Encerrar(false);
                 return;
             }
 
@@ -184,28 +199,19 @@ namespace ALotOfDamage.Combat
 
             if (vidaDoInimigo > 0) return;
 
-            if (EstadoDoEncontro.Ativo)
+            if (encontro.Ativo)
             {
-                double recompensa = vidaMaximaDoInimigo * 0.5;
-                ProgressoDoJogador.Ouro += recompensa;
-                ProgressoDoJogador.Vitorias++;
-                string texto = $"VITÓRIA!  +{FormatadorDeNumeros.Formatar(recompensa)} ouro";
-
-                var bestiario = BalanceamentoDoBestiario.Atual;
-                var monstro = bestiario.Buscar(EstadoDoEncontro.TipoDoInimigo);
-                if (monstro != null)
-                {
-                    if (monstro.MaterialPorVitoria > 0) texto += $"  +{monstro.MaterialPorVitoria} {monstro.NomeDoMaterial}";
-                    if (ProgressoDoJogador.RegistrarVitoria(monstro, bestiario.parametros))
-                        texto += $"\nBESTIÁRIO: {monstro.Nome} x{ProgressoDoJogador.Derrotas(monstro.Id)}!";
-                }
+                var v = registrarVitoria.Executar(encontro.TipoDoInimigo, vidaMaximaDoInimigo * 0.5);
+                string texto = $"VITÓRIA!  +{FormatadorDeNumeros.Formatar(v.Ouro)} ouro";
+                if (v.MaterialGanho > 0) texto += $"  +{v.MaterialGanho} {v.Monstro.NomeDoMaterial}";
+                if (v.AtingiuMarcoDoBestiario) texto += $"\nBESTIÁRIO: {v.Monstro.Nome} x{v.Derrotas}!";
                 MostrarFaixa(texto);
                 voltarEm = Time.time + 1.5f;
             }
             else
             {
                 // Modo de teste da cena Batalha aberta direto: estágios infinitos
-                ProgressoDoJogador.Ouro += vidaMaximaDoInimigo * 0.5;
+                registrarVitoria.Executar(null, vidaMaximaDoInimigo * 0.5);
                 estagio++;
                 NovoInimigo();
             }
@@ -215,15 +221,15 @@ namespace ALotOfDamage.Combat
         {
             var grande = new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold };
 
-            if (EstadoDoEncontro.Ativo)
+            if (encontro.Ativo)
             {
-                GUI.Label(new Rect(20, 20, 600, 30), $"{nomeDoInimigo}   Ouro {FormatadorDeNumeros.Formatar(ProgressoDoJogador.Ouro)}", grande);
+                GUI.Label(new Rect(20, 20, 600, 30), $"{nomeDoInimigo}   Ouro {FormatadorDeNumeros.Formatar(Ouro)}", grande);
                 if (voltarEm < 0 && GUI.Button(new Rect(Screen.width - 140, 20, 120, 40), "Fugir (Esc)"))
-                    EstadoDoEncontro.Encerrar(false);
+                    encontro.Encerrar(false);
             }
             else
             {
-                GUI.Label(new Rect(20, 20, 600, 30), $"Estágio {estagio}   Ouro {FormatadorDeNumeros.Formatar(ProgressoDoJogador.Ouro)}", grande);
+                GUI.Label(new Rect(20, 20, 600, 30), $"Estágio {estagio}   Ouro {FormatadorDeNumeros.Formatar(Ouro)}", grande);
             }
 
             if (Time.time < faixaAte || voltarEm > 0)

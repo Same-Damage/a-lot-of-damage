@@ -1,7 +1,12 @@
 {
     "name": "ALotOfDamage.Combat",
     "rootNamespace": "",
-    "references": ["ALotOfDamage.Core", "Unity.InputSystem"],
+    "references": [
+        "ALotOfDamage.Core",
+        "ALotOfDamage.Infraestrutura",
+        "VContainer",
+        "Unity.InputSystem"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

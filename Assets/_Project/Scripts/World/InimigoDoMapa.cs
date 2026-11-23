@@ -1,6 +1,8 @@
 using ALotOfDamage.Core;
+using ALotOfDamage.Infrastructure;
 using UnityEngine;
 using UnityEngine.AI;
+using VContainer;
 
 namespace ALotOfDamage.World
 {
@@ -9,6 +11,11 @@ namespace ALotOfDamage.World
     [RequireComponent(typeof(NavMeshAgent))]
     public class InimigoDoMapa : MonoBehaviour
     {
+        FluxoDeEncontro encontro;
+
+        [Inject]
+        public void Construir(FluxoDeEncontro encontro) => this.encontro = encontro;
+
         public string idDoInimigo = "inimigo";
         [Tooltip("Id do monstro no BalanceamentoDoBestiario")]
         public string tipo = "slime";
@@ -43,7 +50,7 @@ namespace ALotOfDamage.World
             var j = GameObject.FindWithTag("Player");
             if (j) jogador = j.transform;
             visuais = GetComponentsInChildren<Renderer>();
-            Mostrar(!EstadoDoEncontro.EstaDerrotado(idDoInimigo));
+            Mostrar(!encontro.EstaDerrotado(idDoInimigo));
         }
 
         // Derrotado fica escondido até renascer
@@ -57,16 +64,16 @@ namespace ALotOfDamage.World
         {
             if (escondido)
             {
-                if (EstadoDoEncontro.EstaDerrotado(idDoInimigo)) { Parar(); return; }
+                if (encontro.EstaDerrotado(idDoInimigo)) { Parar(); return; }
                 Mostrar(true);
             }
-            if (!jogador || EstadoDoEncontro.Ativo) { Parar(); return; }
+            if (!jogador || encontro.Ativo) { Parar(); return; }
 
             Vector3 ateJogador = jogador.position - transform.position;
             ateJogador.y = 0f;
             float distancia = ateJogador.magnitude;
 
-            Perseguindo = RegrasDoEncontro.DevePerseguir(Perseguindo, distancia, raioDeVisao, raioDeDesistencia, EstadoDoEncontro.EmProtecao);
+            Perseguindo = RegrasDoEncontro.DevePerseguir(Perseguindo, distancia, raioDeVisao, raioDeDesistencia, encontro.EmProtecao);
 
             if (Perseguindo)
             {
@@ -83,7 +90,7 @@ namespace ALotOfDamage.World
 
         public void Enfrentar(Vantagem vantagem)
         {
-            if (jogador && !escondido) EstadoDoEncontro.Iniciar(idDoInimigo, tipo, nome, multiplicadorDeVida, vantagem, jogador.position);
+            if (jogador && !escondido) encontro.Iniciar(idDoInimigo, tipo, nome, multiplicadorDeVida, vantagem, jogador.position);
         }
 
         void Vagar()

@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using ALotOfDamage.Core;
+using VContainer;
 
 namespace ALotOfDamage.UI
 {
@@ -19,6 +21,17 @@ namespace ALotOfDamage.UI
         protected abstract void DesenharConteudo(Rect area);
 
         protected bool Aberta => aberta == this;
+
+        protected IRepositorioDeProgresso repositorio;
+        protected ICatalogo catalogo;
+        protected Progresso Progresso => repositorio.Carregar();
+
+        [Inject]
+        public void ConstruirJanela(IRepositorioDeProgresso repositorio, ICatalogo catalogo)
+        {
+            this.repositorio = repositorio;
+            this.catalogo = catalogo;
+        }
 
         protected static GUIStyle EstiloTitulo, EstiloTexto, EstiloBotao;
 
@@ -69,7 +82,7 @@ namespace ALotOfDamage.UI
             var area = new Rect((Screen.width - 200 - largura) / 2, 80, largura, 60 + AlturaDoConteudo);
             GUI.Box(area, "");
             GUI.Label(new Rect(area.x + 16, area.y + 10, largura, 30),
-                $"{Titulo}     Ouro: {Core.FormatadorDeNumeros.Formatar(Core.ProgressoDoJogador.Ouro)}", EstiloTitulo);
+                $"{Titulo}     Ouro: {FormatadorDeNumeros.Formatar(Progresso.Ouro)}", EstiloTitulo);
             DesenharConteudo(new Rect(area.x, area.y + 50, area.width, AlturaDoConteudo));
         }
     }

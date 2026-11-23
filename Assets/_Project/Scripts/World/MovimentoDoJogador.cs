@@ -1,7 +1,9 @@
 using ALotOfDamage.Core;
+using ALotOfDamage.Infrastructure;
 using ALotOfDamage.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VContainer;
 
 namespace ALotOfDamage.World
 {
@@ -9,6 +11,11 @@ namespace ALotOfDamage.World
     [RequireComponent(typeof(CharacterController))]
     public class MovimentoDoJogador : MonoBehaviour
     {
+        FluxoDeEncontro encontro;
+
+        [Inject]
+        public void Construir(FluxoDeEncontro encontro) => this.encontro = encontro;
+
         public float velocidade = 6f;
         public float gravidade = -20f;
         public Transform camera_;
@@ -20,12 +27,15 @@ namespace ALotOfDamage.World
         {
             controle = GetComponent<CharacterController>();
             if (!camera_ && Camera.main) camera_ = Camera.main.transform;
+        }
 
+        void Start()
+        {
             // Volta ao ponto onde a batalha começou
-            if (EstadoDoEncontro.TemPosicaoDeRetorno)
+            if (encontro.TemPosicaoDeRetorno)
             {
                 controle.enabled = false;
-                transform.position = EstadoDoEncontro.PosicaoDeRetorno;
+                transform.position = encontro.PosicaoDeRetorno;
                 controle.enabled = true;
             }
         }

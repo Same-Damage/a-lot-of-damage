@@ -1,8 +1,20 @@
 {
     "name": "ALotOfDamage.Ferramentas",
     "rootNamespace": "",
-    "references": ["ALotOfDamage.Core", "ALotOfDamage.Combat", "ALotOfDamage.World", "ALotOfDamage.UI", "Unity.InputSystem", "UnityEngine.UI", "Unity.AI.Navigation"],
-    "includePlatforms": ["Editor"],
+    "references": [
+        "ALotOfDamage.Core",
+        "ALotOfDamage.Infraestrutura",
+        "ALotOfDamage.Combat",
+        "ALotOfDamage.World",
+        "ALotOfDamage.UI",
+        "Unity.InputSystem",
+        "UnityEngine.UI",
+        "Unity.AI.Navigation",
+        "VContainer"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
