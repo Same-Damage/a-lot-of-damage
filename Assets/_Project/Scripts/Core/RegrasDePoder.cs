@@ -10,11 +10,13 @@ namespace ALotOfDamage.Core
 
         static readonly CultureInfo Br = new CultureInfo("pt-BR");
 
-        // Dano por segundo de referência: um click + o auto-ataque, com o crítico médio
+        // Dano por segundo de referência: um click + o auto-ataque + o follower, com o crítico médio
         public static double Poder(AtributosDeCombate a, double multiplicadorCritico)
         {
             double fatorCritico = 1 + a.ChanceCritica * (multiplicadorCritico - 1);
-            return (a.DanoDoClick + a.DanoAutomatico) * fatorCritico;
+            double follower = a.Follower != null && a.Follower.IntervaloDeAtaque > 0
+                ? a.DanoDoFollower / a.Follower.IntervaloDeAtaque : 0;
+            return (a.DanoDoClick + a.DanoAutomatico + follower) * fatorCritico;
         }
 
         // "+38%" para ganhos pequenos, "×4" a partir do dobro; null quando não cresceu

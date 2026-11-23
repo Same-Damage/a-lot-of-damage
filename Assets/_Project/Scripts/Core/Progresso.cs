@@ -5,8 +5,15 @@ namespace ALotOfDamage.Core
     // Entidade com tudo que o jogador conquistou. Quem guarda e carrega é o IRepositorioDeProgresso.
     public class Progresso
     {
+        public const string ClassePadrao = "guerreiro";
+        public const string FollowerPadrao = "pip";
+
         public double Ouro { get; private set; }
         public int Vitorias { get; private set; }
+
+        // Por enquanto só existe o Guerreiro e um follower; a escolha e o gacha vêm depois
+        public string ClasseId { get; private set; } = ClassePadrao;
+        public string FollowerAtivoId { get; private set; } = FollowerPadrao;
 
         readonly Dictionary<string, int> niveis = new Dictionary<string, int>();
         readonly Dictionary<string, int> niveisDosItens = new Dictionary<string, int>();

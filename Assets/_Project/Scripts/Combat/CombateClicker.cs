@@ -7,7 +7,8 @@ using VContainer;
 
 namespace ALotOfDamage.Combat
 {
-    // Protótipo do combate clicker: auto-ataque + click com combo + ponto fraco + ultimate.
+    // Protótipo do combate clicker: auto-ataque + click com combo + ponto fraco + ultimate,
+    // com a passiva e a ultimate da classe e o follower lutando junto.
     // HUD em OnGUI só para testar a sensação; trocar por UI de verdade depois.
     public class CombateClicker : MonoBehaviour
     {
@@ -38,7 +39,8 @@ namespace ALotOfDamage.Combat
         int estagio = 1;
         double vidaDoInimigo, vidaMaximaDoInimigo;
         int combo;
-        float ultimoClick, timerAutomatico, timerPontoFraco, pontoFracoRestante, ultimate, tremor;
+        float ultimoClick, timerAutomatico, timerFollower, timerPontoFraco, pontoFracoRestante, ultimate, tremor;
+        float forcaDoTremor = 0.08f;
         LimitadorDeCliques limitador;
         readonly List<Popup> popups = new List<Popup>();
 
@@ -132,11 +134,22 @@ namespace ALotOfDamage.Combat
                 Acertar(DanoAutomatico, false, Color.white, 22);
             }
 
+            var follower = atributos.Follower;
+            if (follower != null && agora >= automaticoComecaEm)
+            {
+                timerFollower += Time.deltaTime;
+                if (timerFollower >= follower.IntervaloDeAtaque)
+                {
+                    timerFollower = 0;
+                    Acertar(atributos.DanoDoFollower, false, new Color(0.55f, 0.8f, 1f), 20);
+                }
+            }
+
             if (combo > 0 && agora - ultimoClick > tempoDoCombo) combo = 0;
 
             timerPontoFraco += Time.deltaTime;
             if (pontoFracoRestante > 0) pontoFracoRestante -= Time.deltaTime;
-            else if (timerPontoFraco >= pontoFracoACada) { timerPontoFraco = 0; pontoFracoRestante = duracaoDoPontoFraco; }
+            else if (timerPontoFraco >= pontoFracoACada) { timerPontoFraco = 0; pontoFracoRestante = RegrasDePersonagem.DuracaoDoPontoFraco(atributos.Follower, duracaoDoPontoFraco); }
 
             var ponteiro = Pointer.current;
             if (ponteiro != null && ponteiro.press.wasPressedThisFrame) AoClicar(agora);
@@ -146,7 +159,7 @@ namespace ALotOfDamage.Combat
 
             if (tremor > 0) tremor -= Time.deltaTime;
             if (visualDoInimigo)
-                visualDoInimigo.localPosition = tremor > 0 ? (Vector3)Random.insideUnitCircle * 0.08f : Vector3.zero;
+                visualDoInimigo.localPosition = tremor > 0 ? (Vector3)Random.insideUnitCircle * forcaDoTremor : Vector3.zero;
         }
 
         ParametrosDoClick Parametros() => new ParametrosDoClick
@@ -168,7 +181,8 @@ namespace ALotOfDamage.Combat
 
             bool critico = Random.value < ChanceCritica;
             bool pontoFraco = pontoFracoRestante > 0;
-            double dano = RegrasDoClick.Dano(Parametros(), combo, critico, pontoFraco);
+            double dano = RegrasDoClick.Dano(Parametros(), combo, critico, pontoFraco)
+                * RegrasDePersonagem.MultiplicadorDeFuria(atributos.Classe, combo);
 
             Color cor = new Color(1f, 0.85f, 0.3f);
             int tamanho = 26;
@@ -181,14 +195,19 @@ namespace ALotOfDamage.Combat
         void DispararUltimate()
         {
             ultimate = 0;
-            Acertar(DanoDoClick * multiplicadorDaUltimate * (1 + combo * bonusDeComboPorHit), true, new Color(0.8f, 0.4f, 1f), 56);
+            var classe = atributos.Classe;
+            double multiplicador = classe?.MultiplicadorDaUltimate ?? multiplicadorDaUltimate;
+            if (!string.IsNullOrEmpty(classe?.NomeDaUltimate)) MostrarFaixa(classe.NomeDaUltimate.ToUpperInvariant() + "!");
+            Acertar(DanoDoClick * multiplicador * (1 + combo * bonusDeComboPorHit), true, new Color(0.8f, 0.4f, 1f), 56);
+            tremor = 0.4f;
+            forcaDoTremor = 0.3f;
         }
 
         void Acertar(double dano, bool doClick, Color cor, int tamanho)
         {
             if (voltarEm > 0) return;
             vidaDoInimigo -= dano;
-            if (doClick) tremor = 0.08f;
+            if (doClick && tremor <= 0) { tremor = 0.08f; forcaDoTremor = 0.08f; }
 
             popups.Add(new Popup
             {
@@ -245,7 +264,11 @@ namespace ALotOfDamage.Combat
             GUI.Label(new Rect(barra.x + 8, barra.y, largura, 24),
                 $"{FormatadorDeNumeros.Formatar(System.Math.Max(0, vidaDoInimigo))} / {FormatadorDeNumeros.Formatar(vidaMaximaDoInimigo)}");
 
-            GUI.Label(new Rect(20, Screen.height - 90, 600, 30), combo > 1 ? $"Combo x{combo}" : "", grande);
+            int furia = RegrasDePersonagem.AcumulosDeFuria(atributos.Classe, combo);
+            string textoDaFuria = furia > 0 ? $"   {atributos.Classe.NomeDaPassiva} x{furia}" : "";
+            GUI.Label(new Rect(20, Screen.height - 90, 600, 30), combo > 1 ? $"Combo x{combo}{textoDaFuria}" : "", grande);
+            if (atributos.Follower != null)
+                GUI.Label(new Rect(20, Screen.height - 125, 600, 30), $"{atributos.Follower.Nome} luta com você", grande);
             GUI.Label(new Rect(20, Screen.height - 55, 600, 30), ultimate >= 100 ? "ULTIMATE PRONTA! [Espaço]" : $"Ultimate {ultimate:0}%", grande);
             if (pontoFracoRestante > 0)
                 GUI.Label(new Rect(Screen.width * 0.5f - 120, 110, 300, 40), "PONTO FRACO! CLIQUE!", new GUIStyle(grande) { fontSize = 28 });

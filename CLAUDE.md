@@ -187,7 +187,7 @@ O cliente segue a arquitetura hexagonal (portas e adaptadores). O domínio fica 
 
 | Camada | Onde | O que tem |
 |---|---|---|
-| Domínio | `Core/` | Regras puras (`RegrasDeUpgrade`, `RegrasDaForja`, `RegrasDoBestiario`, `RegrasDoClick`, `RegrasDoEncontro`, `RegrasDePoder`, `FormatadorDeNumeros`...), definições (`DefinicaoDeUpgrade`...) e a entidade `Progresso` |
+| Domínio | `Core/` | Regras puras (`RegrasDeUpgrade`, `RegrasDaForja`, `RegrasDoBestiario`, `RegrasDoClick`, `RegrasDoEncontro`, `RegrasDePoder`, `RegrasDePersonagem`, `FormatadorDeNumeros`...), definições (`DefinicaoDeUpgrade`...) e a entidade `Progresso` |
 | Portas | `Core/Ports/` | `IRepositorioDeProgresso`, `ICatalogo`, `ISorteio` |
 | Casos de uso | `Core/UseCases/` | `ComprarUpgrade`, `ForjarItem`, `RegistrarVitoria`, `CalcularAtributos`, `CalcularPoder`: carregam o progresso, aplicam a regra e salvam |
 | Adaptadores de saída | `Infrastructure/` | `RepositorioDeProgressoEmMemoria`, `CatalogoDeBalanceamento` (lê os ScriptableObjects), `SorteioDaUnity`, `FluxoDeEncontro` (troca de cena) |
@@ -205,7 +205,7 @@ Regras:
   - Cada cena tem um `EscopoDaCena` (o `ConstrutorDeCenas` coloca), que injeta os `MonoBehaviour`s do jogo da cena.
   - `MonoBehaviour` recebe dependências por um método `[Inject] public void Construir(...)` e só as usa a partir do `Start`, nunca no `Awake`.
   - Serviço novo é registrado no `EscopoDoJogo`.
-- Valores de balanceamento ficam em assets de `Data/Resources` com o nome da classe (`BalanceamentoDeUpgrades`, `BalanceamentoDaForja`, `BalanceamentoDoBestiario`), herdando de `Balanceamento<T>`. O jogo os lê só pelo `ICatalogo`.
+- Valores de balanceamento ficam em assets de `Data/Resources` com o nome da classe (`BalanceamentoDeUpgrades`, `BalanceamentoDaForja`, `BalanceamentoDoBestiario`, `BalanceamentoDePersonagens`), herdando de `Balanceamento<T>`. O jogo os lê só pelo `ICatalogo`.
 - Quando chegar o servidor (Nakama), entram adaptadores novos para as mesmas portas (ex.: `RepositorioDeProgressoNoServidor`) e os casos de uso viram as ações que o cliente envia. O domínio não muda.
 - Nível de upgrade começa em 1; item da forja começa em +0.
 - Telas provisórias em OnGUI herdam de `JanelaProvisoria` (uma aberta por vez) até chegar o kit de interface.

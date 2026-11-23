@@ -13,6 +13,8 @@ namespace ALotOfDamage.Testes
             public IReadOnlyList<DefinicaoDeItem> Itens { get; set; } = new List<DefinicaoDeItem>();
             public IReadOnlyList<DefinicaoDeMonstro> Monstros { get; set; } = new List<DefinicaoDeMonstro>();
             public ParametrosDoBestiario Bestiario { get; set; } = new ParametrosDoBestiario();
+            public IReadOnlyList<DefinicaoDeClasse> Classes { get; set; } = new List<DefinicaoDeClasse>();
+            public IReadOnlyList<DefinicaoDeFollower> Followers { get; set; } = new List<DefinicaoDeFollower>();
         }
 
         class RepositorioQueConta : IRepositorioDeProgresso
@@ -121,6 +123,26 @@ namespace ALotOfDamage.Testes
             Assert.AreEqual(3 * 2, a.DanoDoClick, 1e-9);
             Assert.AreEqual(5, a.DanoAutomatico, 1e-9);
             Assert.AreEqual(0.05, a.ChanceCritica, 1e-9);
+        }
+
+        [Test]
+        public void Atributos_trazem_a_classe_e_o_follower_do_jogador()
+        {
+            catalogo.Classes = new List<DefinicaoDeClasse> { new DefinicaoDeClasse { Id = Progresso.ClassePadrao } };
+            catalogo.Followers = new List<DefinicaoDeFollower> { new DefinicaoDeFollower { Id = Progresso.FollowerPadrao, FracaoDoAutoAtaque = 0.2 } };
+
+            var a = new CalcularAtributos(repositorio, catalogo).Executar(null);
+            Assert.AreEqual(Progresso.ClassePadrao, a.Classe.Id);
+            Assert.AreEqual(Progresso.FollowerPadrao, a.Follower.Id);
+            Assert.AreEqual(5 * 0.2, a.DanoDoFollower, 1e-9);
+        }
+
+        [Test]
+        public void Sem_follower_no_catalogo_o_follower_nao_causa_dano()
+        {
+            var a = new CalcularAtributos(repositorio, catalogo).Executar(null);
+            Assert.IsNull(a.Follower);
+            Assert.AreEqual(0, a.DanoDoFollower, 1e-9);
         }
 
         [Test]
