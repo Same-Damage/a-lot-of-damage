@@ -37,6 +37,8 @@ namespace ALotOfDamage.Core
         public double Vida;
         public double Ouro;
         public bool Chefe;
+        public FormaDoMonstro Forma;
+        public string Cor;
     }
 
     public struct SituacaoDaCampanha
@@ -137,6 +139,8 @@ namespace ALotOfDamage.Core
                 Vida = vida,
                 Ouro = RegrasDaCampanha.Ouro(c.Campanha, vida),
                 Chefe = chefe,
+                Forma = m?.Forma ?? FormaDoMonstro.Gosma,
+                Cor = m?.Cor ?? "#4CE64C",
             };
         }
     }

@@ -14,11 +14,19 @@ namespace ALotOfDamage.Visual
         [Tooltip("Para que lado o personagem está desenhado")]
         public bool desenhoOlhaParaDireita = true;
         public bool olhandoParaDireita = true;
+        [Tooltip("Segundos para misturar uma pose na outra ao trocar de estado")]
+        public float duracaoDaTransicao = 0.15f;
 
         EstadoDoBoneco estado = EstadoDoBoneco.Parado;
         EstadoDoBoneco estadoDeBase = EstadoDoBoneco.Parado;
         float desde, duracao;
-        Vector3 posicaoDoTronco;
+        Vector3 posicaoDoTronco, posicaoDaPernaFrente, posicaoDaPernaTras;
+        Core.Pose atual, deOnde;
+        float larguraDoCorpo = 1, viradaDesde = -10, sinalAntesDaVirada = 1;
+        float guinadaAlvo, guinadaAtual;
+
+        // Graus que o corpo gira em direção ao movimento (RegrasDeAnimacao.Guinada)
+        public float Guinada { set => guinadaAlvo = value; }
 
         public bool Andando
         {
@@ -36,23 +44,37 @@ namespace ALotOfDamage.Visual
             get => olhandoParaDireita;
             set
             {
+                if (value == olhandoParaDireita) return;
+                // vira girando como um papel, em vez de espelhar de uma vez
+                sinalAntesDaVirada = SinalAtual();
+                viradaDesde = Time.unscaledTime;
                 olhandoParaDireita = value;
-                AplicarDirecao();
             }
         }
 
         void Start()
         {
             if (tronco) posicaoDoTronco = tronco.localPosition;
-            AplicarDirecao();
+            if (pernaFrente) posicaoDaPernaFrente = pernaFrente.localPosition;
+            if (pernaTras) posicaoDaPernaTras = pernaTras.localPosition;
+            if (corpo) larguraDoCorpo = Mathf.Abs(corpo.localScale.x);
         }
 
-        void AplicarDirecao()
+        float SinalAtual() => RegrasDeAnimacao.EscalaHorizontal(desenhoOlhaParaDireita, olhandoParaDireita);
+
+        // Largura (com o lado), giro em direção ao movimento e balanço do corpo inteiro
+        void AplicarDirecao(float balanco)
         {
             if (!corpo) return;
+            float sinal = SinalAtual();
+            float t = (Time.unscaledTime - viradaDesde) / RegrasDeAnimacao.DuracaoDaVirada;
+            float x = t < 1 ? sinalAntesDaVirada * RegrasDeAnimacao.EscalaDaVirada(t) : sinal;
             var s = corpo.localScale;
-            s.x = Mathf.Abs(s.x) * RegrasDeAnimacao.EscalaHorizontal(desenhoOlhaParaDireita, olhandoParaDireita);
+            s.x = larguraDoCorpo * x;
             corpo.localScale = s;
+
+            guinadaAtual = Mathf.Lerp(guinadaAtual, guinadaAlvo, 1 - Mathf.Exp(-10 * Time.unscaledDeltaTime));
+            corpo.localRotation = Quaternion.Euler(0, sinal * guinadaAtual, sinal * balanco);
         }
 
         public void Golpear(float velocidade = 1f) => Trocar(EstadoDoBoneco.Golpeando, duracaoDoGolpe / Mathf.Max(0.1f, velocidade));
@@ -64,6 +86,8 @@ namespace ALotOfDamage.Visual
 
         void Trocar(EstadoDoBoneco novo, float duracaoDoEstado)
         {
+            // a nova pose parte de onde o corpo está, em vez de pular
+            deOnde = atual;
             estado = novo;
             desde = Time.unscaledTime;
             duracao = duracaoDoEstado;
@@ -75,7 +99,11 @@ namespace ALotOfDamage.Visual
             float progresso = duracao > 0 ? tempo / duracao : 0;
             if (duracao > 0 && progresso >= 1) Trocar(estadoDeBase, 0);
 
-            var p = RegrasDeAnimacao.Pose(estado, estado == estadoDeBase ? Time.unscaledTime : tempo, progresso);
+            // parado respira no relógio global (não reinicia a cada troca); o resto conta do início do estado
+            var p = RegrasDeAnimacao.Pose(estado, estado == EstadoDoBoneco.Parado ? Time.unscaledTime : tempo, progresso);
+            // o golpe entra seco, sem mistura, para não perder o impacto
+            if (tempo < duracaoDaTransicao && estado != EstadoDoBoneco.Golpeando) p = RegrasDeAnimacao.Misturar(deOnde, p, tempo / duracaoDaTransicao);
+            atual = p;
             // As poses são pensadas para um desenho olhando para a direita; desenho para a esquerda usa o espelho
             float sinal = desenhoOlhaParaDireita ? 1 : -1;
             Girar(tronco, sinal * p.Tronco);
@@ -89,6 +117,9 @@ namespace ALotOfDamage.Visual
             Girar(pernaFrente, sinal * p.PernaFrente);
             Girar(pernaTras, sinal * p.PernaTras);
             if (tronco) tronco.localPosition = posicaoDoTronco + new Vector3(0, p.Elevacao, 0);
+            if (pernaFrente) pernaFrente.localPosition = posicaoDaPernaFrente + new Vector3(0, p.PernaFrenteSobe, 0);
+            if (pernaTras) pernaTras.localPosition = posicaoDaPernaTras + new Vector3(0, p.PernaTrasSobe, 0);
+            AplicarDirecao(p.Balanco);
         }
 
         static void Girar(Transform osso, float angulo)

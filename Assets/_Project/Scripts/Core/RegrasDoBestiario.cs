@@ -23,7 +23,10 @@ namespace ALotOfDamage.Core
         public double MultiplicadorDeVida = 1;
         public string Cor = "#4CE64C";   // placeholder no mapa até chegar o sprite
         public float Escala = 1;
+        public FormaDoMonstro Forma = FormaDoMonstro.Gosma;   // corpo low-poly provisório até chegar a arte
     }
+
+    public enum FormaDoMonstro { Gosma, Quadrupede, Golem }
 
     // Bestiário: derrotar um tipo 10, 100, 1.000... vezes dá bônus permanente contra ele e no geral
     public static class RegrasDoBestiario

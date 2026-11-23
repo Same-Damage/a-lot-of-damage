@@ -26,7 +26,166 @@ namespace ALotOfDamage.Testes
 
             Assert.Less(a.PernaFrente * a.PernaTras, 0, "uma perna para cada lado");
             Assert.Less(a.PernaFrente * b.PernaFrente, 0, "meio passo depois inverte");
-            Assert.Greater(System.Math.Abs(a.PernaFrente), 10);
+            Assert.Greater(System.Math.Abs(a.PernaFrente), 6);
+        }
+
+        // O desenho é de frente: o passo é a perna subindo, não girando para o lado como um compasso
+        [Test]
+        public void Andando_as_pernas_sobem_alternadas()
+        {
+            float ciclo = RegrasDeAnimacao.CicloDoPasso;
+            var a = RegrasDeAnimacao.Pose(EstadoDoBoneco.Andando, ciclo * 0.25f, 0);
+            var b = RegrasDeAnimacao.Pose(EstadoDoBoneco.Andando, ciclo * 0.75f, 0);
+            Assert.Greater(a.PernaFrenteSobe, 0.05f);
+            Assert.AreEqual(0, a.PernaTrasSobe, 1e-4);
+            Assert.Greater(b.PernaTrasSobe, 0.05f);
+            Assert.AreEqual(0, b.PernaFrenteSobe, 1e-4);
+        }
+
+        [Test]
+        public void Andando_o_corpo_balanca_para_o_lado_da_perna_de_apoio()
+        {
+            float ciclo = RegrasDeAnimacao.CicloDoPasso;
+            var a = RegrasDeAnimacao.Pose(EstadoDoBoneco.Andando, ciclo * 0.25f, 0);
+            var b = RegrasDeAnimacao.Pose(EstadoDoBoneco.Andando, ciclo * 0.75f, 0);
+            Assert.Greater(System.Math.Abs(a.Balanco), 2);
+            Assert.Less(a.Balanco * b.Balanco, 0);
+        }
+
+        [Test]
+        public void Parado_nao_balanca_nem_levanta_as_pernas()
+        {
+            var p = RegrasDeAnimacao.Pose(EstadoDoBoneco.Parado, 1.3f, 0);
+            Assert.AreEqual(0, p.Balanco, 1e-4);
+            Assert.AreEqual(0, p.PernaFrenteSobe, 1e-4);
+        }
+
+        // Virar de lado gira o corpo como um papel: a largura vai de 1 a -1 passando por 0, sem estalo
+        [Test]
+        public void Virada_passa_pela_largura_zero()
+        {
+            Assert.AreEqual(1, RegrasDeAnimacao.EscalaDaVirada(0), 1e-4);
+            Assert.AreEqual(0, RegrasDeAnimacao.EscalaDaVirada(0.5f), 1e-4);
+            Assert.AreEqual(-1, RegrasDeAnimacao.EscalaDaVirada(1), 1e-4);
+            Assert.AreEqual(-1, RegrasDeAnimacao.EscalaDaVirada(3), 1e-4);
+        }
+
+        [Test]
+        public void Gira_o_corpo_para_onde_anda_de_lado_e_fica_de_frente_indo_reto()
+        {
+            Assert.Greater(RegrasDeAnimacao.Guinada(1, 0), 20);
+            Assert.Greater(RegrasDeAnimacao.Guinada(0.7f, 0.7f), 8);
+            Assert.Less(RegrasDeAnimacao.Guinada(0.7f, 0.7f), RegrasDeAnimacao.Guinada(1, 0));
+            Assert.AreEqual(0, RegrasDeAnimacao.Guinada(0, 1), 1e-4);
+            Assert.AreEqual(0, RegrasDeAnimacao.Guinada(0, 0), 1e-4);
+            Assert.AreEqual(RegrasDeAnimacao.Guinada(1, 0), RegrasDeAnimacao.Guinada(-1, 0), 1e-4);
+        }
+
+        // Regressão: o ciclo usava o relógio global e o passo começava numa fase qualquer, com tranco
+        [Test]
+        public void Andar_comeca_com_as_pernas_juntas()
+        {
+            var inicio = RegrasDeAnimacao.Pose(EstadoDoBoneco.Andando, 0, 0);
+            Assert.AreEqual(0, inicio.PernaFrente, 0.5f);
+            Assert.AreEqual(0, inicio.PernaTras, 0.5f);
+        }
+
+        // Num andar natural o corpo fica mais baixo quando o pé toca o chão (pernas abertas)
+        // e mais alto quando as pernas se cruzam; o contrário faz o boneco "pular"
+        [Test]
+        public void Corpo_desce_no_toque_do_pe_e_sobe_no_cruzamento()
+        {
+            float ciclo = RegrasDeAnimacao.CicloDoPasso;
+            var cruzando = RegrasDeAnimacao.Pose(EstadoDoBoneco.Andando, 0, 0);
+            var tocando = RegrasDeAnimacao.Pose(EstadoDoBoneco.Andando, ciclo * 0.25f, 0);
+            Assert.Greater(cruzando.Elevacao, tocando.Elevacao);
+        }
+
+        [Test]
+        public void Andando_o_tronco_inclina_para_a_frente()
+        {
+            float soma = 0;
+            for (int i = 0; i < 20; i++) soma += RegrasDeAnimacao.Pose(EstadoDoBoneco.Andando, RegrasDeAnimacao.CicloDoPasso * i / 20f, 0).Tronco;
+            // o desenho olha para a direita: inclinar para a frente é girar no sentido horário (negativo)
+            Assert.Less(soma / 20, -2);
+        }
+
+        [Test]
+        public void Braco_balanca_ao_contrario_da_perna_do_mesmo_lado()
+        {
+            var p = RegrasDeAnimacao.Pose(EstadoDoBoneco.Andando, RegrasDeAnimacao.CicloDoPasso * 0.25f, 0);
+            Assert.Less(p.PernaFrente * p.BracoFrente, 0);
+        }
+
+        [Test]
+        public void Mistura_vai_de_uma_pose_a_outra_sem_salto()
+        {
+            var a = new Pose { PernaFrente = 20, Tronco = -4, Elevacao = 0.1f };
+            var b = new Pose { PernaFrente = 0, Tronco = 0, Elevacao = 0 };
+            Assert.AreEqual(20, RegrasDeAnimacao.Misturar(a, b, 0).PernaFrente, 1e-4);
+            Assert.AreEqual(10, RegrasDeAnimacao.Misturar(a, b, 0.5f).PernaFrente, 1e-4);
+            Assert.AreEqual(0, RegrasDeAnimacao.Misturar(a, b, 1).PernaFrente, 1e-4);
+            Assert.AreEqual(0, RegrasDeAnimacao.Misturar(a, b, 3).Elevacao, 1e-4);
+        }
+
+        // ---------- monstros ----------
+
+        [Test]
+        public void Gosma_amassa_sem_perder_volume()
+        {
+            for (float t = 0; t < 2; t += 0.05f)
+            foreach (bool andando in new[] { false, true })
+            {
+                var p = RegrasDeAnimacao.Monstro(FormaDoMonstro.Gosma, t, andando);
+                Assert.AreEqual(1, p.Largura * p.Largura * p.Altura, 0.03f);
+            }
+        }
+
+        [Test]
+        public void Gosma_pula_ao_andar_e_fica_no_chao_parada()
+        {
+            float maxAndando = 0, maxParada = 0;
+            for (float t = 0; t < 2; t += 0.02f)
+            {
+                maxAndando = System.Math.Max(maxAndando, RegrasDeAnimacao.Monstro(FormaDoMonstro.Gosma, t, true).Elevacao);
+                maxParada = System.Math.Max(maxParada, RegrasDeAnimacao.Monstro(FormaDoMonstro.Gosma, t, false).Elevacao);
+            }
+            Assert.Greater(maxAndando, 0.25f);
+            Assert.AreEqual(0, maxParada, 1e-4);
+        }
+
+        [Test]
+        public void Gosma_achata_quando_toca_o_chao_e_estica_no_ar()
+        {
+            var noChao = RegrasDeAnimacao.Monstro(FormaDoMonstro.Gosma, 0, true);
+            var noAlto = RegrasDeAnimacao.Monstro(FormaDoMonstro.Gosma, RegrasDeAnimacao.CicloDoPulo * 0.5f, true);
+            Assert.Less(noChao.Altura, 1);
+            Assert.Greater(noAlto.Altura, 1);
+            Assert.Greater(noAlto.Elevacao, noChao.Elevacao);
+        }
+
+        [Test]
+        public void Quadrupede_trota_com_as_diagonais_opostas()
+        {
+            var p = RegrasDeAnimacao.Monstro(FormaDoMonstro.Quadrupede, RegrasDeAnimacao.CicloDoTrote * 0.25f, true);
+            Assert.Greater(System.Math.Abs(p.PernasA), 15);
+            Assert.AreEqual(-p.PernasA, p.PernasB, 1e-4);
+        }
+
+        [Test]
+        public void Golem_balanca_os_bracos_ao_contrario_das_pernas()
+        {
+            var p = RegrasDeAnimacao.Monstro(FormaDoMonstro.Golem, RegrasDeAnimacao.CicloDoGolem * 0.25f, true);
+            Assert.Less(p.PernasA * p.Bracos, 0);
+            Assert.Greater(System.Math.Abs(p.Inclinacao), 1);
+        }
+
+        [Test]
+        public void Monstro_parado_nao_mexe_as_pernas()
+        {
+            foreach (var forma in new[] { FormaDoMonstro.Quadrupede, FormaDoMonstro.Golem })
+            for (float t = 0; t < 2; t += 0.1f)
+                Assert.Less(System.Math.Abs(RegrasDeAnimacao.Monstro(forma, t, false).PernasA), 1);
         }
 
         [Test]

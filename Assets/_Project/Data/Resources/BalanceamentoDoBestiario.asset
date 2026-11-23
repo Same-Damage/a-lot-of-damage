@@ -26,6 +26,7 @@ MonoBehaviour:
     MultiplicadorDeVida: 1
     Cor: '#4CE64C'
     Escala: 0.8
+    Forma: 0
   - Id: lobo
     Nome: Lobo
     MaterialId: presa
@@ -34,6 +35,7 @@ MonoBehaviour:
     MultiplicadorDeVida: 4
     Cor: '#9999A6'
     Escala: 1
+    Forma: 1
   - Id: golem
     Nome: Golem
     MaterialId: pedra_runica
@@ -42,3 +44,4 @@ MonoBehaviour:
     MultiplicadorDeVida: 20
     Cor: '#8C5933'
     Escala: 1.6
+    Forma: 2

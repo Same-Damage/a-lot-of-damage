@@ -60,7 +60,7 @@ namespace ALotOfDamage.Testes
                 },
                 Monstros = new List<DefinicaoDeMonstro>
                 {
-                    new DefinicaoDeMonstro { Id = "lobo", MaterialId = "presa", MaterialPorVitoria = 2 },
+                    new DefinicaoDeMonstro { Id = "lobo", MaterialId = "presa", MaterialPorVitoria = 2, Forma = FormaDoMonstro.Quadrupede, Cor = "#9999A6" },
                 },
             };
         }
@@ -186,6 +186,14 @@ namespace ALotOfDamage.Testes
             Assert.AreEqual(1000, chefe.Vida, 1e-9);
             Assert.AreEqual(500, chefe.Ouro, 1e-9);
             Assert.IsTrue(chefe.Chefe);
+        }
+
+        [Test]
+        public void Inimigo_da_batalha_traz_a_forma_e_a_cor_do_monstro()
+        {
+            var lobo = new CalcularInimigo(repositorio, catalogo).Executar("lobo", false);
+            Assert.AreEqual(FormaDoMonstro.Quadrupede, lobo.Forma);
+            Assert.AreEqual("#9999A6", lobo.Cor);
         }
 
         [Test]

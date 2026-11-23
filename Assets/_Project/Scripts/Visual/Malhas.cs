@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ALotOfDamage.World
+namespace ALotOfDamage.Visual
 {
     // Construtor de malhas low-poly com sombreamento chapado (cada triângulo com a própria normal),
     // o visual "facetado" dos jogos isométricos estilizados.
