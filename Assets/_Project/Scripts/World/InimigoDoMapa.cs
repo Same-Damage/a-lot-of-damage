@@ -1,5 +1,6 @@
 using ALotOfDamage.Core;
 using ALotOfDamage.Infrastructure;
+using ALotOfDamage.Visual;
 using UnityEngine;
 using UnityEngine.AI;
 using VContainer;
@@ -27,6 +28,7 @@ namespace ALotOfDamage.World
         public int indiceDoPonto;
         [Tooltip("Ponto do chefe: só aparece nos estágios de chefe")]
         public bool pontoDoChefe;
+        public MonstroLowPoly modelo;
 
         public string Tipo { get; private set; }
 
@@ -57,8 +59,6 @@ namespace ALotOfDamage.World
             EscolherDestino();
             var j = GameObject.FindWithTag("Player");
             if (j) jogador = j.transform;
-            visuais = GetComponentsInChildren<Renderer>();
-
             var campanha = consultarCampanha.Executar();
             Tipo = RegrasDaCampanha.MonstroDoPonto(campanha.Regiao, indiceDoPonto, pontoDoChefe);
             var monstro = catalogo.Monstro(Tipo);
@@ -68,6 +68,7 @@ namespace ALotOfDamage.World
                 return;
             }
             Aparencia(monstro);
+            visuais = GetComponentsInChildren<Renderer>();
             Mostrar(!encontro.EstaDerrotado(idDoInimigo));
         }
 
@@ -78,9 +79,7 @@ namespace ALotOfDamage.World
             agente.baseOffset = escala;
             if (!ColorUtility.TryParseHtmlString(m.Cor, out var cor)) cor = Color.magenta;
             if (pontoDoChefe) cor = Color.Lerp(cor, new Color(0.7f, 0.1f, 0.1f), 0.5f);
-            var bloco = new MaterialPropertyBlock();
-            bloco.SetColor("_BaseColor", cor);
-            foreach (var r in visuais) r.SetPropertyBlock(bloco);
+            if (modelo) modelo.Montar(m.Forma, cor);
             name = (pontoDoChefe ? "Chefe " : "") + m.Nome;
         }
 
@@ -97,6 +96,11 @@ namespace ALotOfDamage.World
             {
                 if (encontro.EstaDerrotado(idDoInimigo)) { Parar(); return; }
                 Mostrar(true);
+            }
+            if (modelo)
+            {
+                modelo.Andando = agente.velocity.sqrMagnitude > 0.04f;
+                modelo.OlharPara(agente.velocity);
             }
             if (!jogador || encontro.Ativo) { Parar(); return; }
 

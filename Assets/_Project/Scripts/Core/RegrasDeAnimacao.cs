@@ -21,11 +21,19 @@ namespace ALotOfDamage.Core
         public float Elevacao;
     }
 
+    // Pose de um monstro low-poly: Largura/Altura amassam o corpo (1 = normal), ângulos em graus
+    public struct PoseDeMonstro
+    {
+        public float Largura, Altura, Elevacao;
+        public float PernasA, PernasB;   // pares de pernas que andam juntos (diagonais no quadrúpede)
+        public float Bracos, Cabeca, Cauda, Inclinacao;
+    }
+
     // Animação procedural do boneco: uma pose desenhada vira parado, andar, golpe e dano
     public static class RegrasDeAnimacao
     {
         public const float CicloDaRespiracao = 2.4f;
-        public const float CicloDoPasso = 0.7f;
+        public const float CicloDoPasso = 0.56f;
         public const float FimDoPreparo = 0.35f;
         public const float FimDoCorte = 0.55f;
         const float EspadaEmRepouso = -20f;
@@ -56,6 +64,81 @@ namespace ALotOfDamage.Core
             };
         }
 
+        public const float CicloDoPulo = 0.55f;
+        public const float CicloDoTrote = 0.42f;
+        public const float CicloDoGolem = 0.95f;
+
+        public static PoseDeMonstro Monstro(FormaDoMonstro forma, float tempo, bool andando)
+        {
+            var p = new PoseDeMonstro { Largura = 1, Altura = 1 };
+            switch (forma)
+            {
+                case FormaDoMonstro.Gosma:
+                    if (andando)
+                    {
+                        // pulinhos: achatada no chão, esticada no alto do pulo
+                        float f = tempo / CicloDoPulo % 1f;
+                        float arco = Sen((float)Math.PI * f);
+                        p.Elevacao = 0.35f * arco;
+                        p.Altura = 0.78f + 0.37f * arco;
+                    }
+                    else p.Altura = 1 + 0.05f * Sen(Tau * tempo / 1.6f);
+                    break;
+                case FormaDoMonstro.Quadrupede:
+                    if (andando)
+                    {
+                        float fase = Tau * tempo / CicloDoTrote;
+                        p.PernasA = 28 * Sen(fase);
+                        p.PernasB = -p.PernasA;
+                        p.Elevacao = 0.035f * (float)Math.Cos(2 * fase);
+                        p.Cabeca = 4 * Sen(2 * fase);
+                        p.Cauda = 15 * Sen(fase);
+                    }
+                    else
+                    {
+                        p.Cauda = 12 * Sen(Tau * tempo / 1.1f);
+                        p.Altura = 1 + 0.015f * Sen(Tau * tempo / CicloDaRespiracao);
+                    }
+                    break;
+                case FormaDoMonstro.Golem:
+                    if (andando)
+                    {
+                        // passos pesados: balança de um lado para o outro e os braços vão ao contrário das pernas
+                        float fase = Tau * tempo / CicloDoGolem;
+                        p.PernasA = 18 * Sen(fase);
+                        p.PernasB = -p.PernasA;
+                        p.Bracos = -20 * Sen(fase);
+                        p.Inclinacao = 4 * Sen(fase);
+                        p.Elevacao = 0.05f * (float)Math.Cos(2 * fase);
+                    }
+                    else
+                    {
+                        p.Bracos = 3 * Sen(Tau * tempo / 3f);
+                        p.Altura = 1 + 0.012f * Sen(Tau * tempo / 3f);
+                    }
+                    break;
+            }
+            // amassar em altura alarga para os lados, mantendo o volume
+            p.Largura = 1 / (float)Math.Sqrt(p.Altura);
+            return p;
+        }
+
+        // Transição entre duas poses (t de 0 a 1), para trocar de estado sem salto
+        public static Pose Misturar(Pose a, Pose b, float t)
+        {
+            t = Math.Max(0, Math.Min(1, t));
+            float L(float x, float y) => x + (y - x) * t;
+            return new Pose
+            {
+                Tronco = L(a.Tronco, b.Tronco), Cabeca = L(a.Cabeca, b.Cabeca), Capa = L(a.Capa, b.Capa),
+                BracoFrente = L(a.BracoFrente, b.BracoFrente), AntebracoFrente = L(a.AntebracoFrente, b.AntebracoFrente),
+                Espada = L(a.Espada, b.Espada),
+                BracoTras = L(a.BracoTras, b.BracoTras), AntebracoTras = L(a.AntebracoTras, b.AntebracoTras),
+                PernaFrente = L(a.PernaFrente, b.PernaFrente), PernaTras = L(a.PernaTras, b.PernaTras),
+                Elevacao = L(a.Elevacao, b.Elevacao),
+            };
+        }
+
         // Escala X do corpo: espelha só quando o personagem olha para o lado contrário do desenho
         public static int EscalaHorizontal(bool desenhoOlhaParaDireita, bool olhandoParaDireita) =>
             desenhoOlhaParaDireita == olhandoParaDireita ? 1 : -1;
@@ -80,15 +163,24 @@ namespace ALotOfDamage.Core
             {
                 case EstadoDoBoneco.Andando:
                 {
+                    // fase 0: pernas se cruzando; um quarto de ciclo depois, a perna da frente tocando o chão
                     float fase = Tau * tempo / CicloDoPasso;
                     float passo = Sen(fase);
-                    p.PernaFrente = 20 * passo;
-                    p.PernaTras = -20 * passo;
-                    p.BracoFrente = -12 * passo;
-                    p.BracoTras = 12 * passo;
-                    p.Tronco = 2 * passo;
-                    p.Capa = 8 + 4 * Sen(2 * fase);
-                    p.Elevacao = Math.Abs(passo) * 0.05f;
+                    float ritmo = (float)Math.Cos(2 * fase);   // duas batidas por ciclo, uma por pé
+                    p.PernaFrente = 24 * passo;
+                    p.PernaTras = -24 * passo;
+                    p.BracoFrente = -14 * passo;
+                    p.BracoTras = 14 * passo;
+                    p.AntebracoFrente = -6 - 4 * passo;
+                    p.AntebracoTras = -6 + 4 * passo;
+                    p.Espada = EspadaEmRepouso - 4 * passo;
+                    // inclinado para a frente, com um leve balanço a cada pé
+                    p.Tronco = -4 + 1.5f * ritmo;
+                    p.Cabeca = 2 - 1.5f * ritmo;
+                    // a capa fica para trás e ondula atrasada em relação ao corpo
+                    p.Capa = 14 + 5 * Sen(2 * fase - 1.2f);
+                    // mais alto quando as pernas cruzam, mais baixo quando o pé toca
+                    p.Elevacao = 0.045f * ritmo;
                     break;
                 }
                 case EstadoDoBoneco.Golpeando:

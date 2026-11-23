@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ALotOfDamage.Core;
+using ALotOfDamage.Visual;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Rendering;

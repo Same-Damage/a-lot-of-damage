@@ -1,4 +1,5 @@
 using ALotOfDamage.Core;
+using ALotOfDamage.Visual;
 using UnityEngine;
 
 namespace ALotOfDamage.World

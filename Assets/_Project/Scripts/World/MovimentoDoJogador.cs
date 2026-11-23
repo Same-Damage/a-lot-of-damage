@@ -19,11 +19,14 @@ namespace ALotOfDamage.World
 
         public float velocidade = 6f;
         public float gravidade = -20f;
+        [Tooltip("Quão rápido chega na velocidade máxima e para (unidades/s²)")]
+        public float aceleracao = 40f;
         public Transform camera_;
         public BonecoDeRecorte boneco;
 
         CharacterController controle;
         float velocidadeVertical;
+        Vector3 velocidadeAtual;
 
         void Awake()
         {
@@ -52,12 +55,15 @@ namespace ALotOfDamage.World
             frente.Normalize(); direita.Normalize();
 
             Vector3 movimento = Vector3.ClampMagnitude(frente * entrada.y + direita * entrada.x, 1f);
+            // arranca e para em poucos quadros, em vez de saltar de 0 para a velocidade máxima
+            velocidadeAtual = Vector3.MoveTowards(velocidadeAtual, movimento * velocidade, aceleracao * Time.deltaTime);
 
             velocidadeVertical = controle.isGrounded ? -1f : velocidadeVertical + gravidade * Time.deltaTime;
-            controle.Move((movimento * velocidade + Vector3.up * velocidadeVertical) * Time.deltaTime);
+            controle.Move((velocidadeAtual + Vector3.up * velocidadeVertical) * Time.deltaTime);
 
             if (!boneco) return;
-            boneco.Andando = entrada.sqrMagnitude > 0.01f;
+            // pela velocidade real: o joystick parado com ruído não fica ligando e desligando o andar
+            boneco.Andando = velocidadeAtual.sqrMagnitude > 0.25f;
             if (Mathf.Abs(entrada.x) > 0.1f) boneco.OlhandoParaDireita = entrada.x > 0;
         }
 

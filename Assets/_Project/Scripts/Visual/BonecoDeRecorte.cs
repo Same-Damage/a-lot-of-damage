@@ -3,22 +3,25 @@ using UnityEngine;
 
 namespace ALotOfDamage.Visual
 {
-    // Personagem pintado, cortado em partes e animado por código a partir de RegrasDeAnimacao.
-    // A hierarquia de ossos é montada pelo ConstrutorDeCenas a partir do montagem.json da arte.
+    // Personagem pintado, cortado em partes e animado por cÃ³digo a partir de RegrasDeAnimacao.
+    // A hierarquia de ossos Ã© montada pelo ConstrutorDeCenas a partir do montagem.json da arte.
     public class BonecoDeRecorte : MonoBehaviour
     {
-        public Transform corpo;   // pai de todos os ossos; virar para a esquerda/direita é escala X dele
+        public Transform corpo;   // pai de todos os ossos; virar para a esquerda/direita Ã© escala X dele
         public Transform tronco, cabeca, capa, bracoFrente, antebracoFrente, espada, bracoTras, antebracoTras, pernaFrente, pernaTras;
         public float duracaoDoGolpe = 0.35f;
         public float duracaoDoDano = 0.3f;
-        [Tooltip("Para que lado o personagem está desenhado")]
+        [Tooltip("Para que lado o personagem estÃ¡ desenhado")]
         public bool desenhoOlhaParaDireita = true;
         public bool olhandoParaDireita = true;
+        [Tooltip("Segundos para misturar uma pose na outra ao trocar de estado")]
+        public float duracaoDaTransicao = 0.15f;
 
         EstadoDoBoneco estado = EstadoDoBoneco.Parado;
         EstadoDoBoneco estadoDeBase = EstadoDoBoneco.Parado;
         float desde, duracao;
         Vector3 posicaoDoTronco;
+        Core.Pose atual, deOnde;
 
         public bool Andando
         {
@@ -64,6 +67,8 @@ namespace ALotOfDamage.Visual
 
         void Trocar(EstadoDoBoneco novo, float duracaoDoEstado)
         {
+            // a nova pose parte de onde o corpo estÃ¡, em vez de pular
+            deOnde = atual;
             estado = novo;
             desde = Time.unscaledTime;
             duracao = duracaoDoEstado;
@@ -75,8 +80,12 @@ namespace ALotOfDamage.Visual
             float progresso = duracao > 0 ? tempo / duracao : 0;
             if (duracao > 0 && progresso >= 1) Trocar(estadoDeBase, 0);
 
-            var p = RegrasDeAnimacao.Pose(estado, estado == estadoDeBase ? Time.unscaledTime : tempo, progresso);
-            // As poses são pensadas para um desenho olhando para a direita; desenho para a esquerda usa o espelho
+            // parado respira no relÃ³gio global (nÃ£o reinicia a cada troca); o resto conta do inÃ­cio do estado
+            var p = RegrasDeAnimacao.Pose(estado, estado == EstadoDoBoneco.Parado ? Time.unscaledTime : tempo, progresso);
+            // o golpe entra seco, sem mistura, para nÃ£o perder o impacto
+            if (tempo < duracaoDaTransicao && estado != EstadoDoBoneco.Golpeando) p = RegrasDeAnimacao.Misturar(deOnde, p, tempo / duracaoDaTransicao);
+            atual = p;
+            // As poses sÃ£o pensadas para um desenho olhando para a direita; desenho para a esquerda usa o espelho
             float sinal = desenhoOlhaParaDireita ? 1 : -1;
             Girar(tronco, sinal * p.Tronco);
             Girar(cabeca, sinal * p.Cabeca);

@@ -307,11 +307,13 @@ namespace ALotOfDamage.Ferramentas
 
         static void CriarPontoDeMonstro(string id, int indice, bool chefe, Vector3 posicao)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            Object.DestroyImmediate(go.GetComponent<Collider>());
-            go.name = chefe ? "Ponto do Chefe" : $"Ponto de Monstro {indice + 1}";
+            var go = new GameObject(chefe ? "Ponto do Chefe" : $"Ponto de Monstro {indice + 1}");
             go.transform.position = posicao;
-            Pintar(go, Color.white);
+            // o ponto fica 1 acima do chão (meio do agente); o modelo pisa no chão
+            var modelo = new GameObject("Modelo").AddComponent<MonstroLowPoly>();
+            modelo.transform.SetParent(go.transform, false);
+            modelo.transform.localPosition = new Vector3(0, -1, 0);
+            modelo.materialBase = MaterialDoMapa("Cenario", "Universal Render Pipeline/Lit");
 
             var agente = go.AddComponent<NavMeshAgent>();
             agente.radius = 0.5f;
@@ -320,6 +322,7 @@ namespace ALotOfDamage.Ferramentas
             e.idDoInimigo = id;
             e.indiceDoPonto = indice;
             e.pontoDoChefe = chefe;
+            e.modelo = modelo;
         }
 
         // Parede invisível na beira da área andável: os morros e o penhasco ficam só de cenário
@@ -436,9 +439,12 @@ namespace ALotOfDamage.Ferramentas
             cam.transform.rotation = Quaternion.Euler(10, 0, 0);
 
             var raiz = new GameObject("Inimigo");
-            raiz.transform.position = new Vector3(0, 1, 0);
-            var corpo = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            raiz.transform.position = new Vector3(0, 0, 0);
+            // virado para o herói, à esquerda e um pouco à frente
+            var corpo = new GameObject("Modelo").AddComponent<MonstroLowPoly>();
             corpo.transform.SetParent(raiz.transform, false);
+            corpo.materialBase = MaterialDoMapa("Cenario", "Universal Render Pipeline/Lit");
+            corpo.transform.localRotation = Quaternion.LookRotation(new Vector3(-1, 0, -0.5f));
 
             CriarFollower(new Vector3(-1.6f, 2.4f, -1.2f));
 
@@ -447,20 +453,12 @@ namespace ALotOfDamage.Ferramentas
 
             var combate = new GameObject("Combate").AddComponent<CombateClicker>();
             combate.visualDoInimigo = corpo.transform;
+            combate.modeloDoInimigo = corpo;
             combate.heroi = heroi;
 
             Salvar(cena, "Batalha");
         }
 
-        // Material simples por objeto (URP Lit)
-        static void Pintar(GameObject go, Color cor)
-        {
-            var r = go.GetComponent<Renderer>();
-            if (!r) return;
-            var shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (!shader) return;
-            r.sharedMaterial = new Material(shader) { color = cor };
-        }
 
         static void Salvar(UnityEngine.SceneManagement.Scene cena, string nome)
         {

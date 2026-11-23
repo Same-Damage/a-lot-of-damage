@@ -32,6 +32,7 @@ namespace ALotOfDamage.Combat
         public double multiplicadorDaUltimate = 50;
 
         public Transform visualDoInimigo;
+        public MonstroLowPoly modeloDoInimigo;
         public BonecoDeRecorte heroi;
 
         static readonly Color CorDoClick = new Color(1f, 0.85f, 0.3f);
@@ -105,6 +106,12 @@ namespace ALotOfDamage.Combat
         {
             inimigo = calcularInimigo.Executar(Tipo, Chefe);
             vidaDoInimigo = inimigo.Vida;
+            if (modeloDoInimigo)
+            {
+                if (!ColorUtility.TryParseHtmlString(inimigo.Cor, out var cor)) cor = Color.magenta;
+                if (inimigo.Chefe) cor = Color.Lerp(cor, new Color(0.7f, 0.1f, 0.1f), 0.5f);
+                modeloDoInimigo.Montar(inimigo.Forma, cor);
+            }
             hud.Inimigo(inimigo.Nome, atributos.Follower?.Nome);
             AtualizarVida();
         }
