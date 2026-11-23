@@ -33,7 +33,8 @@ namespace ALotOfDamage.UI
             this.catalogo = catalogo;
         }
 
-        protected static GUIStyle EstiloTitulo, EstiloTexto, EstiloBotao;
+        protected static GUIStyle EstiloTitulo => TemaVisual.EstiloTitulo;
+        protected static GUIStyle EstiloTexto => TemaVisual.EstiloTexto;
 
         void Alternar() => aberta = Aberta ? null : this;
 
@@ -54,36 +55,30 @@ namespace ALotOfDamage.UI
             faixaAte = Time.time + (destaque ? 2.5f : 1.2f);
         }
 
-        protected static void Barra(Rect r, float progresso, Color cor)
-        {
-            GUI.Box(r, "");
-            GUI.color = cor;
-            GUI.Box(new Rect(r.x, r.y, r.width * Mathf.Clamp01(progresso), r.height), "");
-            GUI.color = Color.white;
-        }
+        protected static void Barra(Rect r, float progresso, Color cor) => TemaVisual.Barra(r, progresso, cor);
+
+        // Fundo escuro com linha dourada separando os itens da lista
+        protected static void Separador(Rect r) => TemaVisual.Separador(r);
 
         void OnGUI()
         {
-            EstiloTitulo ??= new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold };
-            EstiloTexto ??= new GUIStyle(GUI.skin.label) { fontSize = 15 };
-            EstiloBotao ??= new GUIStyle(GUI.skin.button) { fontSize = 15 };
-
-            if (GUI.Button(new Rect(Screen.width - 180, 20 + Ordem * 52, 160, 44),
-                    Aberta ? $"Fechar [{Tecla}]" : $"{Titulo} [{Tecla}]", EstiloBotao))
+            if (TemaVisual.Botao(new Rect(Screen.width - 180, 20 + Ordem * 52, 160, 44),
+                    Aberta ? $"Fechar [{Tecla}]" : $"{Titulo} [{Tecla}]"))
                 Alternar();
 
             if (Time.time < faixaAte)
-                GUI.Label(new Rect(Screen.width * 0.5f - 300, Screen.height * 0.15f, 600, 60), faixa,
-                    new GUIStyle(EstiloTitulo) { fontSize = 34, alignment = TextAnchor.MiddleCenter, normal = { textColor = new Color(1f, 0.85f, 0.3f) } });
+                TemaVisual.FaixaDeHabilidade(Screen.width * 0.5f, Screen.height * 0.15f, faixa);
 
             if (!Aberta) return;
 
             float largura = Mathf.Min(760, Screen.width - 240);
-            var area = new Rect((Screen.width - 200 - largura) / 2, 80, largura, 60 + AlturaDoConteudo);
-            GUI.Box(area, "");
-            GUI.Label(new Rect(area.x + 16, area.y + 10, largura, 30),
-                $"{Titulo}     Ouro: {FormatadorDeNumeros.Formatar(Progresso.Ouro)}", EstiloTitulo);
-            DesenharConteudo(new Rect(area.x, area.y + 50, area.width, AlturaDoConteudo));
+            var area = new Rect((Screen.width - 200 - largura) / 2, 90, largura, 90 + AlturaDoConteudo);
+            var dentro = TemaVisual.Painel(area, Titulo);
+            if (TemaVisual.BotaoFechar(area)) { Alternar(); return; }
+
+            TemaVisual.TextoComContorno(new Rect(dentro.x + 4, dentro.y, dentro.width, 28),
+                $"Ouro  {FormatadorDeNumeros.Formatar(Progresso.Ouro)}", EstiloTitulo, TemaVisual.OuroClaro, TextAnchor.MiddleRight, 18);
+            DesenharConteudo(new Rect(dentro.x - 14, dentro.y + 36, dentro.width + 28, AlturaDoConteudo));
         }
     }
 }

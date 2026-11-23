@@ -40,37 +40,39 @@ namespace ALotOfDamage.UI
                 var d = upgrades[i];
                 int nivel = Progresso.Nivel(d.Id);
                 float y = area.y + i * AlturaItem;
+                Separador(new Rect(area.x + 6, y - 6, area.width - 12, AlturaItem - 6));
+                TemaVisual.Slot(new Rect(area.x + 16, y, 58, 58), TemaVisual.Inicial(d.Nome), TemaVisual.OuroClaro);
                 bool linear = d.Tipo == TipoDeUpgrade.Linear;
 
                 string valor = linear
                     ? $"{RegrasDeUpgrade.Valor(d, nivel) * 100:0}%"
                     : FormatadorDeNumeros.Formatar(RegrasDeUpgrade.Valor(d, nivel));
-                GUI.Label(new Rect(area.x + 16, y, 420, 24), $"{d.Nome}  (nível {nivel})", EstiloTitulo);
-                GUI.Label(new Rect(area.x + 16, y + 26, 420, 22), $"{d.Descricao}: {valor}", EstiloTexto);
+                GUI.Label(new Rect(area.x + 86, y, 420, 24), $"{d.Nome}  (nível {nivel})", EstiloTitulo);
+                GUI.Label(new Rect(area.x + 86, y + 26, 420, 22), $"{d.Descricao}: {valor}", EstiloTexto);
 
                 if (RegrasDeUpgrade.NoMaximo(d, nivel))
                 {
-                    GUI.Label(new Rect(area.x + 16, y + 48, 420, 22), "Nível máximo", EstiloTexto);
+                    GUI.Label(new Rect(area.x + 86, y + 48, 420, 22), "Nível máximo", EstiloTexto);
                     continue;
                 }
 
                 double custo = RegrasDeUpgrade.Custo(d, nivel);
                 double ganho = RegrasDeUpgrade.GanhoRelativo(d, nivel) * 100;
-                GUI.Label(new Rect(area.x + 16, y + 48, 420, 22),
+                GUI.Label(new Rect(area.x + 86, y + 48, 420, 22),
                     $"Próximo: +{ganho:0.#}%   Custo: {FormatadorDeNumeros.Formatar(custo)}", EstiloTexto);
 
                 if (!linear)
                 {
                     int marco = RegrasDeUpgrade.ProximoMarco(nivel);
                     int anterior = RegrasDeUpgrade.MarcoAnterior(nivel);
-                    Barra(new Rect(area.x + 16, y + 74, 300, 14), (float)(nivel - anterior) / (marco - anterior), new Color(1f, 0.8f, 0.2f));
-                    GUI.Label(new Rect(area.x + 324, y + 70, 200, 22), $"marco no nível {marco}", EstiloTexto);
+                    Barra(new Rect(area.x + 86, y + 74, 300, 14), (float)(nivel - anterior) / (marco - anterior), TemaVisual.Ouro);
+                    GUI.Label(new Rect(area.x + 394, y + 70, 200, 22), $"marco no nível {marco}", EstiloTexto);
                 }
 
                 float bx = area.x + area.width - 250;
-                if (GUI.Button(new Rect(bx, y + 10, 70, 40), "x1", EstiloBotao)) Comprar(d, 1);
-                if (GUI.Button(new Rect(bx + 78, y + 10, 70, 40), "x10", EstiloBotao)) Comprar(d, 10);
-                if (GUI.Button(new Rect(bx + 156, y + 10, 80, 40), "Máx", EstiloBotao)) Comprar(d, RegrasDeUpgrade.Maximo);
+                if (TemaVisual.Botao(new Rect(bx, y + 10, 70, 40), "x1")) Comprar(d, 1);
+                if (TemaVisual.Botao(new Rect(bx + 78, y + 10, 70, 40), "x10")) Comprar(d, 10);
+                if (TemaVisual.Botao(new Rect(bx + 156, y + 10, 80, 40), "Máx")) Comprar(d, RegrasDeUpgrade.Maximo);
             }
         }
     }

@@ -17,7 +17,6 @@ namespace ALotOfDamage.UI
         float proximaConsulta;
         string ganho;
         float ganhoDesde = -10;
-        GUIStyle estiloPoder, estiloGanho;
 
         [Inject]
         public void Construir(CalcularPoder calcularPoder) => this.calcularPoder = calcularPoder;
@@ -40,23 +39,23 @@ namespace ALotOfDamage.UI
             mostrado = RegrasDePoder.ContadorAnimado(mostrado, alvo, Time.unscaledDeltaTime, rapidezDoContador);
         }
 
+        // Placa escura com moldura dourada e o número grande em itálico, como o "Poder" da ficha
         void OnGUI()
         {
-            estiloPoder ??= new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 30, fontStyle = FontStyle.Bold, normal = { textColor = new Color(1f, 0.82f, 0.3f) },
-            };
-            estiloGanho ??= new GUIStyle(estiloPoder) { fontSize = 26 };
+            var numero = TemaVisual.EstiloNumero;
+            string valor = FormatadorDeNumeros.Formatar(mostrado);
+            float largura = TemaVisual.LarguraDoTexto(valor, numero, 30) + 130;
+            var area = new Rect(16, 96, Mathf.Max(240, largura), 56);
+            var dentro = TemaVisual.Painel(area, null);
 
-            var area = new Rect(20, 100, 520, 44);
-            GUI.Label(area, $"Poder {FormatadorDeNumeros.Formatar(mostrado)}", estiloPoder);
+            TemaVisual.TextoComContorno(new Rect(dentro.x, dentro.y - 2, 90, dentro.height + 4), "Poder", numero, TemaVisual.OuroClaro, TextAnchor.MiddleLeft, 20);
+            TemaVisual.TextoComContorno(new Rect(dentro.x + 80, dentro.y - 4, area.width, dentro.height + 8), valor, numero, TemaVisual.OuroClaro, TextAnchor.MiddleLeft, 30);
 
             float t = (Time.unscaledTime - ganhoDesde) / duracaoDoGanho;
             if (t >= 1) return;
-            var cor = new Color(0.45f, 1f, 0.5f, 1 - t);
-            estiloGanho.normal.textColor = cor;
-            float largura = estiloPoder.CalcSize(new GUIContent($"Poder {FormatadorDeNumeros.Formatar(mostrado)}")).x;
-            GUI.Label(new Rect(area.x + largura + 14, area.y - t * 30, 300, 40), ganho, estiloGanho);
+            var cor = TemaVisual.Verde;
+            cor.a = 1 - t;
+            TemaVisual.TextoComContorno(new Rect(area.xMax + 10, area.y + 8 - t * 30, 300, 40), ganho, numero, cor, TextAnchor.MiddleLeft, 26);
         }
     }
 }

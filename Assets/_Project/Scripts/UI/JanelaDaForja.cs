@@ -37,17 +37,19 @@ namespace ALotOfDamage.UI
                 var d = itens[i];
                 int nivel = Progresso.NivelDoItem(d.Id);
                 float y = area.y + i * AlturaItem;
+                Separador(new Rect(area.x + 6, y - 6, area.width - 12, AlturaItem - 6));
+                TemaVisual.Slot(new Rect(area.x + 16, y, 58, 58), $"+{nivel}", nivel > 0 ? TemaVisual.Laranja : TemaVisual.CorDoTexto);
                 string material = catalogo.NomeDoMaterial(d.MaterialId);
 
-                GUI.Label(new Rect(area.x + 16, y, 420, 24), $"{d.Nome} +{nivel}", EstiloTitulo);
-                GUI.Label(new Rect(area.x + 16, y + 26, 460, 22),
+                GUI.Label(new Rect(area.x + 86, y, 420, 24), $"{d.Nome} +{nivel}", EstiloTitulo);
+                GUI.Label(new Rect(area.x + 86, y + 26, 460, 22),
                     $"{d.Descricao}: x{FormatadorDeNumeros.Formatar(RegrasDaForja.Multiplicador(d, nivel))}" +
                     $"   próximo: x{1 + d.BonusPorNivel:0.##}   crítico {d.ChanceDeSucessoCritico * 100:0}%", EstiloTexto);
-                GUI.Label(new Rect(area.x + 16, y + 48, 460, 22),
+                GUI.Label(new Rect(area.x + 86, y + 48, 460, 22),
                     $"Custo: {FormatadorDeNumeros.Formatar(RegrasDaForja.CustoEmOuro(d, nivel))} ouro + " +
                     $"{RegrasDaForja.CustoEmMaterial(d, nivel)} {material} (tem {Progresso.Material(d.MaterialId)})", EstiloTexto);
 
-                if (GUI.Button(new Rect(area.x + area.width - 140, y + 10, 120, 40), "Forjar", EstiloBotao)) Forjar(d);
+                if (TemaVisual.Botao(new Rect(area.x + area.width - 140, y + 10, 120, 40), "Forjar")) Forjar(d);
             }
         }
     }

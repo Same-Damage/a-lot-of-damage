@@ -60,17 +60,25 @@ namespace ALotOfDamage.World
             if (maisPerto) maisPerto.Enfrentar(RegrasDoEncontro.AoAtacar(maisPerto.Perseguindo));
         }
 
+        // Placa do topo esquerdo com ouro e vitórias, e a lista de pendências em verde embaixo
         void OnGUI()
         {
-            var estilo = new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold };
-            var pequeno = new GUIStyle(estilo) { fontSize = 14, fontStyle = FontStyle.Normal };
-            GUI.Label(new Rect(20, 20, 700, 30),
-                $"Ouro {FormatadorDeNumeros.Formatar(repositorio.Carregar().Ouro)}   Vitórias {repositorio.Carregar().Vitorias}   [U] Upgrades  [J] Forja  [B] Bestiário", estilo);
-            GUI.Label(new Rect(20, 50, 700, 30), "F / Espaço: atacar (acerte antes de ser visto = ataque preventivo)", pequeno);
+            var titulo = TemaVisual.EstiloTitulo;
+            var progresso = repositorio.Carregar();
+            var dentro = TemaVisual.Painel(new Rect(16, 16, 360, 70), null);
+            TemaVisual.TextoComContorno(new Rect(dentro.x, dentro.y - 4, dentro.width, 24),
+                $"Ouro  {FormatadorDeNumeros.Formatar(progresso.Ouro)}", titulo, TemaVisual.OuroClaro, TextAnchor.UpperLeft, 20);
+            TemaVisual.TextoComContorno(new Rect(dentro.x, dentro.y + 22, dentro.width, 22),
+                $"Vitórias  {progresso.Vitorias}", titulo, TemaVisual.CorDoTexto, TextAnchor.UpperLeft, 15);
+
+            float y = 166;
+            TemaVisual.TextoComContorno(new Rect(20, y, 640, 22), "F / Espaço: atacar (acerte antes de ser visto = ataque preventivo)",
+                titulo, TemaVisual.Verde, TextAnchor.UpperLeft, 14);
             if (encontro.EmProtecao)
-                GUI.Label(new Rect(20, 75, 400, 30), "Protegido...", pequeno);
+                TemaVisual.TextoComContorno(new Rect(20, y + 22, 400, 22), "Protegido...", titulo, TemaVisual.Ciano, TextAnchor.UpperLeft, 14);
             if (golpeVisivel > 0)
-                GUI.Label(new Rect(Screen.width * 0.5f - 30, Screen.height * 0.5f - 60, 100, 40), "GOLPE!", estilo);
+                TemaVisual.TextoComContorno(new Rect(0, Screen.height * 0.5f - 70, Screen.width, 50), "GOLPE!",
+                    TemaVisual.EstiloNumero, TemaVisual.Laranja, TextAnchor.MiddleCenter, 34);
         }
     }
 }

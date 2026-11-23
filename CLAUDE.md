@@ -196,7 +196,7 @@ O cliente segue a arquitetura hexagonal (portas e adaptadores). O domínio fica 
 
 Regras:
 - O sentido das dependências é sempre para dentro. `Core` não referencia nenhuma assembly e tem `noEngineReferences: true`: o compilador recusa `UnityEngine` ali.
-- `Infraestrutura` → `Core`. `Combat` e `World` → `Core` e `Infraestrutura` (`World` também → `UI`). `UI` → só `Core`. `Core` nunca conhece quem está fora.
+- `Infraestrutura` → `Core`. `Combat` e `World` → `Core`, `Infraestrutura` e `UI` (que tem o `TemaVisual` das telas). `UI` → só `Core`. `Core` nunca conhece quem está fora.
 - Toda dependência externa (salvar, assets, aleatoriedade, tempo, rede) entra no domínio por uma porta, para o teste trocar por um fake.
 - Uma ação nova do jogador vira um caso de uso em `Core/UseCases`, testado em EditMode com fakes das portas. O `MonoBehaviour` só chama o caso de uso; nada de regra de negócio nele.
 - Estado do jogo mora na entidade `Progresso`, acessada pelo `IRepositorioDeProgresso`. Nada de classe estática com estado global nem de singletons (`.Instance`) para serviços.

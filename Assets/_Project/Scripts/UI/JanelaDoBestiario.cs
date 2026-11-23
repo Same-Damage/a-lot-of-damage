@@ -29,13 +29,15 @@ namespace ALotOfDamage.UI
                 int derrotas = Progresso.Derrotas(m.Id);
                 long proximo = RegrasDoBestiario.ProximoMarco(p, derrotas);
                 float y = area.y + (i + 1) * AlturaItem;
+                Separador(new Rect(area.x + 6, y - 6, area.width - 12, AlturaItem - 6));
+                TemaVisual.Slot(new Rect(area.x + 16, y - 2, 52, 52), TemaVisual.Inicial(m.Nome), TemaVisual.Ciano);
 
-                GUI.Label(new Rect(area.x + 16, y, 600, 24),
+                GUI.Label(new Rect(area.x + 86, y, 600, 24),
                     $"{m.Nome}   {derrotas} derrotados   contra ele: x{RegrasDoBestiario.MultiplicadorContraTipo(p, derrotas):0.##}", EstiloTitulo);
                 long anterior = proximo / p.FatorEntreMarcos;
                 if (derrotas < p.PrimeiroMarco) anterior = 0;
-                Barra(new Rect(area.x + 16, y + 30, 300, 14), (float)(derrotas - anterior) / (proximo - anterior), new Color(0.4f, 0.8f, 1f));
-                GUI.Label(new Rect(area.x + 324, y + 26, 400, 22), $"próximo marco: {proximo}   drop: {m.NomeDoMaterial}", EstiloTexto);
+                Barra(new Rect(area.x + 86, y + 30, 300, 14), (float)(derrotas - anterior) / (proximo - anterior), TemaVisual.Ciano);
+                GUI.Label(new Rect(area.x + 394, y + 26, 400, 22), $"próximo marco: {proximo}   drop: {m.NomeDoMaterial}", EstiloTexto);
             }
         }
     }
