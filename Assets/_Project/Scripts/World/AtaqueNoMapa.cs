@@ -3,6 +3,7 @@ using ALotOfDamage.Infrastructure;
 using ALotOfDamage.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using ALotOfDamage.Visual;
 using VContainer;
 
 namespace ALotOfDamage.World
@@ -17,6 +18,7 @@ namespace ALotOfDamage.World
 
         public float alcance = 2f;
         public float recarga = 0.4f;
+        public BonecoDeRecorte boneco;
 
         float proximoAtaque;
 
@@ -27,6 +29,7 @@ namespace ALotOfDamage.World
             if (AtaquePedido() && Time.time >= proximoAtaque)
             {
                 proximoAtaque = Time.time + recarga;
+                if (boneco) boneco.Golpear();
                 TentarAcertar();
             }
         }

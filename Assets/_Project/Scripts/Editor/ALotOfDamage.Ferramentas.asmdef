@@ -10,7 +10,8 @@
         "Unity.InputSystem",
         "UnityEngine.UI",
         "Unity.AI.Navigation",
-        "VContainer"
+        "VContainer",
+        "ALotOfDamage.Visual"
     ],
     "includePlatforms": [
         "Editor"

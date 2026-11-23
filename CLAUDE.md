@@ -1,6 +1,6 @@
 # A Lot of Damage
 
-RPG clicker online para mobile (Android/iOS) e desktop, feito em Unity. Visual HD-2D (sprites em pixel art em cenários 3D, como Octopath Traveler), câmera isométrica que se move pouco (como Lost Ark), campanha infinita com o mapa mudando conforme se avança (como AFK Journey) e encontros vistos no mapa que levam a uma arena de batalha (como Clair Obscur: Expedition 33). O centro do jogo é o combate clicker com números gigantes (como Cookie Clicker e Clicker Heroes). O documento de design completo está em `docs/roteiro.pdf`.
+RPG clicker online para mobile (Android/iOS) e desktop, feito em Unity. Visual com personagens pintados em estilo anime (direção de arte do Legend Online) dentro de cenários 3D com pós-processamento HD-2D (como Octopath Traveler), câmera isométrica que se move pouco (como Lost Ark), campanha infinita com o mapa mudando conforme se avança (como AFK Journey) e encontros vistos no mapa que levam a uma arena de batalha (como Clair Obscur: Expedition 33). O centro do jogo é o combate clicker com números gigantes (como Cookie Clicker e Clicker Heroes). O documento de design completo está em `docs/roteiro.pdf`.
 
 ## Repositório
 
@@ -75,13 +75,13 @@ O que cada jogo de referência significa para o A Lot of Damage. Quando um pedid
 
 | Referência | O que pegamos | O que significa no jogo |
 |---|---|---|
-| **Octopath Traveler II** e **Final Fantasy Resonance** | Estilo visual **HD-2D** | Personagens e monstros em sprites de pixel art 2D dentro de cenários 3D, com profundidade de campo (bordas desfocadas), bloom e iluminação dinâmica. É um estilo visual feito em cima da engine, não uma engine. |
+| **Octopath Traveler II** e **Final Fantasy Resonance** | **Cenário HD-2D** | Personagens 2D dentro de cenários 3D, com profundidade de campo (bordas desfocadas), bloom e iluminação dinâmica. Pegamos o cenário e o pós-processamento; os personagens aqui são pintados (ver Legend Online), não pixel art. |
 | **Lost Ark** | **Câmera isométrica** com **zona morta** | Vista de cima na diagonal, ângulo fixo, sem o jogador girar a câmera. A câmera fica parada enquanto o personagem anda dentro de uma área invisível no centro da tela (dead zone / camera window) e só acompanha quando ele chega perto da borda. Em lutas, a câmera trava no enquadramento da arena. |
 | **AFK Arena** e **AFK Journey** | **Campanha infinita**, **recompensa AFK**, **mapa que evolui** e **gacha de personagens** | Estágios que nunca acabam, com dificuldade crescente e chefes periódicos. O personagem "continua lutando" offline e o jogador coleta ouro, XP e materiais ao voltar. No AFK Journey o mundo é explorável e muda conforme a campanha avança (abre caminhos, troca monstros, reconstrói vilas). O gacha aqui é só de followers e só com moeda do jogo. |
 | **Clair Obscur: Expedition 33** | **Encontro visível no mapa** que leva a uma **arena** | Os monstros andam pelo mapa à vista; o jogador ataca o monstro no mapa e a luta acontece numa arena separada, voltando ao mesmo ponto depois. Acertar primeiro dá vantagem (ataque preventivo); ser pego dá vantagem ao monstro (emboscada). |
 | **Cookie Clicker** e **Clicker Heroes** | **Combate clicker**, **números gigantes** e **prestígio** | Cada click/toque causa dano e dá feedback satisfatório. Dano, ouro e custos crescem de forma exponencial até notações como aa, ab... Upgrades com marcos multiplicativos e automação gradual do click. Prestígio (aqui, Ascensão): recomeçar em troca de um multiplicador permanente. |
 | **Tap Titans** | **Click no mobile** | O mesmo combate clicker pensado para toque na tela do celular. |
-| **Legend Online** (神曲, 7Road / Oasis Games) | **Direção de arte da interface e do hub**, **feedback de combate** e **painel de pendências** | Cidade-hub flutuante em isométrico de mármore e ouro com cristais azuis (a "Cidade do Céu"), que inspira o nosso lobby/taverna. Interface com painéis escuros e moldura dourada, ficha com boneco e slots em volta e o número de **Poder** em destaque. No combate: números de dano grandes e estilizados, nome da habilidade em faixa e contador de combo. Lista lateral de coisas prontas ("desafios grátis 10/10", filas, coletas) como dopamina fora do combate. Não pegamos nada pago (VIP, recarga, pacotes) nem o excesso de ícones. Referências em `Downloads\inspiracoes ALOT\Legend Online` (uso interno, fora do repositório). |
+| **Legend Online** (神曲, 7Road / Oasis Games) | **Direção de arte dos personagens, da interface e do hub**, **feedback de combate** e **painel de pendências** | Cidade-hub flutuante em isométrico de mármore e ouro com cristais azuis (a "Cidade do Céu"), que inspira o nosso lobby/taverna. Personagens pintados em estilo anime, de proporção heroica, armaduras com detalhes dourados e auras coloridas por elemento/raridade. Interface com painéis escuros e moldura dourada, ficha com boneco e slots em volta e o número de **Poder** em destaque. No combate: números de dano grandes e estilizados, nome da habilidade em faixa e contador de combo. Lista lateral de coisas prontas ("desafios grátis 10/10", filas, coletas) como dopamina fora do combate. Não pegamos nada pago (VIP, recarga, pacotes) nem o excesso de ícones. Referências em `Downloads\inspiracoes ALOT\Legend Online` (uso interno, fora do repositório). |
 | **Diablo** e **Path of Exile** | Família de **ARPG isométrico** | Referência geral de ângulo de câmera, leitura de tela e loot, junto com Lost Ark. |
 
 ## Regras do jogo
@@ -169,6 +169,7 @@ Assets/_Project/
     Combat/          combate clicker (MonoBehaviours)
     World/           mapa: movimento, câmera, monstros, ataque no mapa
     UI/              controles de toque e interface
+    Visual/          bonecos de recorte animados (assembly ALotOfDamage.Visual)
     Editor/          ferramentas do editor (ConstrutorDeCenas), assembly ALotOfDamage.Ferramentas
   Tests/
     EditMode/        domínio e casos de uso, com fakes das portas
@@ -187,7 +188,7 @@ O cliente segue a arquitetura hexagonal (portas e adaptadores). O domínio fica 
 
 | Camada | Onde | O que tem |
 |---|---|---|
-| Domínio | `Core/` | Regras puras (`RegrasDeUpgrade`, `RegrasDaForja`, `RegrasDoBestiario`, `RegrasDoClick`, `RegrasDoEncontro`, `RegrasDePoder`, `RegrasDePersonagem`, `RegrasDaCampanha`, `RegrasDeFeedback`, `FormatadorDeNumeros`...), definições (`DefinicaoDeUpgrade`...) e a entidade `Progresso` |
+| Domínio | `Core/` | Regras puras (`RegrasDeUpgrade`, `RegrasDaForja`, `RegrasDoBestiario`, `RegrasDoClick`, `RegrasDoEncontro`, `RegrasDePoder`, `RegrasDePersonagem`, `RegrasDaCampanha`, `RegrasDeFeedback`, `RegrasDeAnimacao`, `FormatadorDeNumeros`...), definições (`DefinicaoDeUpgrade`...) e a entidade `Progresso` |
 | Portas | `Core/Ports/` | `IRepositorioDeProgresso`, `ICatalogo`, `ISorteio` |
 | Casos de uso | `Core/UseCases/` | `ComprarUpgrade`, `ForjarItem`, `RegistrarVitoria`, `CalcularAtributos`, `CalcularPoder`, `CalcularInimigo`, `ConsultarCampanha`, `ListarPendencias`: carregam o progresso, aplicam a regra e salvam |
 | Adaptadores de saída | `Infrastructure/` | `RepositorioDeProgressoEmArquivo` (save em JSON), `RepositorioDeProgressoEmMemoria`, `CatalogoDeBalanceamento` (lê os ScriptableObjects), `SorteioDaUnity`, `FluxoDeEncontro` (troca de cena) |
@@ -196,7 +197,7 @@ O cliente segue a arquitetura hexagonal (portas e adaptadores). O domínio fica 
 
 Regras:
 - O sentido das dependências é sempre para dentro. `Core` não referencia nenhuma assembly e tem `noEngineReferences: true`: o compilador recusa `UnityEngine` ali.
-- `Infraestrutura` → `Core`. `Combat` e `World` → `Core`, `Infraestrutura` e `UI`. `UI` → só `Core`. `Core` nunca conhece quem está fora.
+- `Infraestrutura` → `Core`. `Visual` (bonecos animados) → só `Core`. `Combat` e `World` → `Core`, `Infraestrutura`, `UI` e `Visual`. `UI` → só `Core`. `Core` nunca conhece quem está fora.
 - Toda dependência externa (salvar, assets, aleatoriedade, tempo, rede) entra no domínio por uma porta, para o teste trocar por um fake.
 - Uma ação nova do jogador vira um caso de uso em `Core/UseCases`, testado em EditMode com fakes das portas. O `MonoBehaviour` só chama o caso de uso; nada de regra de negócio nele.
 - Estado do jogo mora na entidade `Progresso`, acessada pelo `IRepositorioDeProgresso`. Nada de classe estática com estado global nem de singletons (`.Instance`) para serviços.
@@ -218,8 +219,10 @@ Regras:
 - Texto só é reescrito quando o valor muda, e nada é criado ou destruído por frame (pense no celular).
 - Feedback de golpe (hit stop, tremor, partículas, som) segue a intensidade de `RegrasDeFeedback`; os sons são gerados por código até chegar o áudio de verdade.
 
-### Arte HD-2D
-- Personagens, followers e monstros: sprites em pixel art (48–64 px de altura) como billboard no 3D, filtro **Point (Nearest)**, sem compressão que borre.
-- Cenário: 3D low-poly com textura em pixel art.
-- Pós-processamento (depth of field, bloom, vinheta) com preset baixo para celular.
-- Arquivos-fonte pesados (`.psd`, `.blend`, `.aseprite`) preferencialmente fora do repositório; dentro dele, só o que a Unity usa.
+### Arte
+- **Personagens, followers e monstros**: arte 2D **pintada em estilo anime**, na direção do Legend Online (proporção heroica, armaduras com detalhes dourados, auras e brilhos como sinal de poder). Nunca copiar personagens ou arte do Legend Online: só o estilo.
+- Exibidos como **billboard virado de frente para a câmera** (gira em torno dos pés), com a câmera do mapa baixa e quase sem perspectiva (inclinação 32°, campo de visão 24°), como no lobby do Legend Online, com **sombra de contato** oval no chão (`SombraDeContato`), como os personagens no lobby do Legend Online. Filtro **Bilinear**, **mipmaps ligados** (a arte aparece bem menor que o original) e compressão de qualidade alta (ASTC 6x6 no celular). Altura de referência: 512 px por personagem.
+- **Animação por recorte com ossos**, feita por código (nada de Spine pago): cada personagem é entregue em partes separadas (cabeça, tronco, braços, antebraços, pernas, arma, capa), e o `montagem.json` da pasta dele diz o pivô de cada peça, onde ela encaixa no pai, a rotação de base da peça (`RotacaoDoSprite`, para peças desenhadas na diagonal) e para que lado o desenho olha (`OlhaParaDireita`; as poses são pensadas para a direita e espelhadas quando preciso). Aves (o Pip) usam a `AveDeRecorte`, que bate as asas com `RegrasDeAnimacao.Voo`. O `ConstrutorDeCenas.CriarBoneco` monta a hierarquia de ossos e o `BonecoDeRecorte` (assembly `Visual`) gira os ossos com as poses de `RegrasDeAnimacao`. Uma pose desenhada só por personagem; parado, andar, golpe e dano saem dela.
+- **Cenário**: 3D low-poly com texturas pintadas, mais o pós-processamento HD-2D (depth of field, bloom, vinheta) com preset baixo para celular.
+- Produção: a arte é gerada no GPT. As partes vêm em PNG com fundo transparente e são importadas em `Assets/_Project/Art/Sprites/<personagem>/`.
+- Arquivos-fonte pesados (`.psd`, `.blend`) preferencialmente fora do repositório; dentro dele, só o que a Unity usa.

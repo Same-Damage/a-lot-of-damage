@@ -6,7 +6,8 @@
         "ALotOfDamage.Infraestrutura",
         "ALotOfDamage.UI",
         "VContainer",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "ALotOfDamage.Visual"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -3,6 +3,7 @@ using ALotOfDamage.Core;
 using ALotOfDamage.Infrastructure;
 using ALotOfDamage.UI;
 using ALotOfDamage.World;
+using ALotOfDamage.Visual;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using Unity.AI.Navigation;
@@ -89,18 +90,20 @@ namespace ALotOfDamage.Ferramentas
             var movimento = jogador.AddComponent<MovimentoDoJogador>();
             jogador.AddComponent<AtaqueNoMapa>();
 
-            // Placeholder do sprite: um quad virado para a câmera
-            var sprite = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            sprite.name = "Sprite (placeholder)";
-            Object.DestroyImmediate(sprite.GetComponent<Collider>());
-            sprite.transform.SetParent(jogador.transform, false);
-            sprite.transform.localScale = new Vector3(1f, 2f, 1f);
-            sprite.AddComponent<Billboard>();
-            Pintar(sprite, new Color(0.3f, 0.5f, 1f));
+            // Guerreiro pintado, animado por recorte, com os pés na base do CharacterController
+            var boneco = CriarBoneco("Guerreiro", jogador.transform, new Vector3(0, -1f, 0));
+            // Virado de frente para a câmera, com os pés como eixo: fica em pé e em tamanho cheio
+            boneco.gameObject.AddComponent<Billboard>().lockVertical = false;
+            boneco.transform.localScale = Vector3.one * EscalaNoMapa;
+            // Um pouco para trás (na direção em que a câmera olha) para ficar embaixo dos pés do desenho inclinado
+            CriarSombra(jogador.transform, new Vector3(0.2f, -0.98f, 0.2f), 1.1f, 0.45f, 0.65f);
+            movimento.boneco = boneco;
+            jogador.GetComponent<AtaqueNoMapa>().boneco = boneco;
 
             // Follower (Pip, o falcão) acompanhando o jogador
             var follower = CriarFollower(new Vector3(-1.6f, 2.8f, 0));
             follower.AddComponent<SeguidorNoMapa>().alvo = jogador.transform;
+            CriarSombra(follower.transform, new Vector3(0, -2.78f, 0), 0.5f, 0.25f, 0.25f);
 
             // Pontos de monstro: o tipo de cada um vem da região atual da campanha
             for (int i = 0; i < 9; i++)
@@ -113,6 +116,11 @@ namespace ALotOfDamage.Ferramentas
 
             var cam = Camera.main;
             var iso = cam.gameObject.AddComponent<CameraIsometrica>();
+            // Como no lobby do Legend Online: câmera mais baixa e quase sem perspectiva,
+            // para os personagens pintados ficarem retos e grandes na tela
+            iso.inclinacao = 32f;
+            iso.distancia = 30f;
+            cam.fieldOfView = 24f;
             iso.alvo = jogador.transform;
             movimento.camera_ = cam.transform;
 
@@ -126,16 +134,175 @@ namespace ALotOfDamage.Ferramentas
             Salvar(cena, "Mapa");
         }
 
-        // Placeholder do follower: um quad pequeno virado para a câmera
+        [System.Serializable]
+        class Montagem
+        {
+            public float PixelsPorUnidade = 280;
+            public bool OlhaParaDireita = true;
+            public PecaDaMontagem[] Pecas;
+        }
+
+        [System.Serializable]
+        class PecaDaMontagem
+        {
+            public string Nome, Pai;
+            public int Ordem;
+            public float PivoX, PivoY, Largura, Altura, EncaixeX, EncaixeY;
+            public float RotacaoDoSprite;   // graus, anti-horário: alinha a peça desenhada torta (ex.: espada na diagonal)
+        }
+
+        class Recorte
+        {
+            public GameObject Raiz;
+            public Transform Corpo;
+            public bool OlhaParaDireita;
+            public System.Collections.Generic.Dictionary<string, Transform> Ossos = new System.Collections.Generic.Dictionary<string, Transform>();
+            public Transform Osso(string nome) => Ossos.TryGetValue(nome, out var t) ? t : null;
+        }
+
+        // Monta um personagem de recorte a partir de Art/Sprites/<personagem>/montagem.json:
+        // cada peça vira um osso no ponto de encaixe do pai, com o sprite deslocado para girar no pivô.
+        // Com noCentro, o meio do desenho fica na raiz (aves voando); sem, os pés (personagens de pé).
+        static Recorte MontarRecorte(string personagem, Transform pai, Vector3 posicao, bool noCentro)
+        {
+            string pasta = $"Assets/_Project/Art/Sprites/{personagem}";
+            var montagem = JsonUtility.FromJson<Montagem>(AssetDatabase.LoadAssetAtPath<TextAsset>($"{pasta}/montagem.json").text);
+            float ppu = montagem.PixelsPorUnidade;
+
+            var raiz = new GameObject(personagem);
+            raiz.transform.SetParent(pai, false);
+            raiz.transform.localPosition = posicao;
+            raiz.AddComponent<UnityEngine.Rendering.SortingGroup>();
+            var corpo = new GameObject("Corpo").transform;
+            corpo.SetParent(raiz.transform, false);
+            var recorte = new Recorte { Raiz = raiz, Corpo = corpo, OlhaParaDireita = montagem.OlhaParaDireita };
+
+            var material = MaterialDosPersonagens();
+            var porNome = new System.Collections.Generic.Dictionary<string, PecaDaMontagem>();
+            foreach (var p in montagem.Pecas) porNome[p.Nome] = p;
+
+            Transform Osso(PecaDaMontagem p)
+            {
+                if (recorte.Ossos.TryGetValue(p.Nome, out var existente)) return existente;
+                var osso = new GameObject(p.Nome).transform;
+                if (string.IsNullOrEmpty(p.Pai)) osso.SetParent(corpo, false);
+                else
+                {
+                    var doPai = porNome[p.Pai];
+                    osso.SetParent(Osso(doPai), false);
+                    // Na imagem o Y cresce para baixo; na Unity, para cima
+                    osso.localPosition = new Vector3(p.EncaixeX - doPai.PivoX, -(p.EncaixeY - doPai.PivoY), 0) / ppu;
+                }
+
+                var go = new GameObject("Sprite", typeof(SpriteRenderer));
+                go.transform.SetParent(osso, false);
+                var giro = Quaternion.Euler(0, 0, p.RotacaoDoSprite);
+                go.transform.localRotation = giro;
+                go.transform.localPosition = giro * (new Vector3(p.Largura / 2 - p.PivoX, -(p.Altura / 2 - p.PivoY), 0) / ppu);
+                var sr = go.GetComponent<SpriteRenderer>();
+                sr.sprite = ImportarSprite($"{pasta}/{p.Nome}.png", ppu);
+                sr.sortingOrder = p.Ordem;
+                sr.sharedMaterial = material;
+                recorte.Ossos[p.Nome] = osso;
+                return osso;
+            }
+            foreach (var p in montagem.Pecas) Osso(p);
+
+            var limites = new Bounds();
+            bool primeiro = true;
+            foreach (var sr in raiz.GetComponentsInChildren<SpriteRenderer>())
+            {
+                if (primeiro) { limites = sr.bounds; primeiro = false; }
+                else limites.Encapsulate(sr.bounds);
+            }
+            float alvo = noCentro ? limites.center.y : limites.min.y;
+            corpo.localPosition = new Vector3(0, raiz.transform.position.y - alvo, 0);
+            return recorte;
+        }
+
+        static Material MaterialDosPersonagens()
+        {
+            const string caminho = "Assets/_Project/Art/Sprites/Personagens.mat";
+            var material = AssetDatabase.LoadAssetAtPath<Material>(caminho);
+            if (material) return material;
+            var shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+            if (!shader) shader = Shader.Find("Sprites/Default");
+            material = new Material(shader);
+            AssetDatabase.CreateAsset(material, caminho);
+            return material;
+        }
+
+        // Personagem de pé (pés em "pes"), animado pelo BonecoDeRecorte
+        static BonecoDeRecorte CriarBoneco(string personagem, Transform pai, Vector3 pes)
+        {
+            var r = MontarRecorte(personagem, pai, pes, false);
+            var b = r.Raiz.AddComponent<BonecoDeRecorte>();
+            b.corpo = r.Corpo;
+            b.desenhoOlhaParaDireita = r.OlhaParaDireita;
+            b.tronco = r.Osso("tronco"); b.cabeca = r.Osso("cabeca"); b.capa = r.Osso("capa");
+            b.bracoFrente = r.Osso("braco_frente"); b.antebracoFrente = r.Osso("antebraco_frente"); b.espada = r.Osso("espada");
+            b.bracoTras = r.Osso("braco_tras"); b.antebracoTras = r.Osso("antebraco_tras");
+            b.pernaFrente = r.Osso("perna_frente"); b.pernaTras = r.Osso("perna_tras");
+            return b;
+        }
+
+        // Ave voando (centro em "centro"), animada pela AveDeRecorte
+        static AveDeRecorte CriarAve(string personagem, Transform pai, Vector3 centro)
+        {
+            var r = MontarRecorte(personagem, pai, centro, true);
+            var a = r.Raiz.AddComponent<AveDeRecorte>();
+            a.corpo = r.Corpo;
+            a.desenhoOlhaParaDireita = r.OlhaParaDireita;
+            a.asaFrente = r.Osso("asa_frente"); a.asaTras = r.Osso("asa_tras");
+            a.cabeca = r.Osso("cabeca"); a.cauda = r.Osso("cauda");
+            return a;
+        }
+
+        static Sprite ImportarSprite(string caminho, float ppu)
+        {
+            var importador = (TextureImporter)AssetImporter.GetAtPath(caminho);
+            importador.textureType = TextureImporterType.Sprite;
+            importador.spriteImportMode = SpriteImportMode.Single;
+            importador.spritePixelsPerUnit = ppu;
+            importador.filterMode = FilterMode.Bilinear;
+            // Mipmaps ligados: a arte pintada aparece bem menor que o original e serrilharia sem eles
+            importador.mipmapEnabled = true;
+            importador.mipMapsPreserveCoverage = true;
+            importador.alphaIsTransparency = true;
+            importador.textureCompression = TextureImporterCompression.CompressedHQ;
+            var android = importador.GetPlatformTextureSettings("Android");
+            android.overridden = true;
+            android.format = TextureImporterFormat.ASTC_6x6;
+            importador.SetPlatformTextureSettings(android);
+            importador.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Sprite>(caminho);
+        }
+
+        // Personagens um pouco maiores que no desenho original, para ler bem com a câmera alta do mapa
+        const float EscalaNoMapa = 1.3f;
+
+        static void CriarSombra(Transform dono, Vector3 posicao, float largura, float profundidade, float opacidade = 0.45f)
+        {
+            var go = new GameObject("Sombra", typeof(SpriteRenderer));
+            go.transform.SetParent(dono, false);
+            go.transform.localPosition = posicao;
+            go.GetComponent<SpriteRenderer>().sharedMaterial = MaterialDosPersonagens();
+            var sombra = go.AddComponent<SombraDeContato>();
+            sombra.largura = largura;
+            sombra.profundidade = profundidade;
+            sombra.opacidade = opacidade;
+        }
+
+        const float EscalaDoPip = 0.95f;
+
+        // Pip, o falcão: um suporte que segue a posição e, dentro dele, a ave virada para a câmera
         static GameObject CriarFollower(Vector3 posicao)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            go.name = "Follower (placeholder)";
-            Object.DestroyImmediate(go.GetComponent<Collider>());
+            var go = new GameObject("Pip");
             go.transform.position = posicao;
-            go.transform.localScale = Vector3.one * 0.6f;
-            go.AddComponent<Billboard>();
-            Pintar(go, new Color(0.85f, 0.55f, 0.25f));
+            var ave = CriarAve("Pip", go.transform, Vector3.zero);
+            ave.transform.localScale = Vector3.one * EscalaDoPip;
+            ave.gameObject.AddComponent<Billboard>().lockVertical = false;
             return go;
         }
 
@@ -235,10 +402,14 @@ namespace ALotOfDamage.Ferramentas
             var corpo = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             corpo.transform.SetParent(raiz.transform, false);
 
-            CriarFollower(new Vector3(-1.8f, 2.2f, -1f));
+            CriarFollower(new Vector3(-1.6f, 2.4f, -1.2f));
+
+            var heroi = CriarBoneco("Guerreiro", null, new Vector3(-2.4f, 0, -0.6f));
+            heroi.olhandoParaDireita = true;
 
             var combate = new GameObject("Combate").AddComponent<CombateClicker>();
             combate.visualDoInimigo = corpo.transform;
+            combate.heroi = heroi;
 
             Salvar(cena, "Batalha");
         }
