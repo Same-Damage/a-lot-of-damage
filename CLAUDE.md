@@ -178,8 +178,9 @@ Assets/_Project/
 
 - Cada pasta de `Scripts/` é um Assembly Definition: `ALotOfDamage.Core`, `ALotOfDamage.Combat`, `ALotOfDamage.World`, `ALotOfDamage.UI` e `ALotOfDamage.Ferramentas` (só editor). Os testes ficam em `ALotOfDamage.Testes.EditMode` (e `ALotOfDamage.Testes.PlayMode`, quando existir).
 - Sentido das dependências: `Core` não depende de ninguém; `Combat` → `Core`; `World` → `Core` e `UI`; `UI` → `Core` (nunca `World` nem `Combat`). Assembly nova entra nas referências da assembly de testes.
-- Regras puras ficam em classes próprias, testadas em EditMode: `FormatadorDeNumeros`, `RegrasDoEncontro`, `RegrasDoClick`, `LimitadorDeCliques`, `RegrasDeUpgrade`. O `MonoBehaviour` correspondente só chama elas.
-- Valores de balanceamento dos upgrades ficam no asset `Data/Resources/BalanceamentoDeUpgrades` (lido por `BalanceamentoDeUpgrades.Atual`). Nível de cada upgrade começa em 1 e fica em `ProgressoDoJogador`.
+- Regras puras ficam em classes próprias, testadas em EditMode: `FormatadorDeNumeros`, `RegrasDoEncontro`, `RegrasDoClick`, `LimitadorDeCliques`, `RegrasDeUpgrade`, `RegrasDaForja`, `RegrasDoBestiario`. O `MonoBehaviour` correspondente só chama elas.
+- Valores de balanceamento ficam em assets de `Data/Resources` com o nome da classe (`BalanceamentoDeUpgrades`, `BalanceamentoDaForja`, `BalanceamentoDoBestiario`), todos herdando de `Balanceamento<T>` e lidos por `.Atual`. Nível de upgrade começa em 1, item da forja começa em +0; níveis, materiais e derrotas ficam em `ProgressoDoJogador`.
+- Telas provisórias em OnGUI herdam de `JanelaProvisoria` (uma aberta por vez) até chegar o kit de interface.
 - Pastas novas seguem esse padrão; não crie código fora de `Assets/_Project`.
 
 ### Arte HD-2D

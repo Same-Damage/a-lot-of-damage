@@ -41,6 +41,7 @@ namespace ALotOfDamage.World
             float menorDistancia = alcance;
             foreach (var e in FindObjectsByType<InimigoDoMapa>(FindObjectsSortMode.None))
             {
+                if (!e.Disponivel) continue;
                 Vector3 d = e.transform.position - transform.position; d.y = 0f;
                 if (d.magnitude < menorDistancia) { menorDistancia = d.magnitude; maisPerto = e; }
             }
@@ -52,7 +53,7 @@ namespace ALotOfDamage.World
             var estilo = new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold };
             var pequeno = new GUIStyle(estilo) { fontSize = 14, fontStyle = FontStyle.Normal };
             GUI.Label(new Rect(20, 20, 700, 30),
-                $"Ouro {FormatadorDeNumeros.Formatar(ProgressoDoJogador.Ouro)}   Vitórias {ProgressoDoJogador.Vitorias}   [U] Upgrades", estilo);
+                $"Ouro {FormatadorDeNumeros.Formatar(ProgressoDoJogador.Ouro)}   Vitórias {ProgressoDoJogador.Vitorias}   [U] Upgrades  [J] Forja  [B] Bestiário", estilo);
             GUI.Label(new Rect(20, 50, 700, 30), "F / Espaço: atacar (acerte antes de ser visto = ataque preventivo)", pequeno);
             if (EstadoDoEncontro.EmProtecao)
                 GUI.Label(new Rect(20, 75, 400, 30), "Protegido...", pequeno);

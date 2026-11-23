@@ -5,26 +5,13 @@ namespace ALotOfDamage.Core
 {
     // Valores de balanceamento dos upgrades. O asset fica em Data/Resources/BalanceamentoDeUpgrades.
     [CreateAssetMenu(menuName = "A Lot of Damage/Balanceamento de Upgrades")]
-    public class BalanceamentoDeUpgrades : ScriptableObject
+    public class BalanceamentoDeUpgrades : Balanceamento<BalanceamentoDeUpgrades>
     {
         public const string IdForca = "forca_do_golpe";
         public const string IdAutomatico = "ataque_automatico";
         public const string IdPrecisao = "precisao";
 
         public List<DefinicaoDeUpgrade> upgrades = Padrao();
-
-        static BalanceamentoDeUpgrades carregado;
-
-        public static BalanceamentoDeUpgrades Atual
-        {
-            get
-            {
-                if (carregado) return carregado;
-                carregado = Resources.Load<BalanceamentoDeUpgrades>(nameof(BalanceamentoDeUpgrades));
-                if (!carregado) carregado = CreateInstance<BalanceamentoDeUpgrades>();
-                return carregado;
-            }
-        }
 
         public DefinicaoDeUpgrade Buscar(string id) => upgrades.Find(u => u.Id == id);
 
