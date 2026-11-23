@@ -13,20 +13,20 @@ namespace ALotOfDamage.UI
         protected override string Titulo => "Bestiário";
         protected override Key Tecla => Key.B;
         protected override int Ordem => 2;
-        protected override float AlturaDoConteudo => (BalanceamentoDoBestiario.Atual.monstros.Count + 1) * AlturaItem;
+        protected override float AlturaDoConteudo => (catalogo.Monstros.Count + 1) * AlturaItem;
 
         protected override void DesenharConteudo(Rect area)
         {
-            var b = BalanceamentoDoBestiario.Atual;
-            var p = b.parametros;
+            var monstros = catalogo.Monstros;
+            var p = catalogo.Bestiario;
 
-            double geral = RegrasDoBestiario.MultiplicadorGeral(p, b.monstros.Select(m => ProgressoDoJogador.Derrotas(m.Id)));
+            double geral = RegrasDoBestiario.MultiplicadorGeral(p, monstros.Select(m => Progresso.Derrotas(m.Id)));
             GUI.Label(new Rect(area.x + 16, area.y, 600, 24), $"Bônus geral de dano: x{geral:0.##}", EstiloTitulo);
 
-            for (int i = 0; i < b.monstros.Count; i++)
+            for (int i = 0; i < monstros.Count; i++)
             {
-                var m = b.monstros[i];
-                int derrotas = ProgressoDoJogador.Derrotas(m.Id);
+                var m = monstros[i];
+                int derrotas = Progresso.Derrotas(m.Id);
                 long proximo = RegrasDoBestiario.ProximoMarco(p, derrotas);
                 float y = area.y + (i + 1) * AlturaItem;
 

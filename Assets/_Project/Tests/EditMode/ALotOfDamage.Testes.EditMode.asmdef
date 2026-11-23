@@ -5,7 +5,7 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "ALotOfDamage.Core",
-        "ALotOfDamage.Combat"
+        "ALotOfDamage.Infraestrutura"
     ],
     "includePlatforms": [
         "Editor"

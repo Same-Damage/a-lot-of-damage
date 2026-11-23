@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ALotOfDamage.Combat
+namespace ALotOfDamage.Core
 {
     public struct ParametrosDoClick
     {

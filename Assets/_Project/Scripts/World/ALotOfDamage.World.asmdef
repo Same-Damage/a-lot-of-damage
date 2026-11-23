@@ -1,7 +1,13 @@
 {
     "name": "ALotOfDamage.World",
     "rootNamespace": "",
-    "references": ["ALotOfDamage.Core", "ALotOfDamage.UI", "Unity.InputSystem"],
+    "references": [
+        "ALotOfDamage.Core",
+        "ALotOfDamage.Infraestrutura",
+        "ALotOfDamage.UI",
+        "VContainer",
+        "Unity.InputSystem"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using ALotOfDamage.Core;
+using ALotOfDamage.Infrastructure;
 using UnityEditor;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ namespace ALotOfDamage.Ferramentas
         public static void Exportar()
         {
             var br = new CultureInfo("pt-BR");
-            var upgrades = BalanceamentoDeUpgrades.Atual.upgrades;
+            var upgrades = BalanceamentoDeUpgrades.Carregar().upgrades;
             var sb = new StringBuilder();
 
             sb.Append("nivel;marcos");
