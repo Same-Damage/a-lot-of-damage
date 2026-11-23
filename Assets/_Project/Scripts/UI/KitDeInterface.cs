@@ -11,7 +11,6 @@ namespace ALotOfDamage.UI
     public static class KitDeInterface
     {
         public static readonly Color Fundo = new Color(0.07f, 0.06f, 0.05f, 0.92f);
-        public static readonly Color FundoDoBotao = new Color(0.18f, 0.13f, 0.08f, 0.95f);
         public static readonly Color Dourado = new Color(1f, 0.8f, 0.32f);
         public static readonly Color DouradoEscuro = new Color(0.55f, 0.4f, 0.15f);
         public static readonly Color TextoClaro = new Color(0.95f, 0.92f, 0.85f);
@@ -20,7 +19,16 @@ namespace ALotOfDamage.UI
         public static readonly Color Azul = new Color(0.4f, 0.8f, 1f);
 
         static Font fonte;
-        public static Font Fonte => fonte ? fonte : fonte = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        // Fonte serifada do sistema, no clima medieval; sem nenhuma delas, a fonte padrão da Unity
+        public static Font Fonte => fonte ? fonte : fonte = FonteSerifada() ?? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+        static Font FonteSerifada()
+        {
+            var instaladas = Font.GetOSInstalledFontNames();
+            foreach (var nome in new[] { "Georgia", "Palatino Linotype", "Book Antiqua", "Times New Roman", "Noto Serif" })
+                if (Array.IndexOf(instaladas, nome) >= 0) return Font.CreateDynamicFontFromOSFont(nome, 32);
+            return null;
+        }
 
         // Canvas único da cena para a interface do jogo (separado do canvas dos controles de toque)
         public static RectTransform Canvas()
@@ -63,13 +71,14 @@ namespace ALotOfDamage.UI
         {
             var rt = Novo(nome, pai);
             var img = rt.gameObject.AddComponent<Image>();
-            img.color = cor ?? Fundo;
             if (moldura)
             {
-                var o = rt.gameObject.AddComponent<Outline>();
-                o.effectColor = Dourado;
-                o.effectDistance = new Vector2(2, -2);
+                // moldura dourada com cravos; a cor só tinge o sprite, então o padrão é branco
+                img.sprite = TemaVisual.Painel;
+                img.type = Image.Type.Sliced;
+                img.color = cor ?? Color.white;
             }
+            else img.color = cor ?? Fundo;
             return img;
         }
 
@@ -93,12 +102,17 @@ namespace ALotOfDamage.UI
 
         public static Button Botao(string nome, Transform pai, string rotulo, Action aoClicar, int tamanhoDaFonte = 22)
         {
-            var img = Painel(nome, pai, FundoDoBotao);
+            var img = Painel(nome, pai, Color.white, false);
+            img.sprite = TemaVisual.Botao;
+            img.type = Image.Type.Sliced;
             var botao = img.gameObject.AddComponent<Button>();
-            var cores = botao.colors;
-            cores.highlightedColor = new Color(1.3f, 1.2f, 1f);
-            cores.pressedColor = new Color(0.7f, 0.6f, 0.5f);
-            botao.colors = cores;
+            botao.transition = Selectable.Transition.SpriteSwap;
+            botao.spriteState = new SpriteState
+            {
+                highlightedSprite = TemaVisual.BotaoHover,
+                selectedSprite = TemaVisual.Botao,
+                pressedSprite = TemaVisual.BotaoPressionado,
+            };
             botao.onClick.AddListener(() => aoClicar());
 
             var t = Texto("Rotulo", img.transform, tamanhoDaFonte, Dourado, TextAnchor.MiddleCenter, true);
@@ -116,12 +130,16 @@ namespace ALotOfDamage.UI
 
         public static Barra NovaBarra(string nome, Transform pai, Color cor)
         {
-            var fundo = Painel(nome, pai, new Color(0, 0, 0, 0.6f));
+            var fundo = Painel(nome, pai, Color.white, false);
+            fundo.sprite = TemaVisual.FundoDaBarra;
+            fundo.type = Image.Type.Sliced;
             var cheio = Painel("Cheio", fundo.transform, cor, false);
             var rt = (RectTransform)cheio.transform;
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = new Vector2(0, 1);
-            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            // o preenchimento fica dentro do filete da moldura
+            rt.offsetMin = new Vector2(3, 3);
+            rt.offsetMax = new Vector2(-3, -3);
             return new Barra(fundo, rt);
         }
     }

@@ -213,6 +213,7 @@ Regras:
 
 ### Interface
 - Toda a interface do jogo é uGUI montada por código com o `KitDeInterface` (painel escuro com moldura dourada, texto com sombra, botão, barra), na direção de arte do Legend Online. Nada de `OnGUI`.
+- Molduras, botões e fundos de barra são sprites fatiados (9-slice) gerados por código no `TemaVisual` (moldura dourada com cravos, couro, bronze); a fonte é serifada do sistema, com a padrão como reserva. Arte de verdade entra trocando esses sprites.
 - Janelas do mapa herdam de `JanelaDoJogo` (botão na coluna da direita, tecla de atalho, uma aberta por vez); a `Faixa` de destaque é uma por canvas; números de dano usam o pool de `NumerosFlutuantes`.
 - Texto só é reescrito quando o valor muda, e nada é criado ou destruído por frame (pense no celular).
 - Feedback de golpe (hit stop, tremor, partículas, som) segue a intensidade de `RegrasDeFeedback`; os sons são gerados por código até chegar o áudio de verdade.
