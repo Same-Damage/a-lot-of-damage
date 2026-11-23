@@ -10,6 +10,8 @@ namespace ALotOfDamage.World
     public class InimigoDoMapa : MonoBehaviour
     {
         public string idDoInimigo = "inimigo";
+        [Tooltip("Id do monstro no BalanceamentoDoBestiario")]
+        public string tipo = "slime";
         public string nome = "Slime";
         public double multiplicadorDeVida = 1;
 
@@ -29,26 +31,36 @@ namespace ALotOfDamage.World
         Vector3 origem, destino;
         float espera;
         NavMeshAgent agente;
+        bool escondido;
+        Renderer[] visuais;
 
         void Start()
         {
-            if (EstadoDoEncontro.Derrotados.Contains(idDoInimigo)) { Destroy(gameObject); return; }
-
             agente = GetComponent<NavMeshAgent>();
             agente.updateRotation = false;
             origem = transform.position;
             EscolherDestino();
             var j = GameObject.FindWithTag("Player");
             if (j) jogador = j.transform;
+            visuais = GetComponentsInChildren<Renderer>();
+            Mostrar(!EstadoDoEncontro.EstaDerrotado(idDoInimigo));
+        }
+
+        // Derrotado fica escondido até renascer
+        void Mostrar(bool visivel)
+        {
+            escondido = !visivel;
+            foreach (var r in visuais) r.enabled = visivel;
         }
 
         void Update()
         {
-            if (!jogador || EstadoDoEncontro.Ativo)
+            if (escondido)
             {
-                if (agente.isOnNavMesh) agente.isStopped = true;
-                return;
+                if (EstadoDoEncontro.EstaDerrotado(idDoInimigo)) { Parar(); return; }
+                Mostrar(true);
             }
+            if (!jogador || EstadoDoEncontro.Ativo) { Parar(); return; }
 
             Vector3 ateJogador = jogador.position - transform.position;
             ateJogador.y = 0f;
@@ -67,9 +79,11 @@ namespace ALotOfDamage.World
             }
         }
 
+        public bool Disponivel => !escondido;
+
         public void Enfrentar(Vantagem vantagem)
         {
-            if (jogador) EstadoDoEncontro.Iniciar(idDoInimigo, nome, multiplicadorDeVida, vantagem, jogador.position);
+            if (jogador && !escondido) EstadoDoEncontro.Iniciar(idDoInimigo, tipo, nome, multiplicadorDeVida, vantagem, jogador.position);
         }
 
         void Vagar()
@@ -81,6 +95,11 @@ namespace ALotOfDamage.World
                 espera = Random.Range(1f, 3f);
                 EscolherDestino();
             }
+        }
+
+        void Parar()
+        {
+            if (agente.isOnNavMesh) agente.isStopped = true;
         }
 
         void MoverPara(Vector3 alvo, float velocidade)

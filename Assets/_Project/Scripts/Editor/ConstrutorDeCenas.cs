@@ -32,18 +32,25 @@ namespace ALotOfDamage.Ferramentas
             };
         }
 
-        // Cria o asset de balanceamento com os valores padrão, se ainda não existir
-        [MenuItem("A Lot of Damage/Criar balanceamento de upgrades")]
+        // Cria os assets de balanceamento com os valores padrão, se ainda não existirem
+        [MenuItem("A Lot of Damage/Criar assets de balanceamento")]
         public static void CriarBalanceamento()
         {
+            CriarAssetSeFaltar<BalanceamentoDeUpgrades>();
+            CriarAssetSeFaltar<BalanceamentoDaForja>();
+            CriarAssetSeFaltar<BalanceamentoDoBestiario>();
+            AssetDatabase.SaveAssets();
+        }
+
+        static void CriarAssetSeFaltar<T>() where T : ScriptableObject
+        {
             const string pasta = "Assets/_Project/Data/Resources";
-            string caminho = $"{pasta}/{nameof(BalanceamentoDeUpgrades)}.asset";
-            if (AssetDatabase.LoadAssetAtPath<BalanceamentoDeUpgrades>(caminho)) return;
+            string caminho = $"{pasta}/{typeof(T).Name}.asset";
+            if (AssetDatabase.LoadAssetAtPath<T>(caminho)) return;
 
             if (!AssetDatabase.IsValidFolder("Assets/_Project/Data")) AssetDatabase.CreateFolder("Assets/_Project", "Data");
             if (!AssetDatabase.IsValidFolder(pasta)) AssetDatabase.CreateFolder("Assets/_Project/Data", "Resources");
-            AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<BalanceamentoDeUpgrades>(), caminho);
-            AssetDatabase.SaveAssets();
+            AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<T>(), caminho);
         }
 
         [MenuItem("A Lot of Damage/Criar cena: Mapa")]
@@ -98,7 +105,10 @@ namespace ALotOfDamage.Ferramentas
 
             AssarNavMesh(chao);
             CriarControlesDeToque();
-            new GameObject("Janela de Upgrades").AddComponent<JanelaDeUpgrades>();
+            var janelas = new GameObject("Janelas");
+            janelas.AddComponent<JanelaDeUpgrades>();
+            janelas.AddComponent<JanelaDaForja>();
+            janelas.AddComponent<JanelaDoBestiario>();
             Salvar(cena, "Mapa");
         }
 
@@ -120,6 +130,7 @@ namespace ALotOfDamage.Ferramentas
                 agente.acceleration = 20f;
                 var e = go.AddComponent<InimigoDoMapa>();
                 e.idDoInimigo = $"{id}_{i + 1}";
+                e.tipo = id;
                 e.nome = nome;
                 e.multiplicadorDeVida = vida;
             }
