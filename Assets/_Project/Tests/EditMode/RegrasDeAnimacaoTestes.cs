@@ -34,8 +34,9 @@ namespace ALotOfDamage.Testes
         {
             var preparo = RegrasDeAnimacao.Pose(EstadoDoBoneco.Golpeando, 0, RegrasDeAnimacao.FimDoPreparo);
             var corte = RegrasDeAnimacao.Pose(EstadoDoBoneco.Golpeando, 0, RegrasDeAnimacao.FimDoCorte);
-            Assert.Greater(preparo.BracoFrente, 100, "braço erguido");
-            Assert.Less(corte.BracoFrente, -40, "braço passou para a frente");
+            // O desenho olha para a direita: erguer é girar no sentido horário (negativo) e cortar, para a frente (positivo)
+            Assert.Less(preparo.BracoFrente, -100, "braço erguido");
+            Assert.Greater(corte.BracoFrente, 40, "braço passou para a frente");
         }
 
         [Test]
@@ -54,6 +55,38 @@ namespace ALotOfDamage.Testes
             var fim = RegrasDeAnimacao.Pose(EstadoDoBoneco.LevandoDano, 0, 1);
             Assert.Greater(inicio.Tronco, 5);
             Assert.AreEqual(0, fim.Tronco, 1);
+        }
+
+        // Regressão: o desenho do Guerreiro olha para a direita, e ele andava virado para o lado contrário
+        [Test]
+        public void So_espelha_quando_olha_para_o_lado_contrario_do_desenho()
+        {
+            Assert.AreEqual(1, RegrasDeAnimacao.EscalaHorizontal(desenhoOlhaParaDireita: true, olhandoParaDireita: true));
+            Assert.AreEqual(-1, RegrasDeAnimacao.EscalaHorizontal(desenhoOlhaParaDireita: true, olhandoParaDireita: false));
+            Assert.AreEqual(-1, RegrasDeAnimacao.EscalaHorizontal(desenhoOlhaParaDireita: false, olhandoParaDireita: true));
+        }
+
+        [Test]
+        public void Voo_bate_as_duas_asas_espelhadas()
+        {
+            float ciclo = RegrasDeAnimacao.CicloDaBatida;
+            var cima = RegrasDeAnimacao.Voo(ciclo * 0.25f);
+            var baixo = RegrasDeAnimacao.Voo(ciclo * 0.75f);
+            Assert.AreEqual(-cima.AsaTras, cima.AsaFrente, 1e-3, "as asas giram em sentidos opostos");
+            Assert.Greater(System.Math.Abs(cima.AsaFrente), 20);
+            Assert.Less(cima.AsaFrente * baixo.AsaFrente, 0, "meia batida depois inverte");
+        }
+
+        [Test]
+        public void Corpo_sobe_quando_as_asas_descem()
+        {
+            float ciclo = RegrasDeAnimacao.CicloDaBatida;
+            var a = RegrasDeAnimacao.Voo(ciclo * 0.25f);
+            var b = RegrasDeAnimacao.Voo(ciclo * 0.75f);
+            // asa da frente com ângulo positivo = ponta para baixo
+            var descendo = a.AsaFrente > 0 ? a : b;
+            var subindo = a.AsaFrente > 0 ? b : a;
+            Assert.Greater(descendo.Elevacao, subindo.Elevacao);
         }
 
         [Test]

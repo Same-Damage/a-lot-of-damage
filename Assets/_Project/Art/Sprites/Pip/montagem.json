@@ -1,0 +1,90 @@
+{
+  "PixelsPorUnidade": 280,
+  "OlhaParaDireita": true,
+  "Pecas": [
+    {
+      "Nome": "corpo",
+      "Pai": "",
+      "Ordem": 4,
+      "RotacaoDoSprite": 0,
+      "PivoX": 64.0,
+      "PivoY": 70.4,
+      "Largura": 139,
+      "Altura": 152,
+      "EncaixeX": 0,
+      "EncaixeY": 0
+    },
+    {
+      "Nome": "asa_tras",
+      "Pai": "corpo",
+      "Ordem": 0,
+      "RotacaoDoSprite": 0,
+      "PivoX": 9.2,
+      "PivoY": 62.4,
+      "Largura": 142,
+      "Altura": 156,
+      "EncaixeX": 92.0,
+      "EncaixeY": 38.4
+    },
+    {
+      "Nome": "cauda",
+      "Pai": "corpo",
+      "Ordem": 1,
+      "RotacaoDoSprite": -20,
+      "PivoX": 19.6,
+      "PivoY": 7.2,
+      "Largura": 84,
+      "Altura": 121,
+      "EncaixeX": 92.0,
+      "EncaixeY": 134.4
+    },
+    {
+      "Nome": "garra_tras",
+      "Pai": "corpo",
+      "Ordem": 2,
+      "RotacaoDoSprite": 0,
+      "PivoX": 38.0,
+      "PivoY": 2.4,
+      "Largura": 77,
+      "Altura": 108,
+      "EncaixeX": 76.0,
+      "EncaixeY": 134.4
+    },
+    {
+      "Nome": "garra_frente",
+      "Pai": "corpo",
+      "Ordem": 3,
+      "RotacaoDoSprite": 0,
+      "PivoX": 35.2,
+      "PivoY": 3.2,
+      "Largura": 72,
+      "Altura": 118,
+      "EncaixeX": 44.0,
+      "EncaixeY": 130.4
+    },
+    {
+      "Nome": "cabeca",
+      "Pai": "corpo",
+      "Ordem": 5,
+      "RotacaoDoSprite": 0,
+      "PivoX": 52.4,
+      "PivoY": 89.6,
+      "Largura": 94,
+      "Altura": 101,
+      "EncaixeX": 36.0,
+      "EncaixeY": 16.4
+    },
+    {
+      "Nome": "asa_frente",
+      "Pai": "corpo",
+      "Ordem": 6,
+      "RotacaoDoSprite": 0,
+      "PivoX": 136.0,
+      "PivoY": 54.4,
+      "Largura": 146,
+      "Altura": 157,
+      "EncaixeX": 32.0,
+      "EncaixeY": 38.4
+    }
+  ]
+}

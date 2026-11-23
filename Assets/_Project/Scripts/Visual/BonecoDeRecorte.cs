@@ -11,8 +11,9 @@ namespace ALotOfDamage.Visual
         public Transform tronco, cabeca, capa, bracoFrente, antebracoFrente, espada, bracoTras, antebracoTras, pernaFrente, pernaTras;
         public float duracaoDoGolpe = 0.35f;
         public float duracaoDoDano = 0.3f;
-        [Tooltip("Desenho original olha para a esquerda; marque para começar olhando para a direita")]
-        public bool olhandoParaDireita;
+        [Tooltip("Para que lado o personagem está desenhado")]
+        public bool desenhoOlhaParaDireita = true;
+        public bool olhandoParaDireita = true;
 
         EstadoDoBoneco estado = EstadoDoBoneco.Parado;
         EstadoDoBoneco estadoDeBase = EstadoDoBoneco.Parado;
@@ -50,7 +51,7 @@ namespace ALotOfDamage.Visual
         {
             if (!corpo) return;
             var s = corpo.localScale;
-            s.x = Mathf.Abs(s.x) * (olhandoParaDireita ? -1 : 1);
+            s.x = Mathf.Abs(s.x) * RegrasDeAnimacao.EscalaHorizontal(desenhoOlhaParaDireita, olhandoParaDireita);
             corpo.localScale = s;
         }
 
@@ -75,16 +76,18 @@ namespace ALotOfDamage.Visual
             if (duracao > 0 && progresso >= 1) Trocar(estadoDeBase, 0);
 
             var p = RegrasDeAnimacao.Pose(estado, estado == estadoDeBase ? Time.unscaledTime : tempo, progresso);
-            Girar(tronco, p.Tronco);
-            Girar(cabeca, p.Cabeca);
-            Girar(capa, p.Capa);
-            Girar(bracoFrente, p.BracoFrente);
-            Girar(antebracoFrente, p.AntebracoFrente);
-            Girar(espada, p.Espada);
-            Girar(bracoTras, p.BracoTras);
-            Girar(antebracoTras, p.AntebracoTras);
-            Girar(pernaFrente, p.PernaFrente);
-            Girar(pernaTras, p.PernaTras);
+            // As poses são pensadas para um desenho olhando para a direita; desenho para a esquerda usa o espelho
+            float sinal = desenhoOlhaParaDireita ? 1 : -1;
+            Girar(tronco, sinal * p.Tronco);
+            Girar(cabeca, sinal * p.Cabeca);
+            Girar(capa, sinal * p.Capa);
+            Girar(bracoFrente, sinal * p.BracoFrente);
+            Girar(antebracoFrente, sinal * p.AntebracoFrente);
+            Girar(espada, sinal * p.Espada);
+            Girar(bracoTras, sinal * p.BracoTras);
+            Girar(antebracoTras, sinal * p.AntebracoTras);
+            Girar(pernaFrente, sinal * p.PernaFrente);
+            Girar(pernaTras, sinal * p.PernaTras);
             if (tronco) tronco.localPosition = posicaoDoTronco + new Vector3(0, p.Elevacao, 0);
         }
 

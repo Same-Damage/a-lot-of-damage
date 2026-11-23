@@ -4,7 +4,7 @@ namespace ALotOfDamage.Core
 {
     public enum EstadoDoBoneco { Parado, Andando, Golpeando, LevandoDano }
 
-    // Ângulos (graus, sentido anti-horário) de cada osso do boneco de recorte, a partir da pose desenhada
+    // Ângulos (graus, sentido anti-horário) de cada osso, a partir da pose desenhada (olhando para a direita)
     public struct Pose
     {
         public float Tronco, Cabeca, Capa;
@@ -12,6 +12,13 @@ namespace ALotOfDamage.Core
         public float BracoTras, AntebracoTras;
         public float PernaFrente, PernaTras;
         public float Elevacao;   // sobe e desce do corpo, em unidades
+    }
+
+    // Ângulos das peças de uma ave voando (graus, anti-horário), a partir do desenho de asas abertas
+    public struct PoseDeVoo
+    {
+        public float AsaFrente, AsaTras, Cabeca, Cauda;
+        public float Elevacao;
     }
 
     // Animação procedural do boneco: uma pose desenhada vira parado, andar, golpe e dano
@@ -31,6 +38,27 @@ namespace ALotOfDamage.Core
             t = t * t * (3 - 2 * t);
             return a + (b - a) * t;
         }
+
+        public const float CicloDaBatida = 0.45f;
+
+        // Batida de asas: a asa da frente (à esquerda no desenho) desce com ângulo positivo e a de trás, negativo;
+        // o corpo sobe quando as asas empurram para baixo
+        public static PoseDeVoo Voo(float tempo)
+        {
+            float batida = Sen(Tau * tempo / CicloDaBatida);
+            return new PoseDeVoo
+            {
+                AsaFrente = 32 * batida,
+                AsaTras = -32 * batida,
+                Cabeca = 3 * Sen(Tau * tempo / CicloDaBatida + 1f),
+                Cauda = 6 * Sen(Tau * tempo / CicloDaBatida - 1f),
+                Elevacao = 0.06f * batida,
+            };
+        }
+
+        // Escala X do corpo: espelha só quando o personagem olha para o lado contrário do desenho
+        public static int EscalaHorizontal(bool desenhoOlhaParaDireita, bool olhandoParaDireita) =>
+            desenhoOlhaParaDireita == olhandoParaDireita ? 1 : -1;
 
         // tempo: segundos desde o início do estado (para ciclos); progresso: 0..1 (golpe e dano)
         public static Pose Pose(EstadoDoBoneco estado, float tempo, float progresso)
@@ -67,34 +95,34 @@ namespace ALotOfDamage.Core
                     if (progresso < FimDoPreparo)
                     {
                         float t = progresso / FimDoPreparo;
-                        p.BracoFrente = Suave(0, 150, t);
-                        p.AntebracoFrente = Suave(0, -30, t);
-                        p.Espada = Suave(EspadaEmRepouso, 40, t);
-                        p.Tronco = Suave(0, 6, t);
+                        p.BracoFrente = Suave(0, -150, t);
+                        p.AntebracoFrente = Suave(0, 30, t);
+                        p.Espada = Suave(EspadaEmRepouso, -40, t);
+                        p.Tronco = Suave(0, -6, t);
                     }
                     else if (progresso < FimDoCorte)
                     {
                         float t = (progresso - FimDoPreparo) / (FimDoCorte - FimDoPreparo);
-                        p.BracoFrente = Suave(150, -70, t);
-                        p.AntebracoFrente = Suave(-30, 10, t);
-                        p.Espada = Suave(40, -10, t);
-                        p.Tronco = Suave(6, -10, t);
-                        p.Capa = Suave(0, -12, t);
+                        p.BracoFrente = Suave(-150, 70, t);
+                        p.AntebracoFrente = Suave(30, -10, t);
+                        p.Espada = Suave(-40, 10, t);
+                        p.Tronco = Suave(-6, 10, t);
+                        p.Capa = Suave(0, 12, t);
                     }
                     else
                     {
                         float t = (progresso - FimDoCorte) / (1 - FimDoCorte);
-                        p.BracoFrente = Suave(-70, 0, t);
-                        p.AntebracoFrente = Suave(10, 0, t);
-                        p.Espada = Suave(-10, EspadaEmRepouso, t);
-                        p.Tronco = Suave(-10, 0, t);
-                        p.Capa = Suave(-12, 0, t);
+                        p.BracoFrente = Suave(70, 0, t);
+                        p.AntebracoFrente = Suave(-10, 0, t);
+                        p.Espada = Suave(10, EspadaEmRepouso, t);
+                        p.Tronco = Suave(10, 0, t);
+                        p.Capa = Suave(12, 0, t);
                     }
                     break;
                 case EstadoDoBoneco.LevandoDano:
                 {
                     float forca = 1 - progresso;
-                    p.Tronco = 12 * forca;
+                    p.Tronco = 12 * forca;   // positivo inclina para a esquerda: para trás de quem olha para a direita
                     p.Cabeca = 10 * forca;
                     p.BracoFrente = 15 * forca;
                     p.BracoTras = 15 * forca;
