@@ -6,21 +6,29 @@ using VContainer;
 
 namespace ALotOfDamage.World
 {
-    // Monstro visível no mapa: vaga, persegue ao ver o jogador e inicia a batalha ao encostar.
-    // Anda pelo NavMesh para desviar dos obstáculos.
+    // Ponto de monstro no mapa: o tipo vem da região atual da campanha, então o mapa muda conforme se avança.
+    // O monstro vaga, persegue ao ver o jogador e inicia a batalha ao encostar, andando pelo NavMesh.
     [RequireComponent(typeof(NavMeshAgent))]
     public class InimigoDoMapa : MonoBehaviour
     {
         FluxoDeEncontro encontro;
+        ConsultarCampanha consultarCampanha;
+        ICatalogo catalogo;
 
         [Inject]
-        public void Construir(FluxoDeEncontro encontro) => this.encontro = encontro;
+        public void Construir(FluxoDeEncontro encontro, ConsultarCampanha consultarCampanha, ICatalogo catalogo)
+        {
+            this.encontro = encontro;
+            this.consultarCampanha = consultarCampanha;
+            this.catalogo = catalogo;
+        }
 
         public string idDoInimigo = "inimigo";
-        [Tooltip("Id do monstro no BalanceamentoDoBestiario")]
-        public string tipo = "slime";
-        public string nome = "Slime";
-        public double multiplicadorDeVida = 1;
+        public int indiceDoPonto;
+        [Tooltip("Ponto do chefe: só aparece nos estágios de chefe")]
+        public bool pontoDoChefe;
+
+        public string Tipo { get; private set; }
 
         [Header("Movimento")]
         public float raioDeVagar = 5f;
@@ -50,7 +58,30 @@ namespace ALotOfDamage.World
             var j = GameObject.FindWithTag("Player");
             if (j) jogador = j.transform;
             visuais = GetComponentsInChildren<Renderer>();
+
+            var campanha = consultarCampanha.Executar();
+            Tipo = RegrasDaCampanha.MonstroDoPonto(campanha.Regiao, indiceDoPonto, pontoDoChefe);
+            var monstro = catalogo.Monstro(Tipo);
+            if (monstro == null || (pontoDoChefe && !campanha.EstagioDeChefe))
+            {
+                gameObject.SetActive(false);
+                return;
+            }
+            Aparencia(monstro);
             Mostrar(!encontro.EstaDerrotado(idDoInimigo));
+        }
+
+        void Aparencia(DefinicaoDeMonstro m)
+        {
+            float escala = m.Escala * (pontoDoChefe ? 1.6f : 1f);
+            transform.localScale = Vector3.one * escala;
+            agente.baseOffset = escala;
+            if (!ColorUtility.TryParseHtmlString(m.Cor, out var cor)) cor = Color.magenta;
+            if (pontoDoChefe) cor = Color.Lerp(cor, new Color(0.7f, 0.1f, 0.1f), 0.5f);
+            var bloco = new MaterialPropertyBlock();
+            bloco.SetColor("_BaseColor", cor);
+            foreach (var r in visuais) r.SetPropertyBlock(bloco);
+            name = (pontoDoChefe ? "Chefe " : "") + m.Nome;
         }
 
         // Derrotado fica escondido até renascer
@@ -90,7 +121,7 @@ namespace ALotOfDamage.World
 
         public void Enfrentar(Vantagem vantagem)
         {
-            if (jogador && !escondido) encontro.Iniciar(idDoInimigo, tipo, nome, multiplicadorDeVida, vantagem, jogador.position);
+            if (jogador && !escondido) encontro.Iniciar(idDoInimigo, Tipo, pontoDoChefe, vantagem, jogador.position);
         }
 
         void Vagar()

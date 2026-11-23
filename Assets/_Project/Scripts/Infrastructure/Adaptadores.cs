@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using ALotOfDamage.Core;
+using UnityEngine;
 
 namespace ALotOfDamage.Infrastructure
 {
@@ -13,6 +16,40 @@ namespace ALotOfDamage.Infrastructure
         public void Salvar(Progresso p) { }
     }
 
+    // Progresso salvo em JSON num arquivo do dispositivo. Grava num temporário e troca, para não corromper o save.
+    public class RepositorioDeProgressoEmArquivo : IRepositorioDeProgresso
+    {
+        readonly string caminho;
+        Progresso progresso;
+
+        public RepositorioDeProgressoEmArquivo(string caminho) => this.caminho = caminho;
+
+        public Progresso Carregar()
+        {
+            if (progresso != null) return progresso;
+            DadosDoProgresso dados = null;
+            try
+            {
+                if (File.Exists(caminho)) dados = JsonUtility.FromJson<DadosDoProgresso>(File.ReadAllText(caminho));
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"Save ilegível, começando do zero: {e.Message}");
+            }
+            return progresso = Progresso.Importar(dados);
+        }
+
+        public void Salvar(Progresso p)
+        {
+            progresso = p;
+            Directory.CreateDirectory(Path.GetDirectoryName(caminho));
+            string temporario = caminho + ".tmp";
+            File.WriteAllText(temporario, JsonUtility.ToJson(p.Exportar()));
+            if (File.Exists(caminho)) File.Delete(caminho);
+            File.Move(temporario, caminho);
+        }
+    }
+
     // Catálogo lido dos ScriptableObjects de Data/Resources
     public class CatalogoDeBalanceamento : ICatalogo
     {
@@ -22,6 +59,8 @@ namespace ALotOfDamage.Infrastructure
         public ParametrosDoBestiario Bestiario { get; }
         public IReadOnlyList<DefinicaoDeClasse> Classes { get; }
         public IReadOnlyList<DefinicaoDeFollower> Followers { get; }
+        public ParametrosDaCampanha Campanha { get; }
+        public IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
 
         public CatalogoDeBalanceamento()
         {
@@ -33,6 +72,9 @@ namespace ALotOfDamage.Infrastructure
             var personagens = BalanceamentoDePersonagens.Carregar();
             Classes = personagens.classes;
             Followers = personagens.followers;
+            var campanha = BalanceamentoDaCampanha.Carregar();
+            Campanha = campanha.parametros;
+            Regioes = campanha.regioes;
         }
     }
 

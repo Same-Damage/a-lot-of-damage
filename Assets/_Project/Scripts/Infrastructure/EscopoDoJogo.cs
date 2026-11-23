@@ -20,9 +20,19 @@ namespace ALotOfDamage.Infrastructure
             Instancia = go.AddComponent<EscopoDoJogo>();
         }
 
+        // No editor o save fica separado do da build
+        public static string CaminhoDoSave => System.IO.Path.Combine(Application.persistentDataPath,
+            Application.isEditor ? "progresso-editor.json" : "progresso.json");
+
+        static bool RodandoTestes => System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-runTests") >= 0;
+
         protected override void Configure(IContainerBuilder builder)
         {
-            builder.Register<IRepositorioDeProgresso, RepositorioDeProgressoEmMemoria>(Lifetime.Singleton);
+            // Testes automáticos não podem mexer no save de quem está desenvolvendo
+            if (RodandoTestes)
+                builder.Register<IRepositorioDeProgresso, RepositorioDeProgressoEmMemoria>(Lifetime.Singleton);
+            else
+                builder.RegisterInstance<IRepositorioDeProgresso>(new RepositorioDeProgressoEmArquivo(CaminhoDoSave));
             builder.Register<ICatalogo, CatalogoDeBalanceamento>(Lifetime.Singleton);
             builder.Register<ISorteio, SorteioDaUnity>(Lifetime.Singleton);
             builder.Register<FluxoDeEncontro>(Lifetime.Singleton);
@@ -32,6 +42,9 @@ namespace ALotOfDamage.Infrastructure
             builder.Register<RegistrarVitoria>(Lifetime.Singleton);
             builder.Register<CalcularAtributos>(Lifetime.Singleton);
             builder.Register<CalcularPoder>(Lifetime.Singleton);
+            builder.Register<CalcularInimigo>(Lifetime.Singleton);
+            builder.Register<ConsultarCampanha>(Lifetime.Singleton);
+            builder.Register<ListarPendencias>(Lifetime.Singleton);
         }
     }
 }

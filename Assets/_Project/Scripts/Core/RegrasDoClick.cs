@@ -21,9 +21,6 @@ namespace ALotOfDamage.Core
             if (critico) dano *= p.MultiplicadorCritico;
             return dano;
         }
-
-        public static double VidaDoInimigo(double vidaBase, double crescimento, int estagio) =>
-            vidaBase * Math.Pow(crescimento, estagio - 1);
     }
 
     // Limite de clicks por segundo (anti-autoclicker)
