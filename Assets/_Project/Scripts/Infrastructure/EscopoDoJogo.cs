@@ -31,6 +31,7 @@ namespace ALotOfDamage.Infrastructure
             builder.Register<ForjarItem>(Lifetime.Singleton);
             builder.Register<RegistrarVitoria>(Lifetime.Singleton);
             builder.Register<CalcularAtributos>(Lifetime.Singleton);
+            builder.Register<CalcularPoder>(Lifetime.Singleton);
         }
     }
 }

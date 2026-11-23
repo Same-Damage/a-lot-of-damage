@@ -111,6 +111,7 @@ namespace ALotOfDamage.Ferramentas
             janelas.AddComponent<JanelaDeUpgrades>();
             janelas.AddComponent<JanelaDaForja>();
             janelas.AddComponent<JanelaDoBestiario>();
+            new GameObject("Painel de Poder").AddComponent<PainelDePoder>();
             Salvar(cena, "Mapa");
         }
 

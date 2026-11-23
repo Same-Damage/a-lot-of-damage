@@ -13,7 +13,7 @@ namespace ALotOfDamage.Combat
     {
         [Header("Jogador")]
         public float intervaloAutomatico = 1f;
-        public double multiplicadorCritico = 5;
+        public double multiplicadorCritico = RegrasDePoder.MultiplicadorCriticoPadrao;
         public int cliquesPorSegundoMaximo = 15;
 
         [Header("Combo")]

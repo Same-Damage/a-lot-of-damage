@@ -187,9 +187,9 @@ O cliente segue a arquitetura hexagonal (portas e adaptadores). O domínio fica 
 
 | Camada | Onde | O que tem |
 |---|---|---|
-| Domínio | `Core/` | Regras puras (`RegrasDeUpgrade`, `RegrasDaForja`, `RegrasDoBestiario`, `RegrasDoClick`, `RegrasDoEncontro`, `FormatadorDeNumeros`...), definições (`DefinicaoDeUpgrade`...) e a entidade `Progresso` |
+| Domínio | `Core/` | Regras puras (`RegrasDeUpgrade`, `RegrasDaForja`, `RegrasDoBestiario`, `RegrasDoClick`, `RegrasDoEncontro`, `RegrasDePoder`, `FormatadorDeNumeros`...), definições (`DefinicaoDeUpgrade`...) e a entidade `Progresso` |
 | Portas | `Core/Ports/` | `IRepositorioDeProgresso`, `ICatalogo`, `ISorteio` |
-| Casos de uso | `Core/UseCases/` | `ComprarUpgrade`, `ForjarItem`, `RegistrarVitoria`, `CalcularAtributos`: carregam o progresso, aplicam a regra e salvam |
+| Casos de uso | `Core/UseCases/` | `ComprarUpgrade`, `ForjarItem`, `RegistrarVitoria`, `CalcularAtributos`, `CalcularPoder`: carregam o progresso, aplicam a regra e salvam |
 | Adaptadores de saída | `Infrastructure/` | `RepositorioDeProgressoEmMemoria`, `CatalogoDeBalanceamento` (lê os ScriptableObjects), `SorteioDaUnity`, `FluxoDeEncontro` (troca de cena) |
 | Adaptadores de entrada | `Combat/`, `World/`, `UI/` | `MonoBehaviour`s: leem input, chamam casos de uso, desenham |
 | Composição | `Infrastructure/EscopoDoJogo`, `EscopoDaCena` | VContainer monta tudo |
