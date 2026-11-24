@@ -100,9 +100,9 @@ namespace ALotOfDamage.Ferramentas
             troca.ataque = jogador.GetComponent<AtaqueNoMapa>();
 
             // Follower (Pip, o falcão) acompanhando o jogador
-            var follower = CriarFollower(new Vector3(-1.6f, 2.8f, 0));
-            follower.AddComponent<SeguidorNoMapa>().alvo = jogador.transform;
-            CriarSombra(follower.transform, new Vector3(0, -2.78f, 0), 0.5f, 0.25f, 0.25f);
+            var follower = CriarFollower(new Vector3(-1.6f, 2.8f, 0), Vector3.back);
+            follower.seguidor = follower.gameObject.AddComponent<SeguidorNoMapa>();
+            follower.seguidor.alvo = jogador.transform;
 
             // Pontos de monstro: o tipo de cada um vem da região atual da campanha
             for (int i = 0; i < 9; i++)
@@ -242,18 +242,6 @@ namespace ALotOfDamage.Ferramentas
             return material;
         }
 
-        // Ave voando (centro em "centro"), animada pela AveDeRecorte
-        static AveDeRecorte CriarAve(string personagem, Transform pai, Vector3 centro)
-        {
-            var r = MontarRecorte(personagem, pai, centro, true);
-            var a = r.Raiz.AddComponent<AveDeRecorte>();
-            a.corpo = r.Corpo;
-            a.desenhoOlhaParaDireita = r.OlhaParaDireita;
-            a.asaFrente = r.Osso("asa_frente"); a.asaTras = r.Osso("asa_tras");
-            a.cabeca = r.Osso("cabeca"); a.cauda = r.Osso("cauda");
-            return a;
-        }
-
         static Sprite ImportarSprite(string caminho, float ppu)
         {
             var importador = (TextureImporter)AssetImporter.GetAtPath(caminho);
@@ -289,17 +277,21 @@ namespace ALotOfDamage.Ferramentas
             sombra.opacidade = opacidade;
         }
 
-        const float EscalaDoPip = 0.95f;
-
-        // Pip, o falcão: um suporte que segue a posição e, dentro dele, a ave virada para a câmera
-        static GameObject CriarFollower(Vector3 posicao)
+        // Follower ativo: raiz que se move (segue o herói no mapa) e, dentro, o modelo low-poly da família dele,
+        // montado em jogo pelo FollowerDaCena conforme o follower escolhido; a sombra é ajustada à altura de cada um
+        static FollowerDaCena CriarFollower(Vector3 posicao, Vector3 olharPara)
         {
-            var go = new GameObject("Pip");
+            var go = new GameObject("Follower");
             go.transform.position = posicao;
-            var ave = CriarAve("Pip", go.transform, Vector3.zero);
-            ave.transform.localScale = Vector3.one * EscalaDoPip;
-            ave.gameObject.AddComponent<Billboard>().lockVertical = false;
-            return go;
+            var modelo = new GameObject("Modelo").AddComponent<FollowerLowPoly>();
+            modelo.transform.SetParent(go.transform, false);
+            modelo.materialBase = MaterialDoMapa("Cenario", "Universal Render Pipeline/Lit");
+            CriarSombra(go.transform, Vector3.zero, 0.6f, 0.35f, 0.35f);
+            var f = go.AddComponent<FollowerDaCena>();
+            f.modelo = modelo;
+            f.sombra = go.GetComponentInChildren<SombraDeContato>();
+            f.olharPara = olharPara;
+            return f;
         }
 
         static void CriarPontoDeMonstro(string id, int indice, bool chefe, Vector3 posicao)
@@ -443,7 +435,8 @@ namespace ALotOfDamage.Ferramentas
             corpo.materialBase = MaterialDoMapa("Cenario", "Universal Render Pipeline/Lit");
             corpo.transform.localRotation = Quaternion.LookRotation(new Vector3(-1, 0, -0.5f));
 
-            CriarFollower(new Vector3(-1.6f, 2.4f, -1.2f));
+            // ao lado do herói, no chão da arena, virado para o inimigo
+            CriarFollower(new Vector3(-1.6f, 0, -1.6f), new Vector3(1, 0, 0.4f));
 
             // de três quartos, virados para o inimigo e um pouco para a câmera
             var herois = CriarHerois(null, new Vector3(-2.4f, 0, -0.6f), 1.8f, Quaternion.LookRotation(new Vector3(1, 0, -0.6f)));
