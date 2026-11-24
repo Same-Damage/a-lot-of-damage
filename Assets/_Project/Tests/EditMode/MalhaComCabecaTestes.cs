@@ -7,13 +7,14 @@ namespace ALotOfDamage.Testes.EditMode
     // Herói com cabeça própria: <nome>_Malha.asset troca a malha do FBX e usa o esqueleto dele
     public class MalhaComCabecaTestes
     {
-        const string Pasta = "Assets/_Project/Art/Characters/Ladino/";
+        const string Pasta = "Assets/_Project/Art/Characters/";
 
-        [Test]
-        public void Malha_do_ladino_usa_o_esqueleto_do_modelo_e_separa_corpo_e_cabeca()
+        [TestCase("Ladino")]
+        [TestCase("Mago")]
+        public void Malha_usa_o_esqueleto_do_modelo_e_separa_corpo_e_cabeca(string nome)
         {
-            var malha = AssetDatabase.LoadAssetAtPath<Mesh>(Pasta + "Ladino_Malha.asset");
-            var modelo = AssetDatabase.LoadAssetAtPath<GameObject>(Pasta + "Ladino.fbx").GetComponentInChildren<SkinnedMeshRenderer>();
+            var malha = AssetDatabase.LoadAssetAtPath<Mesh>($"{Pasta}{nome}/{nome}_Malha.asset");
+            var modelo = AssetDatabase.LoadAssetAtPath<GameObject>($"{Pasta}{nome}/{nome}.fbx").GetComponentInChildren<SkinnedMeshRenderer>();
 
             Assert.IsNotNull(malha);
             Assert.AreEqual(2, malha.subMeshCount);

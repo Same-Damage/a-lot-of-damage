@@ -35,6 +35,7 @@ Material:
     - _LarguraDoContorno: 0.001
     - _LimiarDaSombra: 0.05
     - _PotenciaDaBorda: 4
+    - _RecuoDoContorno: 0.05
     - _SuavidadeDaSombra: 0.08
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
