@@ -44,6 +44,8 @@ namespace ALotOfDamage.Infrastructure
             builder.Register<DesmontarItem>(Lifetime.Singleton);
             builder.Register<EquiparItem>(Lifetime.Singleton);
             builder.Register<DesequiparItem>(Lifetime.Singleton);
+            builder.Register<OrganizarInventario>(Lifetime.Singleton);
+            builder.Register<ConsultarItem>(Lifetime.Singleton);
             builder.Register<RegistrarVitoria>(Lifetime.Singleton);
             builder.Register<CalcularAtributos>(Lifetime.Singleton);
             builder.Register<CalcularPoder>(Lifetime.Singleton);
