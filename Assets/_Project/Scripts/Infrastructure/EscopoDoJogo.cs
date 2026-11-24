@@ -38,7 +38,12 @@ namespace ALotOfDamage.Infrastructure
             builder.Register<FluxoDeEncontro>(Lifetime.Singleton);
 
             builder.Register<ComprarUpgrade>(Lifetime.Singleton);
-            builder.Register<ForjarItem>(Lifetime.Singleton);
+            builder.Register<RefinarItem>(Lifetime.Singleton);
+            builder.Register<FabricarItem>(Lifetime.Singleton);
+            builder.Register<VenderItem>(Lifetime.Singleton);
+            builder.Register<DesmontarItem>(Lifetime.Singleton);
+            builder.Register<EquiparItem>(Lifetime.Singleton);
+            builder.Register<DesequiparItem>(Lifetime.Singleton);
             builder.Register<RegistrarVitoria>(Lifetime.Singleton);
             builder.Register<CalcularAtributos>(Lifetime.Singleton);
             builder.Register<CalcularPoder>(Lifetime.Singleton);

@@ -240,6 +240,9 @@ namespace ALotOfDamage.Combat
                 if (v.MaterialGanho > 0) texto += $"  +{v.MaterialGanho} {v.Monstro.NomeDoMaterial}";
                 if (v.AtingiuMarcoDoBestiario) texto += $"\nBESTIÁRIO: {v.Monstro.Nome} ×{v.Derrotas}!";
                 if (v.AvancouEstagio) texto += $"\nESTÁGIO {v.Estagio}!";
+                if (v.ItemGanho != null)
+                    texto += $"\nITEM: {v.NomeDoItem} {RegrasDosItens.Nome(v.ItemGanho.Raridade)}" +
+                             (v.ItemVendidoPorFaltaDeEspaco ? " (inventário cheio: vendido)" : "");
                 hud.Faixa.Fixar(texto);
                 voltarEm = Time.unscaledTime + 1.8f;
             }

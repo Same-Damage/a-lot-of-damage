@@ -60,13 +60,16 @@ namespace ALotOfDamage.Infrastructure
         public IReadOnlyList<DefinicaoDeClasse> Classes { get; }
         public IReadOnlyList<DefinicaoDeFollower> Followers { get; }
         public ParametrosDaCampanha Campanha { get; }
+        public ParametrosDosItens ParametrosDosItens { get; }
         public IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
 
         public CatalogoDeBalanceamento()
         {
             var bestiario = BalanceamentoDoBestiario.Carregar();
             Upgrades = BalanceamentoDeUpgrades.Carregar().upgrades;
-            Itens = BalanceamentoDaForja.Carregar().itens;
+            var forja = BalanceamentoDaForja.Carregar();
+            Itens = forja.itens;
+            ParametrosDosItens = forja.parametros;
             Monstros = bestiario.monstros;
             Bestiario = bestiario.parametros;
             var personagens = BalanceamentoDePersonagens.Carregar();
