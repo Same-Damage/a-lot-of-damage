@@ -278,5 +278,36 @@ namespace ALotOfDamage.Testes
             var fim = RegrasDeAnimacao.Pose(EstadoDoBoneco.Golpeando, 0, 1);
             Assert.AreEqual(fim.BracoFrente, depois.BracoFrente, 1e-3);
         }
+
+        [Test]
+        public void Locomocao_fica_parada_abaixo_do_limiar()
+        {
+            Assert.AreEqual(0, RegrasDeAnimacao.Locomocao(0.2f, 6), 1e-6);
+            Assert.AreEqual(0, RegrasDeAnimacao.Locomocao(0, 6), 1e-6);
+        }
+
+        [Test]
+        public void Locomocao_vai_de_zero_a_um_com_a_velocidade()
+        {
+            Assert.AreEqual(0.5f, RegrasDeAnimacao.Locomocao(3, 6), 1e-6);
+            Assert.AreEqual(1, RegrasDeAnimacao.Locomocao(6, 6), 1e-6);
+            Assert.AreEqual(1, RegrasDeAnimacao.Locomocao(9, 6), 1e-6, "nunca passa de correr");
+        }
+
+        [Test]
+        public void Locomocao_sem_velocidade_maxima_fica_parada()
+        {
+            Assert.AreEqual(0, RegrasDeAnimacao.Locomocao(3, 0), 1e-6);
+        }
+
+        [Test]
+        public void Rumo_aponta_para_onde_o_personagem_anda()
+        {
+            Assert.AreEqual(0, RegrasDeAnimacao.Rumo(0, 1), 1e-4, "frente (+z)");
+            Assert.AreEqual(90, RegrasDeAnimacao.Rumo(1, 0), 1e-4, "direita (+x)");
+            Assert.AreEqual(180, System.Math.Abs(RegrasDeAnimacao.Rumo(0, -1)), 1e-4);
+            Assert.AreEqual(-90, RegrasDeAnimacao.Rumo(-1, 0), 1e-4);
+            Assert.AreEqual(45, RegrasDeAnimacao.Rumo(1, 1), 1e-4, "diagonal");
+        }
     }
 }

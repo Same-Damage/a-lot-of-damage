@@ -5,7 +5,7 @@ namespace ALotOfDamage.Visual
 {
     // Personagem pintado, cortado em partes e animado por código a partir de RegrasDeAnimacao.
     // A hierarquia de ossos é montada pelo ConstrutorDeCenas a partir do montagem.json da arte.
-    public class BonecoDeRecorte : MonoBehaviour
+    public class BonecoDeRecorte : PersonagemVisual
     {
         public Transform corpo;   // pai de todos os ossos; virar para a esquerda/direita é escala X dele
         public Transform tronco, cabeca, capa, bracoFrente, antebracoFrente, espada, bracoTras, antebracoTras, pernaFrente, pernaTras;
@@ -75,9 +75,17 @@ namespace ALotOfDamage.Visual
             corpo.localRotation = Quaternion.Euler(0, sinal * guinadaAtual, sinal * balanco);
         }
 
-        public void Golpear(float velocidade = 1f) => Trocar(EstadoDoBoneco.Golpeando, duracaoDoGolpe / Mathf.Max(0.1f, velocidade));
+        public override void Mover(Vector3 velocidadeNoMundo, float velocidadeMaxima, Vector2 entrada)
+        {
+            // pela velocidade real: o joystick parado com ruído não fica ligando e desligando o andar
+            Andando = velocidadeNoMundo.sqrMagnitude > 0.25f;
+            Guinada = RegrasDeAnimacao.Guinada(entrada.x, entrada.y);
+            if (Mathf.Abs(entrada.x) > 0.1f) OlhandoParaDireita = entrada.x > 0;
+        }
 
-        public void LevarDano()
+        public override void Golpear(float velocidade = 1f) => Trocar(EstadoDoBoneco.Golpeando, duracaoDoGolpe / Mathf.Max(0.1f, velocidade));
+
+        public override void LevarDano()
         {
             if (estado != EstadoDoBoneco.Golpeando) Trocar(EstadoDoBoneco.LevandoDano, duracaoDoDano);
         }

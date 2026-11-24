@@ -22,7 +22,7 @@ namespace ALotOfDamage.World
         [Tooltip("Quão rápido chega na velocidade máxima e para (unidades/s²)")]
         public float aceleracao = 40f;
         public Transform camera_;
-        public BonecoDeRecorte boneco;
+        public PersonagemVisual boneco;
 
         CharacterController controle;
         float velocidadeVertical;
@@ -61,11 +61,7 @@ namespace ALotOfDamage.World
             velocidadeVertical = controle.isGrounded ? -1f : velocidadeVertical + gravidade * Time.deltaTime;
             controle.Move((velocidadeAtual + Vector3.up * velocidadeVertical) * Time.deltaTime);
 
-            if (!boneco) return;
-            // pela velocidade real: o joystick parado com ruído não fica ligando e desligando o andar
-            boneco.Andando = velocidadeAtual.sqrMagnitude > 0.25f;
-            boneco.Guinada = RegrasDeAnimacao.Guinada(entrada.x, entrada.y);
-            if (Mathf.Abs(entrada.x) > 0.1f) boneco.OlhandoParaDireita = entrada.x > 0;
+            if (boneco) boneco.Mover(velocidadeAtual, velocidade, entrada);
         }
 
         static Vector2 LerEntrada()
