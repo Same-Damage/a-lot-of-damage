@@ -9,6 +9,7 @@
         "ALotOfDamage.Combat",
         "ALotOfDamage.World",
         "ALotOfDamage.UI",
+        "ALotOfDamage.Visual",
         "VContainer"
     ],
     "includePlatforms": [],
