@@ -15,6 +15,7 @@ Shader "ALotOfDamage/PersonagemPintado"
         _PotenciaDaBorda ("Largura do brilho de borda", Range(1, 10)) = 4
         _CorDoContorno ("Cor do contorno", Color) = (0.12, 0.08, 0.06, 1)
         _LarguraDoContorno ("Largura do contorno", Range(0, 0.01)) = 0.001
+        _RecuoDoContorno ("Recuo do contorno (metros para trás, em tecido fino)", Range(0, 0.2)) = 0
         _CorDaEmissao ("Cor da emissão (poder do item)", Color) = (0, 0, 0, 1)
         _ForcaDaEmissao ("Força da emissão", Range(0, 4)) = 0
     }
@@ -39,6 +40,7 @@ Shader "ALotOfDamage/PersonagemPintado"
             half _PotenciaDaBorda;
             half4 _CorDoContorno;
             float _LarguraDoContorno;
+            float _RecuoDoContorno;
             half4 _CorDaEmissao;
             half _ForcaDaEmissao;
         CBUFFER_END
@@ -145,6 +147,7 @@ Shader "ALotOfDamage/PersonagemPintado"
                 // largura constante na tela, independente da distância da câmera
                 float distancia = length(GetCameraPositionWS() - posicaoMundo);
                 posicaoMundo += normalMundo * _LarguraDoContorno * distancia;
+                posicaoMundo += normalize(posicaoMundo - _WorldSpaceCameraPos) * _RecuoDoContorno;
                 s.posicaoClip = TransformWorldToHClip(posicaoMundo);
                 s.fog = ComputeFogFactor(s.posicaoClip.z);
                 return s;

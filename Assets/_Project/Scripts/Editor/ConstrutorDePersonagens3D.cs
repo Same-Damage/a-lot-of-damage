@@ -20,6 +20,16 @@ namespace ALotOfDamage.Ferramentas
         static readonly string[] ClipesEmLaco = { "Parada", "Andar", "Correr" };
         static readonly string[] Clipes = { "Parada", "Andar", "Correr", "Golpe", "Dano", "Morte" };
 
+        // Ajustes de um clipe de um herói: trecho usado, em fração da duração, e se ele fica no lugar (descarta o passo do corpo)
+        struct Recorte { public float Inicio, Fim; public bool NoLugar; }
+
+        static readonly System.Collections.Generic.Dictionary<string, Recorte> Recortes = new()
+        {
+            // sem o preparo longo: com cliques seguidos, o golpe recomeçaria antes de a magia sair
+            ["Mago@Golpe"] = new Recorte { Inicio = 0.3f, Fim = 0.82f },
+            ["Mago@Dano"] = new Recorte { Inicio = 0f, Fim = 0.75f, NoLugar = true },
+        };
+
         // Personagem pronto para a cena, com os pés em "pes" e a altura dada (unidades do mundo)
         public static PersonagemAnimado3D Criar(string nome, Transform pai, Vector3 pes, float altura)
         {
@@ -205,9 +215,17 @@ namespace ALotOfDamage.Ferramentas
                 // Nos ciclos, o deslocamento e o giro do quadril saem como root motion, que é descartado
                 // (applyRootMotion desligado). Se ficassem na pose, uma corrida que não é "In Place" ou que faz
                 // curva levaria o corpo para o lado ao longo do ciclo e daria um tranco de volta a cada repetição.
+                bool noLugar = emLaco;
+                if (Recortes.TryGetValue($"{nome}@{clipe}", out var recorte))
+                {
+                    float inicio = origem.firstFrame, duracao = origem.lastFrame - origem.firstFrame;
+                    origem.firstFrame = inicio + duracao * recorte.Inicio;
+                    origem.lastFrame = inicio + duracao * recorte.Fim;
+                    noLugar |= recorte.NoLugar;
+                }
                 origem.lockRootRotation = !emLaco;
                 origem.lockRootHeightY = true;
-                origem.lockRootPositionXZ = !emLaco;
+                origem.lockRootPositionXZ = !noLugar;
                 origem.keepOriginalOrientation = true;
                 origem.keepOriginalPositionY = true;
                 origem.keepOriginalPositionXZ = true;
