@@ -18,7 +18,8 @@ namespace ALotOfDamage.UI
 
         protected override string Titulo => "Inventário";
         protected override Key Tecla => Key.I;
-        protected override int Ordem => 3;
+        protected override int Ordem => 0;
+        protected override IconeDoHud Icone => IconeDoHud.Inventario;
         protected override int Linhas => 0;
         protected override float AlturaDaLinha => 0;
         protected override Vector2 Tamanho => new Vector2(1520, 880);

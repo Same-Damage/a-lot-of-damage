@@ -17,7 +17,8 @@ namespace ALotOfDamage.UI
 
         protected override string Titulo => "Followers";
         protected override Key Tecla => Key.G;
-        protected override int Ordem => 6;
+        protected override int Ordem => 3;
+        protected override IconeDoHud Icone => IconeDoHud.Followers;
         protected override int Linhas => 0;
         protected override float AlturaDaLinha => 0;
         protected override Vector2 Tamanho => new Vector2(1520, 880);

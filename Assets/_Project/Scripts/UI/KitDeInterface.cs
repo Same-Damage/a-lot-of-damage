@@ -12,6 +12,7 @@ namespace ALotOfDamage.UI
     {
         public static readonly Color Fundo = new Color(0.07f, 0.06f, 0.05f, 0.92f);
         public static readonly Color Dourado = new Color(1f, 0.8f, 0.32f);
+        public static readonly Color DouradoClaro = new Color(0.95f, 0.85f, 0.6f);
         public static readonly Color DouradoEscuro = new Color(0.55f, 0.4f, 0.15f);
         public static readonly Color TextoClaro = new Color(0.95f, 0.92f, 0.85f);
         public static readonly Color Verde = new Color(0.45f, 1f, 0.5f);
@@ -79,6 +80,24 @@ namespace ALotOfDamage.UI
                 img.color = cor ?? Color.white;
             }
             else img.color = cor ?? Fundo;
+            return img;
+        }
+
+        // Placa leve do HUD: translúcida, sem moldura, para não competir com o cenário
+        public static RectTransform Placa(string nome, Transform pai)
+        {
+            var img = Painel(nome, pai, Color.white, false);
+            img.sprite = TemaVisual.Placa;
+            img.type = Image.Type.Sliced;
+            img.raycastTarget = false;
+            return (RectTransform)img.transform;
+        }
+
+        public static Image Icone(string nome, Transform pai, IconeDoHud icone)
+        {
+            var img = Painel(nome, pai, Color.white, false);
+            img.sprite = IconesDoHud.Do(icone);
+            img.raycastTarget = false;
             return img;
         }
 

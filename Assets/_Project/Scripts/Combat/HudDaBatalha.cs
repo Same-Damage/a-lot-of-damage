@@ -5,69 +5,71 @@ using UnityEngine.UI;
 
 namespace ALotOfDamage.Combat
 {
-    // Interface da arena no kit de interface: inimigo e vida no alto, combo e ultimate embaixo,
+    // Interface da arena, só com o essencial: inimigo e vida no alto, combo e ultimate na direita, ouro no canto,
     // faixa de destaque e números de dano. Só desenha; quem decide é o CombateClicker.
     public class HudDaBatalha
     {
-        readonly Text nome, vida, ouro, combo, follower, ultimate, pontoFraco;
-        readonly Barra barraDeVida, barraDaUltimate;
-        readonly GameObject botaoDeFugir;
+        readonly Text nome, vida, ouro, combo, furia, pontoFraco;
+        readonly Barra barraDeVida;
+        readonly BotaoDeIcone botaoDaUltimate, botaoDeFugir;
+        readonly Image cargaDaUltimate;
         public readonly Faixa Faixa;
         public readonly NumerosFlutuantes Numeros;
 
         int comboMostrado = -1, furiaMostrada = -1;
         float ultimateMostrada = -1;
 
-        public HudDaBatalha(Action fugir)
+        public HudDaBatalha(Action fugir, Action dispararUltimate)
         {
             var canvas = KitDeInterface.Canvas();
 
-            var topo = (RectTransform)KitDeInterface.Painel("Inimigo", canvas).transform;
-            KitDeInterface.Ancorar(topo, new Vector2(0.5f, 1), new Vector2(0, -20), new Vector2(900, 110));
-            nome = KitDeInterface.Texto("Nome", topo, 32, KitDeInterface.Dourado, TextAnchor.MiddleCenter, true);
-            KitDeInterface.Ancorar((RectTransform)nome.transform, new Vector2(0.5f, 1), new Vector2(0, -8), new Vector2(860, 44));
+            var topo = KitDeInterface.Placa("Inimigo", canvas);
+            KitDeInterface.Ancorar(topo, new Vector2(0.5f, 1), new Vector2(0, -24), new Vector2(640, 78));
+            nome = KitDeInterface.Texto("Nome", topo, 25, KitDeInterface.Dourado, TextAnchor.MiddleCenter, true);
+            KitDeInterface.Ancorar((RectTransform)nome.transform, new Vector2(0.5f, 1), new Vector2(0, -6), new Vector2(600, 34));
             barraDeVida = KitDeInterface.NovaBarra("Vida", topo, KitDeInterface.Vermelho);
-            KitDeInterface.Ancorar(barraDeVida.Rect, new Vector2(0.5f, 1), new Vector2(0, -60), new Vector2(840, 34));
-            vida = KitDeInterface.Texto("Vida", barraDeVida.Rect, 22, Color.white, TextAnchor.MiddleCenter, true);
+            KitDeInterface.Ancorar(barraDeVida.Rect, new Vector2(0.5f, 0), new Vector2(0, 11), new Vector2(596, 24));
+            vida = KitDeInterface.Texto("Vida", barraDeVida.Rect, 17, Color.white, TextAnchor.MiddleCenter, true);
             KitDeInterface.Esticar((RectTransform)vida.transform);
 
-            var esquerda = (RectTransform)KitDeInterface.Painel("Ouro", canvas).transform;
-            KitDeInterface.Ancorar(esquerda, new Vector2(0, 1), new Vector2(20, -20), new Vector2(360, 60));
-            ouro = KitDeInterface.Texto("Ouro", esquerda, 26, KitDeInterface.Dourado, TextAnchor.MiddleLeft, true);
-            KitDeInterface.Ancorar((RectTransform)ouro.transform, new Vector2(0, 0.5f), new Vector2(18, 0), new Vector2(330, 40));
+            var canto = KitDeInterface.Placa("Ouro", canvas);
+            KitDeInterface.Ancorar(canto, new Vector2(0, 1), new Vector2(24, -24), new Vector2(190, 44));
+            var moeda = KitDeInterface.Icone("Moeda", canto, IconeDoHud.Ouro);
+            KitDeInterface.Ancorar((RectTransform)moeda.transform, new Vector2(0, 0.5f), new Vector2(16, 0), new Vector2(22, 22));
+            ouro = KitDeInterface.Texto("Ouro", canto, 22, KitDeInterface.TextoClaro, TextAnchor.MiddleLeft, true);
+            KitDeInterface.Ancorar((RectTransform)ouro.transform, new Vector2(0, 0.5f), new Vector2(48, 0), new Vector2(136, 32));
 
-            var fugirBotao = KitDeInterface.Botao("Fugir", canvas, "Fugir [Esc]", fugir);
-            KitDeInterface.Ancorar((RectTransform)fugirBotao.transform, new Vector2(1, 1), new Vector2(-20, -20), new Vector2(220, 60));
-            botaoDeFugir = fugirBotao.gameObject;
+            botaoDeFugir = new BotaoDeIcone("Fugir", canvas, IconeDoHud.Fugir, "Fugir", 64, fugir);
+            KitDeInterface.Ancorar(botaoDeFugir.Rect, new Vector2(1, 1), new Vector2(-24, -24), Vector2.one * 64);
 
-            pontoFraco = KitDeInterface.Texto("Ponto Fraco", canvas, 40, KitDeInterface.Azul, TextAnchor.MiddleCenter, true);
-            KitDeInterface.Ancorar((RectTransform)pontoFraco.transform, new Vector2(0.5f, 1), new Vector2(0, -150), new Vector2(700, 60));
-            pontoFraco.text = "PONTO FRACO! CLIQUE!";
+            pontoFraco = KitDeInterface.Texto("Ponto Fraco", canvas, 30, KitDeInterface.Azul, TextAnchor.MiddleCenter, true);
+            KitDeInterface.Ancorar((RectTransform)pontoFraco.transform, new Vector2(0.5f, 1), new Vector2(0, -112), new Vector2(600, 44));
+            pontoFraco.text = "PONTO FRACO!";
 
-            var baixo = (RectTransform)KitDeInterface.Painel("Combate", canvas).transform;
-            KitDeInterface.Ancorar(baixo, new Vector2(0, 0), new Vector2(20, 20), new Vector2(620, 170));
-            follower = Linha(baixo, 12, 22, KitDeInterface.Azul);
-            combo = Linha(baixo, 46, 30, KitDeInterface.Dourado);
-            ultimate = Linha(baixo, 90, 24, KitDeInterface.TextoClaro);
-            barraDaUltimate = KitDeInterface.NovaBarra("Ultimate", baixo, new Color(0.75f, 0.4f, 1f));
-            KitDeInterface.Ancorar(barraDaUltimate.Rect, new Vector2(0, 1), new Vector2(20, -136), new Vector2(580, 18));
+            // ultimate: o disco enche e acende quando está pronta (toque, clique ou Espaço)
+            botaoDaUltimate = new BotaoDeIcone("Ultimate", canvas, IconeDoHud.Ultimate, "", 124, dispararUltimate);
+            KitDeInterface.Ancorar(botaoDaUltimate.Rect, new Vector2(1, 0), new Vector2(-48, 64), Vector2.one * 124);
+            cargaDaUltimate = KitDeInterface.Painel("Carga", botaoDaUltimate.Rect, CorDaCarga, false);
+            cargaDaUltimate.sprite = TemaVisual.Circulo;
+            cargaDaUltimate.raycastTarget = false;
+            cargaDaUltimate.type = Image.Type.Filled;
+            cargaDaUltimate.fillMethod = Image.FillMethod.Vertical;
+            KitDeInterface.Ancorar((RectTransform)cargaDaUltimate.transform, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.one * 112);
+            cargaDaUltimate.transform.SetAsFirstSibling();
+
+            combo = KitDeInterface.Texto("Combo", canvas, 44, KitDeInterface.Dourado, TextAnchor.MiddleRight, true);
+            KitDeInterface.Ancorar((RectTransform)combo.transform, new Vector2(1, 0.5f), new Vector2(-48, 40), new Vector2(400, 60));
+            furia = KitDeInterface.Texto("Furia", canvas, 24, KitDeInterface.Vermelho, TextAnchor.MiddleRight, true);
+            KitDeInterface.Ancorar((RectTransform)furia.transform, new Vector2(1, 0.5f), new Vector2(-48, -6), new Vector2(400, 36));
 
             Faixa = Faixa.DoCanvas(canvas, 0.72f);
             Numeros = NumerosFlutuantes.Criar(canvas);
         }
 
-        static Text Linha(RectTransform painel, float y, int tamanho, Color cor)
-        {
-            var t = KitDeInterface.Texto("Linha", painel, tamanho, cor, TextAnchor.MiddleLeft, true);
-            KitDeInterface.Ancorar((RectTransform)t.transform, new Vector2(0, 1), new Vector2(20, -y), new Vector2(580, tamanho + 10));
-            return t;
-        }
+        static readonly Color CorDaCarga = new Color(0.55f, 0.28f, 0.85f, 0.55f);
+        static readonly Color CorDaCargaPronta = new Color(0.62f, 0.34f, 0.95f, 0.85f);
 
-        public void Inimigo(string nomeDoInimigo, string nomeDoFollower)
-        {
-            nome.text = nomeDoInimigo;
-            follower.text = nomeDoFollower != null ? $"{nomeDoFollower} luta com você" : "";
-        }
+        public void Inimigo(string nomeDoInimigo) => nome.text = nomeDoInimigo;
 
         public void Ouro(string texto) => ouro.text = texto;
 
@@ -77,21 +79,25 @@ namespace ALotOfDamage.Combat
             vida.text = texto;
         }
 
-        public void Combo(int valor, int furia, string nomeDaPassiva)
+        public void Combo(int valor, int acumulosDeFuria, string nomeDaPassiva)
         {
-            if (valor == comboMostrado && furia == furiaMostrada) return;
+            if (valor == comboMostrado && acumulosDeFuria == furiaMostrada) return;
             comboMostrado = valor;
-            furiaMostrada = furia;
-            combo.text = valor > 1 ? $"Combo ×{valor}" + (furia > 0 ? $"   {nomeDaPassiva} ×{furia}" : "") : "";
+            furiaMostrada = acumulosDeFuria;
+            combo.text = valor > 1 ? $"×{valor}" : "";
+            furia.text = valor > 1 && acumulosDeFuria > 0 ? $"{nomeDaPassiva} ×{acumulosDeFuria}" : "";
         }
 
         public void Ultimate(float carga)
         {
             if (Mathf.Approximately(carga, ultimateMostrada)) return;
             ultimateMostrada = carga;
-            barraDaUltimate.Definir(carga / 100f);
-            ultimate.text = carga >= 100 ? "ULTIMATE PRONTA! [Espaço]" : $"Ultimate {carga:0}%";
-            ultimate.color = carga >= 100 ? KitDeInterface.Dourado : KitDeInterface.TextoClaro;
+            bool pronta = carga >= 100;
+            cargaDaUltimate.fillAmount = carga / 100f;
+            cargaDaUltimate.color = pronta ? CorDaCargaPronta : CorDaCarga;
+            botaoDaUltimate.Destacar(pronta);
+            botaoDaUltimate.Rotulo.text = pronta ? "ULTIMATE!" : "";
+            botaoDaUltimate.Rotulo.color = KitDeInterface.Dourado;
         }
 
         public void PontoFraco(bool ativo)
@@ -101,7 +107,8 @@ namespace ALotOfDamage.Combat
 
         public void PodeFugir(bool pode)
         {
-            if (botaoDeFugir.activeSelf != pode) botaoDeFugir.SetActive(pode);
+            var botao = botaoDeFugir.Rect.gameObject;
+            if (botao.activeSelf != pode) botao.SetActive(pode);
         }
     }
 }

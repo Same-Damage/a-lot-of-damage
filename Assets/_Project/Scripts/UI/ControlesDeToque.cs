@@ -7,7 +7,7 @@ namespace ALotOfDamage.UI
     public class ControlesDeToque : MonoBehaviour
     {
         [Tooltip("Mostra os controles no editor/PC para testar com o mouse")]
-        public bool mostrarNoDesktop = true;
+        public bool mostrarNoDesktop = false;
 
         static bool ataquePedido;
 

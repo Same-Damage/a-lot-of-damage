@@ -114,6 +114,21 @@ namespace ALotOfDamage.Testes
             LogAssert.NoUnexpectedReceived();
         }
 
+        // O HUD fica limpo: só os principais à vista, os outros atrás do Menu
+        [UnityTest]
+        public IEnumerator Menu_mostra_os_outros_icones_so_quando_aberto()
+        {
+            yield return Carregar(FluxoDeEncontro.CenaDoMapa);
+            for (int i = 0; i < 3; i++) yield return null;
+            var menu = Object.FindAnyObjectByType<MenuDoMapa>();
+            int fechado = menu.GetComponentsInChildren<UnityEngine.UI.Button>().Length;
+            Assert.AreEqual(MenuDoMapa.Principais + 1, fechado);
+
+            menu.Alternar();
+            yield return null;
+            Assert.AreEqual(Object.FindObjectsByType<JanelaDoJogo>().Length + 1, menu.GetComponentsInChildren<UnityEngine.UI.Button>().Length);
+        }
+
         [UnityTest]
         public IEnumerator Follower_ativo_aparece_com_o_modelo_dele()
         {

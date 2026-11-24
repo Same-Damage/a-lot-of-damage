@@ -23,10 +23,10 @@ namespace ALotOfDamage.World
 
         void Start()
         {
-            var botao = KitDeInterface.Botao("TrocarHeroi", KitDeInterface.Canvas(), "", Trocar, 22);
-            // logo abaixo do painel do HUD
-            KitDeInterface.Ancorar((RectTransform)botao.transform, new Vector2(0, 1), new Vector2(20, -284), new Vector2(300, 56));
-            rotulo = botao.GetComponentInChildren<Text>();
+            var botao = new BotaoDeIcone("TrocarHeroi", KitDeInterface.Canvas(), IconeDoHud.Heroi, "", 84, Trocar);
+            // no canto, ao lado da placa do Poder
+            KitDeInterface.Ancorar(botao.Rect, new Vector2(0, 1), new Vector2(24, -24), Vector2.one * 84);
+            rotulo = botao.Rotulo;
             Aplicar(escolha.Atual(herois.Nomes));
         }
 
@@ -45,7 +45,7 @@ namespace ALotOfDamage.World
             var visual = herois.Mostrar(nome);
             movimento.boneco = visual;
             ataque.boneco = visual;
-            rotulo.text = $"Herói: {visual.name} (H)";
+            rotulo.text = visual.name;
         }
     }
 }

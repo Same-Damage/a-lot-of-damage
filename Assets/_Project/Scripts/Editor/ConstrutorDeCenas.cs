@@ -389,19 +389,19 @@ namespace ALotOfDamage.Ferramentas
             var circulo = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
 
             // Joystick no canto inferior esquerdo
-            var fundo = NovaImagem("Joystick", canvasGo.transform, circulo, new Color(1, 1, 1, 0.25f), 260);
+            var fundo = NovaImagem("Joystick", canvasGo.transform, circulo, new Color(1, 1, 1, 0.16f), 230);
             fundo.anchorMin = fundo.anchorMax = new Vector2(0, 0);
             fundo.anchoredPosition = new Vector2(220, 220);
-            var pino = NovaImagem("Pino", fundo, circulo, new Color(1, 1, 1, 0.7f), 110);
+            var pino = NovaImagem("Pino", fundo, circulo, new Color(1, 1, 1, 0.5f), 96);
             pino.GetComponent<Image>().raycastTarget = false;
             var joy = fundo.gameObject.AddComponent<JoystickVirtual>();
             joy.fundo = fundo;
             joy.pino = pino;
 
             // Botão de ataque no canto inferior direito
-            var ataque = NovaImagem("Botao de Ataque", canvasGo.transform, circulo, new Color(1f, 0.4f, 0.3f, 0.6f), 200);
+            var ataque = NovaImagem("Botao de Ataque", canvasGo.transform, circulo, new Color(0.8f, 0.25f, 0.2f, 0.55f), 150);
             ataque.anchorMin = ataque.anchorMax = new Vector2(1, 0);
-            ataque.anchoredPosition = new Vector2(-200, 200);
+            ataque.anchoredPosition = new Vector2(-150, 150);
             ataque.gameObject.AddComponent<BotaoDeAtaque>();
         }
 

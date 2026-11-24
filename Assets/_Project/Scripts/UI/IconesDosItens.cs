@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ALotOfDamage.Core;
 using UnityEngine;
+using static ALotOfDamage.UI.DesenhoDeIcone;
 
 namespace ALotOfDamage.UI
 {
@@ -21,30 +22,9 @@ namespace ALotOfDamage.UI
 
             string chave = $"{slot}#{ColorUtility.ToHtmlStringRGB(cor)}";
             if (cache.TryGetValue(chave, out var provisorio)) return provisorio;
-            provisorio = Silhueta(slot, cor);
+            provisorio = DesenhoDeIcone.Criar(Tamanho, cor, (u, v) => Distancia(slot, u, v));
             cache[chave] = provisorio;
             return provisorio;
-        }
-
-        static Sprite Silhueta(SlotDeItem slot, Color cor)
-        {
-            var t = new Texture2D(Tamanho, Tamanho, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
-            var px = new Color32[Tamanho * Tamanho];
-            for (int y = 0; y < Tamanho; y++)
-            for (int x = 0; x < Tamanho; x++)
-            {
-                // coordenadas de -1 a 1, y para cima
-                float u = (x + 0.5f) / Tamanho * 2 - 1, v = (y + 0.5f) / Tamanho * 2 - 1;
-                float d = Distancia(slot, u, v);
-                float a = Mathf.Clamp01(0.5f - d * Tamanho * 0.5f);
-                // sombreado simples: mais claro em cima, para parecer volume
-                var c = Color.Lerp(cor * 0.55f, Color.Lerp(cor, Color.white, 0.35f), (v + 1) * 0.5f);
-                c.a = a;
-                px[y * Tamanho + x] = c;
-            }
-            t.SetPixels32(px);
-            t.Apply();
-            return Sprite.Create(t, new Rect(0, 0, Tamanho, Tamanho), new Vector2(0.5f, 0.5f), 100);
         }
 
         // Distância com sinal até a forma (negativa dentro)
@@ -71,20 +51,6 @@ namespace ALotOfDamage.UI
                     float corrente = v > 0.1f ? Mathf.Abs(Mathf.Abs(u) - 0.55f) - 0.05f : Mathf.Abs(Mathf.Sqrt(u * u + (v - 0.1f) * (v - 0.1f)) - 0.55f) - 0.05f;
                     return Mathf.Min(corrente, Mathf.Sqrt(u * u + (v + 0.55f) * (v + 0.55f)) - 0.2f);
             }
-        }
-
-        static float Caixa(float u, float v, float meiaLargura, float meiaAltura)
-        {
-            float dx = Mathf.Abs(u) - meiaLargura, dy = Mathf.Abs(v) - meiaAltura;
-            return Mathf.Max(dx, dy) > 0 ? new Vector2(Mathf.Max(dx, 0), Mathf.Max(dy, 0)).magnitude : Mathf.Max(dx, dy);
-        }
-
-        static float Segmento(float u, float v, float ax, float ay, float bx, float by)
-        {
-            var p = new Vector2(u - ax, v - ay);
-            var ab = new Vector2(bx - ax, by - ay);
-            float t = Mathf.Clamp01(Vector2.Dot(p, ab) / ab.sqrMagnitude);
-            return (p - ab * t).magnitude;
         }
     }
 }
