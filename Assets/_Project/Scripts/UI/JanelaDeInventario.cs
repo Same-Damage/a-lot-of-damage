@@ -29,11 +29,14 @@ namespace ALotOfDamage.UI
         static readonly SlotDeItem[] SlotsDaDireita = { SlotDeItem.Botas, SlotDeItem.Cinto, SlotDeItem.Anel, SlotDeItem.Colar };
         static readonly string[] NomesDosSlots = { "Arma", "Elmo", "Peitoral", "Luvas", "Botas", "Cinto", "Anel", "Colar" };
 
-        public static readonly Color[] CoresDasRaridades =
+        static readonly Color[] CoresDasRaridades = CoresDoDominio();
+
+        static Color[] CoresDoDominio()
         {
-            new Color(0.62f, 0.62f, 0.62f), new Color(0.35f, 0.85f, 0.35f), new Color(0.3f, 0.6f, 1f),
-            new Color(0.7f, 0.35f, 1f), new Color(1f, 0.6f, 0.15f),
-        };
+            var cores = new Color[RegrasDosItens.NomesDasRaridades.Length];
+            for (int i = 0; i < cores.Length; i++) ColorUtility.TryParseHtmlString(RegrasDosItens.CorDaRaridade((Raridade)i), out cores[i]);
+            return cores;
+        }
 
         CalcularPoder calcularPoder;
         ConsultarItem consultarItem;

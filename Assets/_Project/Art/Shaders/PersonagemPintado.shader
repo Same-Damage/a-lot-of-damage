@@ -15,6 +15,8 @@ Shader "ALotOfDamage/PersonagemPintado"
         _PotenciaDaBorda ("Largura do brilho de borda", Range(1, 10)) = 4
         _CorDoContorno ("Cor do contorno", Color) = (0.12, 0.08, 0.06, 1)
         _LarguraDoContorno ("Largura do contorno", Range(0, 0.01)) = 0.001
+        _CorDaEmissao ("Cor da emissão (poder do item)", Color) = (0, 0, 0, 1)
+        _ForcaDaEmissao ("Força da emissão", Range(0, 4)) = 0
     }
 
     SubShader
@@ -37,6 +39,8 @@ Shader "ALotOfDamage/PersonagemPintado"
             half _PotenciaDaBorda;
             half4 _CorDoContorno;
             float _LarguraDoContorno;
+            half4 _CorDaEmissao;
+            half _ForcaDaEmissao;
         CBUFFER_END
 
         TEXTURE2D(_BaseMap);
@@ -100,6 +104,9 @@ Shader "ALotOfDamage/PersonagemPintado"
                 half borda = pow(saturate(1 - dot(n, v)), _PotenciaDaBorda) * _ForcaDaBorda * (0.35 + 0.65 * faixa);
 
                 half3 final = cor.rgb * tom + _CorDaBorda.rgb * borda;
+                // brilho próprio do item (raridade e refino): mais forte nas partes claras do desenho, que pegam o bloom
+                half luz_ = dot(cor.rgb, half3(0.3, 0.59, 0.11));
+                final += _CorDaEmissao.rgb * _ForcaDaEmissao * (0.35 + 0.65 * luz_);
                 final = MixFog(final, s.fog);
                 return half4(final, 1);
             }

@@ -51,7 +51,7 @@ namespace ALotOfDamage.Infrastructure
             builder.Register<CalcularPoder>(Lifetime.Singleton);
             builder.Register<CalcularInimigo>(Lifetime.Singleton);
             builder.Register<ConsultarCampanha>(Lifetime.Singleton);
-            builder.Register<ConsultarBrilhoDaArma>(Lifetime.Singleton);
+            builder.Register<ConsultarVisualDoHeroi>(Lifetime.Singleton);
             builder.Register<ListarPendencias>(Lifetime.Singleton);
             builder.Register<EscolhaDeHeroi>(Lifetime.Singleton);
         }
