@@ -122,6 +122,19 @@ namespace ALotOfDamage.Testes
         }
 
         [Test]
+        public void Organizar_poe_raridade_maior_primeiro_depois_slot_e_refino()
+        {
+            var comumAnel = progresso.ReceberItem("anel", SlotDeItem.Anel, Raridade.Comum, 1, 10);
+            var raraArma = progresso.ReceberItem("espada", SlotDeItem.Arma, Raridade.Raro, 1, 10);
+            var comumArma = progresso.ReceberItem("espada", SlotDeItem.Arma, Raridade.Comum, 1, 10);
+            var comumArmaRefinada = progresso.ReceberItem("espada", SlotDeItem.Arma, Raridade.Comum, 1, 10);
+            comumArmaRefinada.Nivel = 2;
+
+            progresso.OrganizarInventario();
+            CollectionAssert.AreEqual(new[] { raraArma, comumArmaRefinada, comumArma, comumAnel }, progresso.Inventario);
+        }
+
+        [Test]
         public void Item_equipado_nao_pode_ser_removido_do_inventario()
         {
             var a = Receber();

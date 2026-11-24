@@ -238,6 +238,33 @@ namespace ALotOfDamage.Testes
         }
 
         [Test]
+        public void Organizar_inventario_salva_a_nova_ordem()
+        {
+            var p = repositorio.Progresso;
+            var comum = p.ReceberItem("espada", SlotDeItem.Arma, Raridade.Comum, 1, 10);
+            var lendario = p.ReceberItem("espada", SlotDeItem.Arma, Raridade.Lendario, 1, 10);
+            new OrganizarInventario(repositorio, catalogo).Executar();
+            Assert.AreSame(lendario, p.Inventario[0]);
+            Assert.AreSame(comum, p.Inventario[1]);
+            Assert.AreEqual(1, repositorio.Salvamentos);
+        }
+
+        [Test]
+        public void Detalhes_do_item_trazem_nome_bonus_venda_e_desmonte()
+        {
+            var item = repositorio.Progresso.ReceberItem("espada", SlotDeItem.Arma, Raridade.Incomum, 1, 10);
+            var d = new ConsultarItem(repositorio, catalogo).Executar(item.Id);
+            Assert.AreEqual("Espada", d.Nome);
+            Assert.AreEqual("Incomum", d.NomeDaRaridade);
+            Assert.AreEqual(AlvoDoItem.Click, d.Alvo);
+            Assert.AreEqual(3, d.Multiplicador, 1e-9);
+            Assert.AreEqual(20, d.PrecoDeVenda, 1e-9);
+            Assert.AreEqual(2, d.MaterialAoDesmontar);
+            Assert.IsFalse(d.Equipado);
+            Assert.IsNull(new ConsultarItem(repositorio, catalogo).Executar(999).Nome, "item inexistente vem vazio");
+        }
+
+        [Test]
         public void Equipar_e_desequipar_pelos_casos_de_uso()
         {
             var item = repositorio.Progresso.ReceberItem("espada", SlotDeItem.Arma, Raridade.Comum, 1, 10);
