@@ -29,19 +29,40 @@ namespace ALotOfDamage.UI
         public static Texture2D TexturaDoFundoDaBarra => fundoDaBarra ??= CriarMoldura(32, new Color(0.05f, 0.04f, 0.03f, 0.95f), new Color(0.1f, 0.07f, 0.05f, 0.95f), 4, false);
 
         // Sprites fatiados para Image.Type.Sliced
-        public static Sprite Painel => Fatiado(ref spritePainel, TexturaDoPainel, Fatia);
-        public static Sprite Botao => Fatiado(ref spriteBotao, TexturaDoBotao, FatiaPequena);
-        public static Sprite BotaoHover => Fatiado(ref spriteBotaoHover, TexturaDoBotaoHover, FatiaPequena);
-        public static Sprite BotaoPressionado => Fatiado(ref spriteBotaoPressionado, TexturaDoBotaoPressionado, FatiaPequena);
-        public static Sprite FundoDaBarra => Fatiado(ref spriteFundoDaBarra, TexturaDoFundoDaBarra, FatiaPequena);
+        // Com arte pintada em Resources/Interface/<nome>.png, ela é usada no lugar da gerada por código
+        public static Sprite Painel => Fatiado(ref spritePainel, "Painel", () => TexturaDoPainel, Fatia);
+        public static Sprite Botao => Fatiado(ref spriteBotao, "Botao", () => TexturaDoBotao, FatiaPequena);
+        public static Sprite BotaoHover => Fatiado(ref spriteBotaoHover, "BotaoHover", () => TexturaDoBotaoHover, FatiaPequena);
+        public static Sprite BotaoPressionado => Fatiado(ref spriteBotaoPressionado, "BotaoPressionado", () => TexturaDoBotaoPressionado, FatiaPequena);
+        public static Sprite FundoDaBarra => Fatiado(ref spriteFundoDaBarra, "FundoDaBarra", () => TexturaDoFundoDaBarra, FatiaPequena);
 
-        static Sprite Fatiado(ref Sprite cache, Texture2D t, int fatia)
+        // Parte da arte pintada que fica fixa nas bordas ao esticar (9-slice): os cantos ornamentados
+        public const float ProporcaoDaFatiaDaArte = 0.12f;
+
+        public static Texture2D ArtePintada(string nome) => Resources.Load<Texture2D>("Interface/" + nome);
+
+        static Sprite Fatiado(ref Sprite cache, string nome, System.Func<Texture2D> gerada, int fatia)
         {
             if (cache) return cache;
+            var t = ArtePintada(nome);
+            if (t) fatia = Mathf.RoundToInt(Mathf.Min(t.width, t.height) * ProporcaoDaFatiaDaArte);
+            else t = gerada();
             cache = Sprite.Create(t, new Rect(0, 0, t.width, t.height), new Vector2(0.5f, 0.5f), 100, 0,
                 SpriteMeshType.FullRect, new Vector4(fatia, fatia, fatia, fatia));
             cache.hideFlags = HideFlags.DontSave;
             return cache;
+        }
+
+        static readonly System.Collections.Generic.Dictionary<string, Sprite> artesInteiras = new();
+
+        // Arte pintada usada inteira, sem esticar as bordas (molduras das casas, faixa do Poder); null se ainda não existe
+        public static Sprite Arte(string nome)
+        {
+            if (artesInteiras.TryGetValue(nome, out var s)) return s;
+            var t = ArtePintada(nome);
+            s = t ? Sprite.Create(t, new Rect(0, 0, t.width, t.height), new Vector2(0.5f, 0.5f), 100) : null;
+            artesInteiras[nome] = s;
+            return s;
         }
 
         static Texture2D Novo(int l, int a)

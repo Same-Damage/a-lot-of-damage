@@ -109,6 +109,15 @@ namespace ALotOfDamage.Core
             return true;
         }
 
+        // Raridade maior primeiro, depois a ordem dos slots, o refino maior e a ordem em que chegou
+        public void OrganizarInventario() => inventario.Sort((a, b) =>
+        {
+            int c = b.Raridade.CompareTo(a.Raridade);
+            if (c == 0) c = a.Slot.CompareTo(b.Slot);
+            if (c == 0) c = b.Nivel.CompareTo(a.Nivel);
+            return c != 0 ? c : a.Id.CompareTo(b.Id);
+        });
+
         public bool Desequipar(SlotDeItem slot, int limite)
         {
             if (!equipados.TryGetValue(slot, out var item) || inventario.Count >= limite) return false;

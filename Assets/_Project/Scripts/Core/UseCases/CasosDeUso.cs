@@ -190,6 +190,62 @@ namespace ALotOfDamage.Core
         }
     }
 
+    public struct DetalhesDoItem
+    {
+        public string Nome;              // null se o item não existe
+        public string NomeDaRaridade;
+        public Raridade Raridade;
+        public SlotDeItem Slot;
+        public AlvoDoItem Alvo;
+        public int Nivel;
+        public double Multiplicador;
+        public double PrecoDeVenda;
+        public int MaterialAoDesmontar;
+        public string Material;
+        public bool Equipado;
+    }
+
+    // O que a tela mostra de um item: nome, raridade, bônus e quanto vale vender ou desmontar
+    public class ConsultarItem : CasoDeUso
+    {
+        public ConsultarItem(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public DetalhesDoItem Executar(int idDoItem)
+        {
+            var p = repositorio.Carregar();
+            var item = p.BuscarItem(idDoItem);
+            var tipo = item == null ? null : catalogo.Item(item.TipoId);
+            if (tipo == null) return default;
+            var regras = catalogo.ParametrosDosItens;
+            return new DetalhesDoItem
+            {
+                Nome = tipo.Nome,
+                NomeDaRaridade = RegrasDosItens.Nome(item.Raridade),
+                Raridade = item.Raridade,
+                Slot = item.Slot,
+                Alvo = tipo.Alvo,
+                Nivel = item.Nivel,
+                Multiplicador = RegrasDosItens.Multiplicador(regras, tipo, item),
+                PrecoDeVenda = RegrasDosItens.PrecoDeVenda(regras, item),
+                MaterialAoDesmontar = RegrasDosItens.MaterialAoDesmontar(regras, item),
+                Material = catalogo.NomeDoMaterial(tipo.MaterialId),
+                Equipado = p.Equipado(item.Slot) == item,
+            };
+        }
+    }
+
+    public class OrganizarInventario : CasoDeUso
+    {
+        public OrganizarInventario(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public void Executar()
+        {
+            var p = repositorio.Carregar();
+            p.OrganizarInventario();
+            repositorio.Salvar(p);
+        }
+    }
+
     public class EquiparItem : CasoDeUso
     {
         public EquiparItem(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }

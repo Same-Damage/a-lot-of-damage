@@ -32,6 +32,24 @@ namespace ALotOfDamage.UI
         protected abstract void MontarLinha(int i, RectTransform linha);
         protected abstract void AtualizarLinha(int i);
 
+        // Janelas com layout próprio (como o inventário) trocam o tamanho e o conteúdo em vez de usar linhas
+        protected virtual Vector2 Tamanho => new Vector2(Largura, 90 + Linhas * AlturaDaLinha);
+
+        protected virtual void MontarConteudo(RectTransform painel)
+        {
+            for (int i = 0; i < Linhas; i++)
+            {
+                var linha = KitDeInterface.Novo($"Linha {i}", painel);
+                KitDeInterface.Ancorar(linha, new Vector2(0, 1), new Vector2(0, -80 - i * AlturaDaLinha), new Vector2(Largura, AlturaDaLinha));
+                MontarLinha(i, linha);
+            }
+        }
+
+        protected virtual void AtualizarConteudo()
+        {
+            AtualizarConteudo();
+        }
+
         public bool Aberta => aberta == this;
 
         [Inject]
@@ -50,26 +68,21 @@ namespace ALotOfDamage.UI
             KitDeInterface.Ancorar((RectTransform)botao.transform, new Vector2(1, 1), new Vector2(-20, -20 - Ordem * 70), new Vector2(240, 60));
             rotuloDoBotao = botao.GetComponentInChildren<Text>();
 
-            float altura = 90 + Linhas * AlturaDaLinha;
+            var tamanho = Tamanho;
             painel = (RectTransform)KitDeInterface.Painel($"Janela {Titulo}", canvas).transform;
-            KitDeInterface.Ancorar(painel, new Vector2(0.5f, 0.5f), new Vector2(-60, 0), new Vector2(Largura, altura));
+            KitDeInterface.Ancorar(painel, new Vector2(0.5f, 0.5f), new Vector2(-60, 0), tamanho);
 
             cabecalho = KitDeInterface.Texto("Cabecalho", painel, 34, KitDeInterface.Dourado, TextAnchor.MiddleLeft, true);
-            KitDeInterface.Ancorar((RectTransform)cabecalho.transform, new Vector2(0, 1), new Vector2(24, -14), new Vector2(Largura - 48, 50));
+            KitDeInterface.Ancorar((RectTransform)cabecalho.transform, new Vector2(0, 1), new Vector2(24, -14), new Vector2(tamanho.x - 48, 50));
 
             var fechar = KitDeInterface.Botao("Fechar", painel, "X", Alternar, 26);
             KitDeInterface.Ancorar((RectTransform)fechar.transform, new Vector2(1, 1), new Vector2(-14, -14), new Vector2(50, 50));
 
-            for (int i = 0; i < Linhas; i++)
-            {
-                var linha = KitDeInterface.Novo($"Linha {i}", painel);
-                KitDeInterface.Ancorar(linha, new Vector2(0, 1), new Vector2(0, -80 - i * AlturaDaLinha), new Vector2(Largura, AlturaDaLinha));
-                MontarLinha(i, linha);
-            }
+            MontarConteudo(painel);
             painel.gameObject.SetActive(false);
         }
 
-        void Alternar()
+        protected void Alternar()
         {
             aberta = Aberta ? null : this;
             proximaAtualizacao = 0;
@@ -88,13 +101,15 @@ namespace ALotOfDamage.UI
             if (painel.gameObject.activeSelf != Aberta)
             {
                 painel.gameObject.SetActive(Aberta);
+                // por cima do HUD e das outras janelas
+                if (Aberta) painel.SetAsLastSibling();
                 rotuloDoBotao.text = Aberta ? $"Fechar [{Tecla}]" : $"{Titulo} [{Tecla}]";
             }
             if (!Aberta || Time.unscaledTime < proximaAtualizacao) return;
 
             proximaAtualizacao = Time.unscaledTime + IntervaloDeAtualizacao;
             cabecalho.text = $"{Titulo}      Ouro {FormatadorDeNumeros.Formatar(Progresso.Ouro)}";
-            for (int i = 0; i < Linhas; i++) AtualizarLinha(i);
+            AtualizarConteudo();
         }
 
         // Atalhos para as linhas
