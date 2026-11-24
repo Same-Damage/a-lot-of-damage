@@ -126,10 +126,13 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 - **Pip, o falcão** (implementado): ataca a cada 1,5 s com 20% do auto-ataque e deixa a janela do ponto fraco 30% mais longa. Voa ao lado do jogador batendo as asas.
 - Futuro: nível, estrelas por duplicata, sinergia com classes, skill ativa e passiva por follower.
 
-### Gacha (só com moeda do jogo)
+### Gacha (só com moeda do jogo) — implementado
 
-- Só followers. Moeda obtida jogando (campanha, diárias, conquistas, eventos, guilda, PvP).
-- Pity garantido e taxas publicadas. Duplicatas viram estrelas/fragmentos.
+- **40 followers** em 5 raridades (14 Comuns, 10 Incomuns, 8 Raros, 5 Épicos, 3 Lendários): companheiros (humanos, elfos, anões, goblin, robôs), bestas, aves, dragões, criaturas míticas e espíritos. O Pip vem de início.
+- Cada follower ataca a cada 1,5 s com uma parte do auto-ataque (20% no Comum a 75% no Lendário) e tem **um efeito**: dano extra, ponto fraco mais longo, +ouro, +AFK, +crítico ou +drop; os raros dão efeitos maiores. Só o follower ativo dá o efeito.
+- **Invocar:** 100 cristais (10 por 900). Taxas públicas: Comum 50%, Incomum 30%, Raro 14%, Épico 5%, Lendário 1%. **Pity:** Épico garantido na 30ª seguida sem Épico, Lendário na 90ª sem Lendário.
+- **Repetido** vira estrela (até 5, cada uma +20% no efeito e no dano); com 5 estrelas devolve 50 cristais.
+- **Cristais** (nunca com dinheiro real): conquistas, 25 por chefe, 200 + 5 por Alma na Ascensão e 1 a cada 20 vitórias do AFK.
 
 ## 6. Números gigantes
 
@@ -160,8 +163,8 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 | Alquimia | Poções | Ervas + drops | Buffs temporários grandes | Futuro |
 | Relíquias | Itens únicos de chefes | Fragmentos de chefe | Multiplicadores grandes | Futuro |
 | Afinidade do follower | Presentes e conversa | Presentes | Passivas e falas | Futuro |
-| Conquistas | Metas de todo o jogo | Jogar | % pequeno acumulativo | Futuro |
-| Ascensão | Recomeça estágio e upgrades por Almas | Progresso atual | Multiplicador permanente | Futuro |
+| Conquistas | 9 metas com degraus (vitórias, chefes, estágio, Ascensões, itens Épicos, refino, fabricação, ouro total, marcos do bestiário); cada degrau é coletado na janela | Jogar | +1% em todo o dano por degrau e cristais (10, 40, 90, 160, 250 pelo degrau) | Implementado |
+| Ascensão | Libera no estágio 50; recomeça estágio, upgrades e ouro por Almas = (estágio − 45)² ÷ 5 (estágio 50: 5, 60: 45, 80: 245). Mantém itens, materiais, bestiário e o resto | Progresso atual | Cada Alma +10% em todo o dano, para sempre | Implementado |
 
 ### O dilema "o que fazer agora?"
 
@@ -176,7 +179,7 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 - **Chefe a cada 5 estágios** (implementado): aparece no mapa maior e avermelhado, com ×10 de vida; só derrotá-lo avança.
 - Regiões trocam a cada 10 estágios.
 - Futuro: capítulos de história antes dos estágios infinitos; torre infinita.
-- **Recompensa AFK** (futuro): o personagem continua lutando offline no estágio alcançado; ao voltar, coleta ouro e materiais, com limite de 12 h. No online, calculada no servidor pelo tempo e pelo poder.
+- **Recompensa AFK** (implementado): enquanto o jogador está fora, o herói luta sozinho no estágio atual só com auto-ataque e follower (cada luta dura vida ÷ dano por segundo, mais 5 s entre lutas). Rende **25%** dessas lutas em ouro, material dos monstros da região e itens pela chance de drop, até **12 h**. Ao abrir o mapa, uma janela mostra o tempo, as vitórias e o que foi ganho, com o botão Coletar. A presença é marcada a cada 30 s e ao pausar ou fechar o jogo. No online, calculada no servidor pelo tempo e pelo poder.
 - **Save** (implementado): progresso salvo em JSON no dispositivo, com gravação segura (temporário + troca).
 
 ## 9. Social e online (futuro)

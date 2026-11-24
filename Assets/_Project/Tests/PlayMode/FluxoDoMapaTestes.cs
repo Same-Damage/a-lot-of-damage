@@ -2,6 +2,7 @@ using System.Collections;
 using ALotOfDamage.Combat;
 using ALotOfDamage.Core;
 using ALotOfDamage.Infrastructure;
+using ALotOfDamage.UI;
 using ALotOfDamage.World;
 using NUnit.Framework;
 using UnityEngine;
@@ -92,6 +93,25 @@ namespace ALotOfDamage.Testes
             Assert.IsFalse(fluxo.Ativo, "a batalha não terminou sozinha em 30 s");
             Assert.AreEqual(FluxoDeEncontro.CenaDoMapa, SceneManager.GetActiveScene().name);
             Assert.Greater(repositorio.Carregar().Ouro, ouroAntes);
+        }
+
+        // Regressão: AtualizarConteudo chamava a si mesmo nas janelas de linhas (Upgrades, Forja, Bestiário),
+        // estourando a pilha a cada atualização: FPS caía e a janela abria vazia
+        [UnityTest]
+        public IEnumerator Todas_as_janelas_do_mapa_abrem_sem_erro()
+        {
+            yield return Carregar(FluxoDeEncontro.CenaDoMapa);
+            var janelas = Object.FindObjectsByType<JanelaDoJogo>();
+            Assert.Greater(janelas.Length, 1);
+            foreach (var janela in janelas)
+            {
+                janela.Alternar();
+                for (int i = 0; i < 5; i++) yield return null;
+                Assert.IsTrue(janela.Aberta, janela.GetType().Name);
+                janela.Alternar();
+                yield return null;
+            }
+            LogAssert.NoUnexpectedReceived();
         }
     }
 }

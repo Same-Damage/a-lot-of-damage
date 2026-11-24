@@ -13,6 +13,18 @@ namespace ALotOfDamage.Core
         public int ChefeACada = 5;
         public double MultiplicadorDeVidaDoChefe = 10;
         public int EstagiosPorRegiao = 10;
+
+        // Recompensa AFK: o herói luta sozinho (só auto-ataque e follower) no estágio atual enquanto o jogador está fora
+        public double FracaoDoAfk = 0.25;           // parte das lutas que vira recompensa
+        public double LimiteDoAfkEmHoras = 12;
+        public double SegundosEntreLutasNoAfk = 5;
+        public double MinimoDoAfkEmSegundos = 60;   // menos que isso não abre a janela de recompensa
+
+        // Ascensão: recomeçar em troca de Almas, que multiplicam todo o dano para sempre
+        public int EstagioMinimoDaAscensao = 50;
+        public int EstagioBaseDasAlmas = 45;        // Almas = (estágio − base)² ÷ divisor
+        public double DivisorDasAlmas = 5;
+        public double BonusPorAlma = 0.1;           // cada Alma soma 10% de dano
     }
 
     [Serializable]

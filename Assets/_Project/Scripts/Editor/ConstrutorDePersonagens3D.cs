@@ -104,6 +104,7 @@ namespace ALotOfDamage.Ferramentas
             public string Peca;
             public HumanBodyBones Osso;
             public Vector3 Pega, Afastamento, Rotacao;
+            public bool Arma;   // mostra o item do slot Arma (some sem item); acessórios ficam sempre
         }
 
         static readonly System.Collections.Generic.Dictionary<string, Encaixe[]> Equipamento = new()
@@ -111,14 +112,14 @@ namespace ALotOfDamage.Ferramentas
             ["Arqueira"] = new[]
             {
                 // arco em pé na mão esquerda, ao lado da perna
-                new Encaixe { Peca = "Arco", Osso = HumanBodyBones.LeftHand, Pega = Vector3.zero, Afastamento = new Vector3(0, -0.08f, 0.02f), Rotacao = new Vector3(0, 90, 0) },
+                new Encaixe { Peca = "Arco", Arma = true, Osso = HumanBodyBones.LeftHand, Pega = Vector3.zero, Afastamento = new Vector3(0, -0.08f, 0.02f), Rotacao = new Vector3(0, 90, 0) },
                 // aljava atravessada nas costas, com as flechas por cima do ombro direito
                 new Encaixe { Peca = "Aljava", Osso = HumanBodyBones.UpperChest, Pega = Vector3.zero, Afastamento = new Vector3(0, -0.05f, -0.17f), Rotacao = new Vector3(0, 0, -30) },
             },
             ["Cavaleiro"] = new[]
             {
                 // espada na mão direita, lâmina para a frente e um pouco para baixo
-                new Encaixe { Peca = "Espada", Osso = HumanBodyBones.RightHand, Pega = new Vector3(0, 0.36f, 0), Afastamento = new Vector3(0, -0.08f, 0.03f), Rotacao = new Vector3(-60, 0, 0) },
+                new Encaixe { Peca = "Espada", Arma = true, Osso = HumanBodyBones.RightHand, Pega = new Vector3(0, 0.36f, 0), Afastamento = new Vector3(0, -0.08f, 0.03f), Rotacao = new Vector3(-60, 0, 0) },
             },
         };
 
@@ -152,7 +153,7 @@ namespace ALotOfDamage.Ferramentas
                 r.sharedMaterials = Enumerable.Repeat(material, r.sharedMaterials.Length).ToArray();
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
-            go.AddComponent<PecaDeEquipamento>();
+            go.AddComponent<PecaDeEquipamento>().ehArma = e.Arma;
             return go.transform;
         }
 

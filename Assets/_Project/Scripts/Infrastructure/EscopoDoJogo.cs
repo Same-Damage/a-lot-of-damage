@@ -35,6 +35,7 @@ namespace ALotOfDamage.Infrastructure
                 builder.RegisterInstance<IRepositorioDeProgresso>(new RepositorioDeProgressoEmArquivo(CaminhoDoSave));
             builder.Register<ICatalogo, CatalogoDeBalanceamento>(Lifetime.Singleton);
             builder.Register<ISorteio, SorteioDaUnity>(Lifetime.Singleton);
+            builder.Register<IRelogio, RelogioDoSistema>(Lifetime.Singleton);
             builder.Register<FluxoDeEncontro>(Lifetime.Singleton);
 
             builder.Register<ComprarUpgrade>(Lifetime.Singleton);
@@ -51,7 +52,17 @@ namespace ALotOfDamage.Infrastructure
             builder.Register<CalcularPoder>(Lifetime.Singleton);
             builder.Register<CalcularInimigo>(Lifetime.Singleton);
             builder.Register<ConsultarCampanha>(Lifetime.Singleton);
-            builder.Register<ConsultarBrilhoDaArma>(Lifetime.Singleton);
+            builder.Register<ConsultarVisualDoHeroi>(Lifetime.Singleton);
+            builder.Register<RegistrarPresenca>(Lifetime.Singleton);
+            builder.Register<ConsultarAscensao>(Lifetime.Singleton);
+            builder.Register<Ascender>(Lifetime.Singleton);
+            builder.Register<ListarConquistas>(Lifetime.Singleton);
+            builder.Register<Invocar>(Lifetime.Singleton);
+            builder.Register<EscolherFollower>(Lifetime.Singleton);
+            builder.Register<ListarFollowers>(Lifetime.Singleton);
+            builder.Register<ColetarConquista>(Lifetime.Singleton);
+            builder.Register<ConsultarRecompensaAfk>(Lifetime.Singleton);
+            builder.Register<ColetarRecompensaAfk>(Lifetime.Singleton);
             builder.Register<ListarPendencias>(Lifetime.Singleton);
             builder.Register<EscolhaDeHeroi>(Lifetime.Singleton);
         }

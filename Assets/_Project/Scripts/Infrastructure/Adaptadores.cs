@@ -59,8 +59,11 @@ namespace ALotOfDamage.Infrastructure
         public ParametrosDoBestiario Bestiario { get; }
         public IReadOnlyList<DefinicaoDeClasse> Classes { get; }
         public IReadOnlyList<DefinicaoDeFollower> Followers { get; }
+        public ParametrosDoGacha Gacha { get; }
         public ParametrosDaCampanha Campanha { get; }
         public ParametrosDosItens ParametrosDosItens { get; }
+        public IReadOnlyList<DefinicaoDeConquista> Conquistas { get; }
+        public ParametrosDasConquistas ParametrosDasConquistas { get; }
         public IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
 
         public CatalogoDeBalanceamento()
@@ -75,10 +78,19 @@ namespace ALotOfDamage.Infrastructure
             var personagens = BalanceamentoDePersonagens.Carregar();
             Classes = personagens.classes;
             Followers = personagens.followers;
+            Gacha = personagens.gacha;
             var campanha = BalanceamentoDaCampanha.Carregar();
             Campanha = campanha.parametros;
             Regioes = campanha.regioes;
+            var conquistas = BalanceamentoDasConquistas.Carregar();
+            Conquistas = conquistas.conquistas;
+            ParametrosDasConquistas = conquistas.parametros;
         }
+    }
+
+    public class RelogioDoSistema : IRelogio
+    {
+        public DateTime AgoraUtc => DateTime.UtcNow;
     }
 
     public class SorteioDaUnity : ISorteio

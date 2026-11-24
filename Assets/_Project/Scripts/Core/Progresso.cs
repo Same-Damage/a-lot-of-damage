@@ -19,6 +19,83 @@ namespace ALotOfDamage.Core
         public string HeroiId { get; private set; } = "";
 
         public int Estagio { get; private set; } = 1;
+
+        public long Almas { get; private set; }
+        public int Ascensoes { get; private set; }
+
+        // Moeda do gacha, ganha só jogando
+        public long Cristais { get; private set; }
+
+        // Contadores das conquistas (nunca zeram, nem na Ascensão)
+        public int ChefesDerrotados { get; private set; }
+        public int EstagioMaximo { get; private set; } = 1;
+        public int ItensEpicosObtidos { get; private set; }
+        public int MaiorRefino { get; private set; }
+        public int ItensFabricados { get; private set; }
+        public double OuroTotalGanho { get; private set; }
+
+        // Followers que o jogador tem e as estrelas de cada um; o Pip vem de início
+        readonly Dictionary<string, int> followers = new Dictionary<string, int> { [FollowerPadrao] = 1 };
+        public int Estrelas(string followerId) => Ler(followers, followerId);
+        public IReadOnlyDictionary<string, int> Followers => followers;
+        public int InvocacoesSemEpico { get; private set; }
+        public int InvocacoesSemLendario { get; private set; }
+
+        // Novo follower (1 estrela) ou +1 estrela no repetido; false se já estava no máximo
+        public bool ReceberFollower(string id, int maximoDeEstrelas)
+        {
+            int estrelas = Estrelas(id);
+            if (estrelas >= maximoDeEstrelas) return false;
+            followers[id] = estrelas + 1;
+            return true;
+        }
+
+        public void RegistrarPity(int semEpico, int semLendario)
+        {
+            InvocacoesSemEpico = Math.Max(0, semEpico);
+            InvocacoesSemLendario = Math.Max(0, semLendario);
+        }
+
+        public bool EscolherFollower(string id)
+        {
+            if (Estrelas(id) <= 0) return false;
+            FollowerAtivoId = id;
+            return true;
+        }
+
+        readonly Dictionary<string, int> conquistasColetadas = new Dictionary<string, int>();
+        public int ConquistasColetadas(string id) => Ler(conquistasColetadas, id);
+        public int TotalDeConquistasColetadas
+        {
+            get { int n = 0; foreach (var v in conquistasColetadas.Values) n += v; return n; }
+        }
+
+        public void ReceberCristais(long quantidade) { if (quantidade > 0) Cristais += quantidade; }
+        public bool GastarCristais(long quantidade)
+        {
+            if (quantidade < 0 || quantidade > Cristais) return false;
+            Cristais -= quantidade;
+            return true;
+        }
+        public void ContarChefe() => ChefesDerrotados++;
+        public void ContarFabricacao() => ItensFabricados++;
+        public void MarcarConquistaColetada(string id, int degraus) => conquistasColetadas[id] = Math.Max(ConquistasColetadas(id), degraus);
+
+        // Última vez que o jogo estava aberto (ticks UTC); 0 = nunca. É daí que conta o tempo fora (AFK)
+        public long UltimaPresencaUtc { get; private set; }
+
+        public void MarcarPresenca(DateTime agoraUtc) => UltimaPresencaUtc = agoraUtc.Ticks;
+
+        // Recomeça estágio, upgrades e ouro; mantém itens, materiais, bestiário e o resto
+        public void Ascender(long almasGanhas)
+        {
+            Almas += Math.Max(0, almasGanhas);
+            Ascensoes++;
+            Estagio = 1;
+            VitoriasNoEstagio = 0;
+            Ouro = 0;
+            niveis.Clear();
+        }
         public int VitoriasNoEstagio { get; private set; }
 
         readonly Dictionary<string, int> niveis = new Dictionary<string, int>();
@@ -46,7 +123,9 @@ namespace ALotOfDamage.Core
 
         public void ReceberOuro(double quantidade)
         {
-            if (quantidade > 0) Ouro += quantidade;
+            if (quantidade <= 0) return;
+            Ouro += quantidade;
+            OuroTotalGanho += quantidade;
         }
 
         public void AdicionarMaterial(string id, int quantidade)
@@ -78,6 +157,7 @@ namespace ALotOfDamage.Core
         {
             if (inventario.Count >= limite) return null;
             var item = new ItemDoJogador { Id = proximoIdDeItem++, TipoId = tipoId, Slot = slot, Raridade = raridade, Estagio = Math.Max(1, estagio) };
+            if (raridade >= Raridade.Epico) ItensEpicosObtidos++;
             inventario.Add(item);
             return item;
         }
@@ -134,6 +214,7 @@ namespace ALotOfDamage.Core
             var r = RegrasDaForja.Forjar(tipo, item.Nivel, Ouro, Material(tipo.MaterialId), sorteio);
             if (!r.Forjou) return r;
             item.Nivel = r.NovoNivel;
+            MaiorRefino = Math.Max(MaiorRefino, item.Nivel);
             Ouro = r.OuroRestante;
             materiais[tipo.MaterialId] = r.MaterialRestante;
             return r;
@@ -154,6 +235,7 @@ namespace ALotOfDamage.Core
         {
             var r = RegrasDaCampanha.AposVitoria(p, Estagio, VitoriasNoEstagio, chefe);
             Estagio = r.Estagio;
+            EstagioMaximo = Math.Max(EstagioMaximo, Estagio);
             VitoriasNoEstagio = r.VitoriasNoEstagio;
             return r;
         }
@@ -166,6 +248,12 @@ namespace ALotOfDamage.Core
             Niveis = Pares(niveis), Materiais = Pares(materiais), Derrotas = Pares(derrotas),
             Inventario = new List<ItemDoJogador>(inventario), Equipados = new List<ItemDoJogador>(equipados.Values),
             ProximoIdDeItem = proximoIdDeItem,
+            UltimaPresencaUtc = UltimaPresencaUtc,
+            Almas = Almas, Ascensoes = Ascensoes, Cristais = Cristais,
+            ChefesDerrotados = ChefesDerrotados, EstagioMaximo = EstagioMaximo, ItensEpicosObtidos = ItensEpicosObtidos,
+            MaiorRefino = MaiorRefino, ItensFabricados = ItensFabricados, OuroTotalGanho = OuroTotalGanho,
+            ConquistasColetadas = Pares(conquistasColetadas),
+            Followers = Pares(followers), InvocacoesSemEpico = InvocacoesSemEpico, InvocacoesSemLendario = InvocacoesSemLendario,
         };
 
         public static Progresso Importar(DadosDoProgresso d)
@@ -183,6 +271,21 @@ namespace ALotOfDamage.Core
             Preencher(p.materiais, d.Materiais);
             Preencher(p.derrotas, d.Derrotas);
             ImportarItens(p, d);
+            p.UltimaPresencaUtc = Math.Max(0, d.UltimaPresencaUtc);
+            p.Almas = Math.Max(0, d.Almas);
+            p.Ascensoes = Math.Max(0, d.Ascensoes);
+            p.Cristais = Math.Max(0, d.Cristais);
+            p.ChefesDerrotados = Math.Max(0, d.ChefesDerrotados);
+            p.EstagioMaximo = Math.Max(p.Estagio, d.EstagioMaximo);
+            p.ItensEpicosObtidos = Math.Max(0, d.ItensEpicosObtidos);
+            p.MaiorRefino = Math.Max(0, d.MaiorRefino);
+            p.ItensFabricados = Math.Max(0, d.ItensFabricados);
+            // save de antes das conquistas: o ouro guardado é o mínimo que já foi ganho
+            p.OuroTotalGanho = Math.Max(p.Ouro, d.OuroTotalGanho);
+            Preencher(p.conquistasColetadas, d.ConquistasColetadas);
+            Preencher(p.followers, d.Followers);
+            if (p.Estrelas(FollowerPadrao) <= 0) p.followers[FollowerPadrao] = 1;
+            p.RegistrarPity(d.InvocacoesSemEpico, d.InvocacoesSemLendario);
             return p;
         }
 
@@ -272,6 +375,20 @@ namespace ALotOfDamage.Core
         public List<ItemDoJogador> Inventario = new List<ItemDoJogador>();
         public List<ItemDoJogador> Equipados = new List<ItemDoJogador>();
         public int ProximoIdDeItem = 1;
+        public long UltimaPresencaUtc;
+        public long Almas;
+        public int Ascensoes;
+        public long Cristais;
+        public int ChefesDerrotados;
+        public int EstagioMaximo = 1;
+        public int ItensEpicosObtidos;
+        public int MaiorRefino;
+        public int ItensFabricados;
+        public double OuroTotalGanho;
+        public List<ParDeValor> ConquistasColetadas = new List<ParDeValor>();
+        public List<ParDeValor> Followers = new List<ParDeValor>();
+        public int InvocacoesSemEpico;
+        public int InvocacoesSemLendario;
         public List<ParDeValor> Materiais = new List<ParDeValor>();
         public List<ParDeValor> Derrotas = new List<ParDeValor>();
     }

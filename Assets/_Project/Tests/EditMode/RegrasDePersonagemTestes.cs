@@ -12,7 +12,7 @@ namespace ALotOfDamage.Testes
 
         static DefinicaoDeFollower Falcao() => new DefinicaoDeFollower
         {
-            Id = "pip", FracaoDoAutoAtaque = 0.2, BonusNaJanelaDoPontoFraco = 0.3,
+            Id = "pip", FracaoDoAutoAtaque = 0.2, Efeito = EfeitoDoFollower.PontoFraco, ValorDoEfeito = 0.3,
         };
 
         [TestCase(0, 0)]
@@ -50,8 +50,8 @@ namespace ALotOfDamage.Testes
         [Test]
         public void Follower_alonga_a_janela_do_ponto_fraco()
         {
-            Assert.AreEqual(1.3, RegrasDePersonagem.DuracaoDoPontoFraco(Falcao(), 1), 1e-6);
-            Assert.AreEqual(1, RegrasDePersonagem.DuracaoDoPontoFraco(null, 1), 1e-6);
+            Assert.AreEqual(1.3, RegrasDePersonagem.DuracaoDoPontoFraco(0.3, 1), 1e-6);
+            Assert.AreEqual(1, RegrasDePersonagem.DuracaoDoPontoFraco(0, 1), 1e-6);
         }
     }
 }

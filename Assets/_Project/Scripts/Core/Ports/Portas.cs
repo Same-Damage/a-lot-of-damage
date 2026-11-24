@@ -18,9 +18,18 @@ namespace ALotOfDamage.Core
         ParametrosDoBestiario Bestiario { get; }
         IReadOnlyList<DefinicaoDeClasse> Classes { get; }
         IReadOnlyList<DefinicaoDeFollower> Followers { get; }
+        ParametrosDoGacha Gacha { get; }
         ParametrosDaCampanha Campanha { get; }
         ParametrosDosItens ParametrosDosItens { get; }
         IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
+        IReadOnlyList<DefinicaoDeConquista> Conquistas { get; }
+        ParametrosDasConquistas ParametrosDasConquistas { get; }
+    }
+
+    // Hora atual (UTC), para o teste controlar o tempo; no online, a hora do servidor
+    public interface IRelogio
+    {
+        System.DateTime AgoraUtc { get; }
     }
 
     // Número aleatório em [0, 1), para o teste controlar a sorte

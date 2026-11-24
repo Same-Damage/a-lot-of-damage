@@ -26,6 +26,18 @@ namespace ALotOfDamage.Testes
                 LimiteDoInventario = 2, CustoDeFabricarEmOuro = 20, MaterialParaFabricar = 3,
                 PrecoDeVenda = new double[] { 10, 20, 30, 40, 50 }, MaterialAoDesmontar = new[] { 1, 2, 3, 4, 5 },
             };
+            public ParametrosDoGacha Gacha { get; set; } = new ParametrosDoGacha
+            {
+                CustoPorInvocacao = 100, CustoDeDez = 900, Taxas = new double[] { 50, 30, 14, 5, 1 }, PityEpico = 30, PityLendario = 90,
+                BonusPorEstrela = 0.2, MaximoDeEstrelas = 5, CristaisPorEstrelaExtra = 50,
+                CristaisPorChefe = 25, CristaisDaAscensao = 200, CristaisPorAlma = 5, VitoriasAfkPorCristal = 20,
+            };
+            public IReadOnlyList<DefinicaoDeConquista> Conquistas { get; set; } = new List<DefinicaoDeConquista>
+            {
+                new DefinicaoDeConquista { Id = "vitorias", Nome = "Guerreiro incansável", Descricao = "Vença {0} batalhas", Meta = MetaDaConquista.Vitorias, Degraus = new double[] { 1, 3 } },
+                new DefinicaoDeConquista { Id = "chefes", Nome = "Caçador de chefes", Descricao = "Derrote {0} chefes", Meta = MetaDaConquista.ChefesDerrotados, Degraus = new double[] { 1 } },
+            };
+            public ParametrosDasConquistas ParametrosDasConquistas { get; set; } = new ParametrosDasConquistas { BonusPorConquista = 0.01, CristaisBase = 10 };
             public IReadOnlyList<DefinicaoDeRegiao> Regioes { get; set; } = new List<DefinicaoDeRegiao>
             {
                 new DefinicaoDeRegiao { Nome = "Campos" },
@@ -56,6 +68,12 @@ namespace ALotOfDamage.Testes
         }
 
         static readonly ISorteio SemDrop = new SorteioFixo { Valor = 0.99 };
+
+        class RelogioFalso : IRelogio
+        {
+            public System.DateTime Agora = new System.DateTime(2026, 1, 1, 12, 0, 0, System.DateTimeKind.Utc);
+            public System.DateTime AgoraUtc => Agora;
+        }
 
         RepositorioQueConta repositorio;
         CatalogoFalso catalogo;
@@ -414,24 +432,400 @@ namespace ALotOfDamage.Testes
         }
 
         [Test]
-        public void Brilho_da_arma_segue_o_item_de_click_equipado_mais_refinado()
+        public void Sem_arma_equipada_o_heroi_fica_de_mao_vazia()
         {
-            var brilho = new ConsultarBrilhoDaArma(repositorio, catalogo);
-            Assert.AreEqual(0, brilho.Executar(), 1e-6);
-
-            EspadaEquipada().Nivel = 3;
-            Assert.AreEqual(RegrasDeAparencia.BrilhoDaArma(3), brilho.Executar(), 1e-6);
+            var v = new ConsultarVisualDoHeroi(repositorio, catalogo).Executar();
+            Assert.IsFalse(v.TemArma);
+            Assert.AreEqual(0, v.Brilho, 1e-6);
         }
 
         [Test]
-        public void Item_de_auto_ataque_ou_guardado_nao_acende_a_arma()
+        public void Arma_equipada_mostra_raridade_e_brilho_com_refino()
         {
             var p = repositorio.Progresso;
-            var anel = p.ReceberItem("anel", SlotDeItem.Anel, Raridade.Comum, 1, 10);
+            var espada = p.ReceberItem("espada", SlotDeItem.Arma, Raridade.Epico, 1, 10);
+            p.Equipar(espada.Id);
+            espada.Nivel = 3;
+
+            var v = new ConsultarVisualDoHeroi(repositorio, catalogo).Executar();
+            Assert.IsTrue(v.TemArma);
+            Assert.AreEqual(Raridade.Epico, v.RaridadeDaArma);
+            Assert.AreEqual(RegrasDeAparencia.BrilhoDoItem(Raridade.Epico, 3), v.Brilho, 1e-6);
+        }
+
+        [Test]
+        public void Item_guardado_ou_de_outro_slot_nao_vira_arma_na_mao()
+        {
+            var p = repositorio.Progresso;
+            var anel = p.ReceberItem("anel", SlotDeItem.Anel, Raridade.Lendario, 1, 10);
             p.Equipar(anel.Id);
-            anel.Nivel = 5;
-            p.ReceberItem("espada", SlotDeItem.Arma, Raridade.Comum, 1, 10).Nivel = 5;
-            Assert.AreEqual(0, new ConsultarBrilhoDaArma(repositorio, catalogo).Executar(), 1e-6);
+            p.ReceberItem("espada", SlotDeItem.Arma, Raridade.Lendario, 1, 10);
+            Assert.IsFalse(new ConsultarVisualDoHeroi(repositorio, catalogo).Executar().TemArma);
+        }
+
+        // AFK: dano automático 5/s (upgrade Automático) contra 100 de vida no estágio 1 = 20 s de luta + 5 s entre lutas.
+        // 2 h = 288 lutas; 25% = 72 vitórias de 50 de ouro
+        (RelogioFalso relogio, ConsultarRecompensaAfk consultar, ColetarRecompensaAfk coletar) Afk(ISorteio sorteio = null)
+        {
+            var relogio = new RelogioFalso();
+            return (relogio, new ConsultarRecompensaAfk(repositorio, catalogo, relogio, new CalcularAtributos(repositorio, catalogo)),
+                new ColetarRecompensaAfk(repositorio, catalogo, relogio, new CalcularAtributos(repositorio, catalogo), sorteio ?? SemDrop));
+        }
+
+        [Test]
+        public void Primeiro_acesso_nao_tem_recompensa_e_marca_a_presenca()
+        {
+            var (relogio, consultar, _) = Afk();
+            Assert.IsFalse(consultar.Executar().TemRecompensa);
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(2);
+            Assert.IsTrue(consultar.Executar().TemRecompensa);
+        }
+
+        [Test]
+        public void Duas_horas_fora_rendem_um_quarto_das_lutas_em_ouro()
+        {
+            catalogo.ParametrosDosItens.ChanceDeDrop = 0;   // só o ouro das lutas, sem itens vendidos
+            var (relogio, consultar, coletar) = Afk();
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(2);
+
+            var r = consultar.Executar();
+            Assert.AreEqual(7200, r.Segundos, 1e-6);
+            Assert.AreEqual(72, r.Vitorias);
+            Assert.AreEqual(72 * 50, r.Ouro, 1e-6);
+
+            coletar.Executar();
+            Assert.AreEqual(72 * 50, repositorio.Progresso.Ouro, 1e-6);
+        }
+
+        [Test]
+        public void Recompensa_para_de_crescer_em_12_horas()
+        {
+            var (relogio, consultar, _) = Afk();
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(40);
+            Assert.AreEqual(12 * 3600, consultar.Executar().Segundos, 1e-6);
+        }
+
+        [Test]
+        public void Coletar_zera_o_tempo_fora()
+        {
+            var (relogio, consultar, coletar) = Afk();
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(2);
+            coletar.Executar();
+            Assert.IsFalse(consultar.Executar().TemRecompensa);
+            Assert.Greater(repositorio.Salvamentos, 0);
+        }
+
+        [Test]
+        public void Pouco_tempo_fora_nao_vira_recompensa()
+        {
+            var (relogio, consultar, _) = Afk();
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddSeconds(30);
+            Assert.IsFalse(consultar.Executar().TemRecompensa);
+        }
+
+        [Test]
+        public void Afk_da_material_dos_monstros_da_regiao()
+        {
+            ((List<DefinicaoDeRegiao>)catalogo.Regioes)[0].Monstros.Add("lobo");
+            var (relogio, consultar, coletar) = Afk();
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(2);
+            coletar.Executar();
+            Assert.AreEqual(72 * 2, repositorio.Progresso.Material("presa"), "72 vitórias contra lobos, 2 presas cada");
+        }
+
+        [Test]
+        public void Afk_da_itens_pela_chance_de_drop_e_vende_o_que_nao_cabe()
+        {
+            var (relogio, consultar, coletar) = Afk(new SorteioFixo { Valor = 0.0 });
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(2);
+            var r = coletar.Executar();
+            // 72 vitórias × 30% = 21 itens; o inventário de teste tem 2 casas: 19 viram ouro (10 cada, comuns)
+            Assert.AreEqual(21, r.Itens);
+            Assert.AreEqual(2, repositorio.Progresso.Inventario.Count);
+            Assert.AreEqual(72 * 50 + 19 * 10, repositorio.Progresso.Ouro, 1e-6);
+        }
+
+        // Ascensão: a campanha de teste libera no estágio 3 (base 1, divisor 2): estágio 3 dá (3 − 1)² ÷ 2 = 2 Almas
+        void ChegarAoEstagio(int estagio)
+        {
+            var c = catalogo.Campanha;
+            c.EstagioMinimoDaAscensao = 3; c.EstagioBaseDasAlmas = 1; c.DivisorDasAlmas = 2; c.BonusPorAlma = 0.1; c.ChefeACada = 0;
+            var vitoria = new RegistrarVitoria(repositorio, catalogo, SemDrop);
+            while (repositorio.Progresso.Estagio < estagio) vitoria.Executar("lobo", false);
+        }
+
+        [Test]
+        public void Ascensao_indisponivel_antes_do_estagio_minimo()
+        {
+            ChegarAoEstagio(2);
+            var a = new ConsultarAscensao(repositorio, catalogo).Executar();
+            Assert.IsFalse(a.Pode);
+            Assert.AreEqual(3, a.EstagioMinimo);
+            Assert.IsFalse(new Ascender(repositorio, catalogo).Executar());
+            Assert.AreEqual(2, repositorio.Progresso.Estagio);
+        }
+
+        [Test]
+        public void Ascender_zera_estagio_upgrades_e_ouro_e_da_almas()
+        {
+            ChegarAoEstagio(3);
+            var p = repositorio.Progresso;
+            p.ReceberOuro(1000);
+            new ComprarUpgrade(repositorio, catalogo).Executar(IdsDosUpgrades.Forca, 2);
+            p.AdicionarMaterial("presa", 7);
+            var espada = EspadaEquipada();
+
+            var antes = new ConsultarAscensao(repositorio, catalogo).Executar();
+            Assert.IsTrue(antes.Pode);
+            Assert.AreEqual(2, antes.AlmasGanhas);
+            Assert.AreEqual(1.2, antes.MultiplicadorDepois, 1e-9);
+
+            Assert.IsTrue(new Ascender(repositorio, catalogo).Executar());
+            Assert.AreEqual(1, p.Estagio);
+            Assert.AreEqual(0, p.VitoriasNoEstagio);
+            Assert.AreEqual(0, p.Ouro, 1e-9);
+            Assert.AreEqual(1, p.Nivel(IdsDosUpgrades.Forca), "upgrades voltam ao nível 1");
+            Assert.AreEqual(2, p.Almas);
+            Assert.AreEqual(1, p.Ascensoes);
+            Assert.GreaterOrEqual(p.Material("presa"), 7, "materiais ficam");
+            Assert.AreSame(espada, p.Equipado(SlotDeItem.Arma), "equipamento fica");
+            Assert.Greater(p.Derrotas("lobo"), 0, "bestiário fica");
+        }
+
+        [Test]
+        public void Almas_multiplicam_o_dano_do_click_e_do_auto_ataque()
+        {
+            ChegarAoEstagio(3);
+            new Ascender(repositorio, catalogo).Executar();
+            var a = new CalcularAtributos(repositorio, catalogo).Executar(null);
+            double bestiario = RegrasDoBestiario.MultiplicadorGeral(catalogo.Bestiario, new[] { repositorio.Progresso.Derrotas("lobo") });
+            Assert.AreEqual(3 * 1.2 * bestiario * RegrasDoBestiario.MultiplicadorContraTipo(catalogo.Bestiario, 0), a.DanoDoClick, 1e-9);
+            Assert.AreEqual(5 * 1.2 * bestiario * RegrasDoBestiario.MultiplicadorContraTipo(catalogo.Bestiario, 0), a.DanoAutomatico, 1e-9);
+        }
+
+        [Test]
+        public void Ascensao_disponivel_vira_pendencia()
+        {
+            ChegarAoEstagio(3);
+            var lista = new List<Pendencia>();
+            new ListarPendencias(repositorio, catalogo).Executar(lista);
+            CollectionAssert.Contains(lista.ConvertAll(x => x.Tipo), TipoDePendencia.Ascensao);
+        }
+
+        SituacaoDaConquista Conquista(string id) =>
+            new ListarConquistas(repositorio, catalogo).Executar().Find(c => c.Id == id);
+
+        [Test]
+        public void Conquista_mostra_progresso_e_fica_pronta_ao_passar_do_degrau()
+        {
+            var c = Conquista("vitorias");
+            Assert.AreEqual(0, c.Valor, 1e-9);
+            Assert.AreEqual(1, c.ProximaMeta, 1e-9);
+            Assert.AreEqual(0, c.Prontas);
+            Assert.AreEqual("Vença 1 batalhas", c.Texto);
+
+            new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar("lobo", false);
+            Assert.AreEqual(1, Conquista("vitorias").Prontas);
+        }
+
+        [Test]
+        public void Coletar_da_cristais_e_um_por_cento_de_dano_por_degrau()
+        {
+            var vitoria = new RegistrarVitoria(repositorio, catalogo, SemDrop);
+            for (int i = 0; i < 3; i++) vitoria.Executar("lobo", false);
+            double antes = new CalcularAtributos(repositorio, catalogo).Executar(null).DanoAutomatico;
+
+            Assert.AreEqual(10 + 40, new ColetarConquista(repositorio, catalogo).Executar("vitorias"));
+            Assert.AreEqual(50, repositorio.Progresso.Cristais);
+            var c = Conquista("vitorias");
+            Assert.AreEqual(0, c.Prontas);
+            Assert.AreEqual(2, c.Coletadas);
+            Assert.IsTrue(c.Completa);
+            Assert.AreEqual(antes * 1.02, new CalcularAtributos(repositorio, catalogo).Executar(null).DanoAutomatico, 1e-9);
+        }
+
+        [Test]
+        public void Coletar_sem_nada_pronto_nao_da_nada()
+        {
+            Assert.AreEqual(0, new ColetarConquista(repositorio, catalogo).Executar("vitorias"));
+            Assert.AreEqual(0, new ColetarConquista(repositorio, catalogo).Executar("nao_existe"));
+            Assert.AreEqual(0, repositorio.Progresso.Cristais);
+        }
+
+        [Test]
+        public void Chefe_derrotado_conta_para_a_conquista_de_chefes()
+        {
+            new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar("lobo", true);
+            Assert.AreEqual(1, Conquista("chefes").Prontas);
+        }
+
+        [Test]
+        public void Conquista_pronta_vira_pendencia()
+        {
+            new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar("lobo", false);
+            var lista = new List<Pendencia>();
+            new ListarPendencias(repositorio, catalogo).Executar(lista);
+            CollectionAssert.Contains(lista.ConvertAll(x => x.Tipo), TipoDePendencia.Conquista);
+        }
+
+        // Gacha: um follower comum (o Pip, que o jogador já tem), um comum novo e um épico
+        void ElencoDoGacha()
+        {
+            catalogo.Followers = new List<DefinicaoDeFollower>
+            {
+                new DefinicaoDeFollower { Id = Progresso.FollowerPadrao, Nome = "Pip", Raridade = Raridade.Comum, FracaoDoAutoAtaque = 0.2, IntervaloDeAtaque = 1.5f, Efeito = EfeitoDoFollower.PontoFraco, ValorDoEfeito = 0.3 },
+                new DefinicaoDeFollower { Id = "lontra", Nome = "Lontra", Raridade = Raridade.Comum, FracaoDoAutoAtaque = 0.2, IntervaloDeAtaque = 1.5f, Efeito = EfeitoDoFollower.Ouro, ValorDoEfeito = 0.5 },
+                new DefinicaoDeFollower { Id = "dragao", Nome = "Dragão", Raridade = Raridade.Epico, FracaoDoAutoAtaque = 0.4, IntervaloDeAtaque = 1.5f, Efeito = EfeitoDoFollower.Critico, ValorDoEfeito = 0.1 },
+            };
+        }
+
+        [Test]
+        public void Jogador_comeca_com_o_pip_ativo_com_uma_estrela()
+        {
+            Assert.AreEqual(1, repositorio.Progresso.Estrelas(Progresso.FollowerPadrao));
+            Assert.AreEqual(0, repositorio.Progresso.Estrelas("lontra"));
+        }
+
+        [Test]
+        public void Invocar_gasta_cristais_e_entrega_o_follower_sorteado()
+        {
+            ElencoDoGacha();
+            repositorio.Progresso.ReceberCristais(100);
+            // raridade comum (0,0), segundo comum da lista (0,6 dá a lontra)
+            var r = new Invocar(repositorio, catalogo, new SorteioEmSequencia(0.0, 0.6)).Executar(1);
+            Assert.AreEqual(1, r.Count);
+            Assert.AreEqual("lontra", r[0].FollowerId);
+            Assert.IsTrue(r[0].Novo);
+            Assert.AreEqual(0, repositorio.Progresso.Cristais);
+            Assert.AreEqual(1, repositorio.Progresso.Estrelas("lontra"));
+        }
+
+        [Test]
+        public void Sem_cristais_nao_invoca()
+        {
+            ElencoDoGacha();
+            repositorio.Progresso.ReceberCristais(99);
+            Assert.IsEmpty(new Invocar(repositorio, catalogo, SemDrop).Executar(1));
+            Assert.AreEqual(99, repositorio.Progresso.Cristais);
+        }
+
+        [Test]
+        public void Dez_invocacoes_custam_novecentos()
+        {
+            ElencoDoGacha();
+            repositorio.Progresso.ReceberCristais(900);
+            var r = new Invocar(repositorio, catalogo, new SorteioFixo { Valor = 0.0 }).Executar(10);
+            Assert.AreEqual(10, r.Count);
+            // gastou os 900; só sobra o que voltou dos repetidos com estrelas no máximo
+            int devolvidos = 0;
+            foreach (var x in r) devolvidos += x.CristaisDevolvidos;
+            Assert.AreEqual(devolvidos, repositorio.Progresso.Cristais);
+        }
+
+        [Test]
+        public void Repetido_vira_estrela_e_no_maximo_vira_cristais()
+        {
+            ElencoDoGacha();
+            repositorio.Progresso.ReceberCristais(600);
+            var invocar = new Invocar(repositorio, catalogo, new SorteioFixo { Valor = 0.0 });   // sempre o Pip
+            for (int i = 0; i < 4; i++) Assert.IsFalse(invocar.Executar(1)[0].Novo);
+            Assert.AreEqual(5, repositorio.Progresso.Estrelas(Progresso.FollowerPadrao));
+            var extra = invocar.Executar(1)[0];
+            Assert.AreEqual(50, extra.CristaisDevolvidos);
+            Assert.AreEqual(5, repositorio.Progresso.Estrelas(Progresso.FollowerPadrao));
+        }
+
+        [Test]
+        public void Pity_garante_epico_na_trigesima()
+        {
+            ElencoDoGacha();
+            repositorio.Progresso.ReceberCristais(30 * 100);
+            var invocar = new Invocar(repositorio, catalogo, new SorteioFixo { Valor = 0.0 });
+            for (int i = 0; i < 29; i++) Assert.AreEqual(Raridade.Comum, invocar.Executar(1)[0].Raridade);
+            var trigesima = invocar.Executar(1)[0];
+            Assert.AreEqual(Raridade.Epico, trigesima.Raridade);
+            Assert.AreEqual("dragao", trigesima.FollowerId);
+        }
+
+        [Test]
+        public void So_pode_escolher_follower_que_tem()
+        {
+            ElencoDoGacha();
+            var escolher = new EscolherFollower(repositorio, catalogo);
+            Assert.IsFalse(escolher.Executar("dragao"));
+            repositorio.Progresso.ReceberFollower("dragao", 5);
+            Assert.IsTrue(escolher.Executar("dragao"));
+            Assert.AreEqual("dragao", repositorio.Progresso.FollowerAtivoId);
+        }
+
+        [Test]
+        public void Efeito_do_follower_ativo_entra_nos_atributos()
+        {
+            ElencoDoGacha();
+            repositorio.Progresso.ReceberFollower("dragao", 5);
+            repositorio.Progresso.ReceberFollower("dragao", 5);   // 2 estrelas
+            new EscolherFollower(repositorio, catalogo).Executar("dragao");
+            var a = new CalcularAtributos(repositorio, catalogo).Executar(null);
+            Assert.AreEqual(0.05 + 0.1 * 1.2, a.ChanceCritica, 1e-9);
+            Assert.AreEqual(5 * 0.4 * 1.2, a.DanoDoFollower, 1e-9);
+            Assert.AreEqual(0, a.BonusNoPontoFraco, 1e-9);
+        }
+
+        [Test]
+        public void Follower_de_ouro_aumenta_o_ouro_da_vitoria()
+        {
+            ElencoDoGacha();
+            repositorio.Progresso.ReceberFollower("lontra", 5);
+            new EscolherFollower(repositorio, catalogo).Executar("lontra");
+            var r = new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar("lobo", false);
+            Assert.AreEqual(50 * 1.5, r.Ouro, 1e-9);
+        }
+
+        [Test]
+        public void Chefe_da_cristais()
+        {
+            new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar("lobo", true);
+            Assert.AreEqual(25, repositorio.Progresso.Cristais);
+        }
+
+        [Test]
+        public void Ascensao_da_cristais_pela_base_e_pelas_almas()
+        {
+            ChegarAoEstagio(3);   // 2 Almas
+            new Ascender(repositorio, catalogo).Executar();
+            Assert.AreEqual(200 + 2 * 5, repositorio.Progresso.Cristais);
+        }
+
+        [Test]
+        public void Afk_da_um_cristal_a_cada_vinte_vitorias()
+        {
+            catalogo.ParametrosDosItens.ChanceDeDrop = 0;
+            var (relogio, consultar, coletar) = Afk();
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(2);
+            Assert.AreEqual(3, consultar.Executar().Cristais, "72 vitórias ÷ 20");
+            coletar.Executar();
+            Assert.AreEqual(3, repositorio.Progresso.Cristais);
+        }
+
+        [Test]
+        public void Followers_possuidos_e_pity_vao_e_voltam_do_save()
+        {
+            var p = repositorio.Progresso;
+            p.ReceberFollower("dragao", 5);
+            p.RegistrarPity(7, 40);
+            var copia = Progresso.Importar(p.Exportar());
+            Assert.AreEqual(1, copia.Estrelas("dragao"));
+            Assert.AreEqual(1, copia.Estrelas(Progresso.FollowerPadrao));
+            Assert.AreEqual(7, copia.InvocacoesSemEpico);
+            Assert.AreEqual(40, copia.InvocacoesSemLendario);
         }
 
         [Test]
