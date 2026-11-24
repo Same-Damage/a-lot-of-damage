@@ -126,10 +126,13 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 - **Pip, o falcão** (implementado): ataca a cada 1,5 s com 20% do auto-ataque e deixa a janela do ponto fraco 30% mais longa. Voa ao lado do jogador batendo as asas.
 - Futuro: nível, estrelas por duplicata, sinergia com classes, skill ativa e passiva por follower.
 
-### Gacha (só com moeda do jogo)
+### Gacha (só com moeda do jogo) — implementado
 
-- Só followers. Moeda obtida jogando (campanha, diárias, conquistas, eventos, guilda, PvP).
-- Pity garantido e taxas publicadas. Duplicatas viram estrelas/fragmentos.
+- **40 followers** em 5 raridades (14 Comuns, 10 Incomuns, 8 Raros, 5 Épicos, 3 Lendários): companheiros (humanos, elfos, anões, goblin, robôs), bestas, aves, dragões, criaturas míticas e espíritos. O Pip vem de início.
+- Cada follower ataca a cada 1,5 s com uma parte do auto-ataque (20% no Comum a 75% no Lendário) e tem **um efeito**: dano extra, ponto fraco mais longo, +ouro, +AFK, +crítico ou +drop; os raros dão efeitos maiores. Só o follower ativo dá o efeito.
+- **Invocar:** 100 cristais (10 por 900). Taxas públicas: Comum 50%, Incomum 30%, Raro 14%, Épico 5%, Lendário 1%. **Pity:** Épico garantido na 30ª seguida sem Épico, Lendário na 90ª sem Lendário.
+- **Repetido** vira estrela (até 5, cada uma +20% no efeito e no dano); com 5 estrelas devolve 50 cristais.
+- **Cristais** (nunca com dinheiro real): conquistas, 25 por chefe, 200 + 5 por Alma na Ascensão e 1 a cada 20 vitórias do AFK.
 
 ## 6. Números gigantes
 

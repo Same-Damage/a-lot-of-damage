@@ -18,7 +18,13 @@ namespace ALotOfDamage.Core
         public double ChanceCritica;
         public DefinicaoDeClasse Classe;        // null se o catálogo não tiver a classe do jogador
         public DefinicaoDeFollower Follower;    // null sem follower ativo
+        public int EstrelasDoFollower;
         public double DanoDoFollower;
+        // Efeitos do follower ativo (0 se ele tem outro efeito)
+        public double BonusNoPontoFraco;
+        public double BonusDeOuro;
+        public double BonusDeAfk;
+        public double BonusDeDrop;
     }
 
     public struct ResultadoDaVitoria
@@ -284,13 +290,18 @@ namespace ALotOfDamage.Core
         {
             var p = repositorio.Carregar();
             var monstro = tipoDoMonstro == null ? null : catalogo.Monstro(tipoDoMonstro);
-            double ouro = CalcularInimigo.Para(p, catalogo, monstro, chefe).Ouro;
+            var atributos = new CalcularAtributos(repositorio, catalogo).Executar(tipoDoMonstro);
+            double ouro = CalcularInimigo.Para(p, catalogo, monstro, chefe).Ouro * (1 + atributos.BonusDeOuro);
             p.ReceberOuro(ouro);
             bool marco = p.RegistrarVitoria(monstro, catalogo.Bestiario);
-            if (chefe) p.ContarChefe();
+            if (chefe)
+            {
+                p.ContarChefe();
+                p.ReceberCristais(catalogo.Gacha.CristaisPorChefe);
+            }
             int estagioDaLuta = p.Estagio;
             var campanha = p.AvancarCampanha(catalogo.Campanha, chefe);
-            var item = DropDeItens.Talvez(p, catalogo, sorteio, chefe, estagioDaLuta, out bool vendido);
+            var item = DropDeItens.Talvez(p, catalogo, sorteio, chefe, estagioDaLuta, atributos.BonusDeDrop, out bool vendido);
             repositorio.Salvar(p);
             return new ResultadoDaVitoria
             {
@@ -313,10 +324,11 @@ namespace ALotOfDamage.Core
     static class DropDeItens
     {
         // Talvez caia um item (chefe sempre); devolve null se não caiu
-        public static ItemDoJogador Talvez(Progresso p, ICatalogo catalogo, ISorteio sorteio, bool chefe, int estagio, out bool vendido)
+        public static ItemDoJogador Talvez(Progresso p, ICatalogo catalogo, ISorteio sorteio, bool chefe, int estagio, double bonusDeDrop, out bool vendido)
         {
             vendido = false;
-            if (catalogo.Itens.Count == 0 || !RegrasDosItens.CaiItem(catalogo.ParametrosDosItens, sorteio.Proximo(), chefe)) return null;
+            // o bônus de drop do follower aumenta a chance na mesma proporção
+            if (catalogo.Itens.Count == 0 || !RegrasDosItens.CaiItem(catalogo.ParametrosDosItens, sorteio.Proximo() / (1 + bonusDeDrop), chefe)) return null;
             return Entregar(p, catalogo, sorteio, chefe, estagio, out vendido);
         }
 
@@ -344,6 +356,7 @@ namespace ALotOfDamage.Core
         public double Ouro;
         public List<ParDeValor> Materiais;
         public int Itens;
+        public long Cristais;
     }
 
     // Marca que o jogo está aberto agora: o tempo fora (AFK) conta a partir daqui
@@ -385,7 +398,7 @@ namespace ALotOfDamage.Core
             var a = atributos.Executar(null);
             double porSegundo = a.DanoAutomatico + (a.Follower == null ? 0 : a.DanoDoFollower / Math.Max(0.1, a.Follower.IntervaloDeAtaque));
             var inimigo = CalcularInimigo.Para(p, catalogo, null, false);
-            long vitorias = (long)Math.Floor(RegrasDoAfk.Vitorias(c, segundos, porSegundo, inimigo.Vida));
+            long vitorias = (long)Math.Floor(RegrasDoAfk.Vitorias(c, segundos, porSegundo, inimigo.Vida) * (1 + a.BonusDeAfk));
 
             // o material vem dos monstros da região atual, em partes iguais
             var materiais = new List<ParDeValor>();
@@ -404,9 +417,10 @@ namespace ALotOfDamage.Core
                 TemRecompensa = fora >= c.MinimoDoAfkEmSegundos && vitorias > 0,
                 Segundos = segundos,
                 Vitorias = vitorias,
-                Ouro = vitorias * inimigo.Ouro,
+                Ouro = vitorias * inimigo.Ouro * (1 + a.BonusDeOuro),
+                Cristais = catalogo.Gacha.VitoriasAfkPorCristal > 0 ? vitorias / catalogo.Gacha.VitoriasAfkPorCristal : 0,
                 Materiais = materiais,
-                Itens = RegrasDoAfk.Itens(vitorias, catalogo.ParametrosDosItens.ChanceDeDrop),
+                Itens = RegrasDoAfk.Itens(vitorias, catalogo.ParametrosDosItens.ChanceDeDrop * (1 + a.BonusDeDrop)),
             };
         }
     }
@@ -435,6 +449,7 @@ namespace ALotOfDamage.Core
             if (r.TemRecompensa)
             {
                 p.ReceberOuro(r.Ouro);
+                p.ReceberCristais(r.Cristais);
                 foreach (var m in r.Materiais) p.AdicionarMaterial(m.Id, m.Valor);
                 if (catalogo.Itens.Count > 0)
                     for (int i = 0; i < Math.Min(r.Itens, MaximoDeItensSorteados); i++)
@@ -488,7 +503,9 @@ namespace ALotOfDamage.Core
         {
             var p = repositorio.Carregar();
             if (!RegrasDaAscensao.PodeAscender(catalogo.Campanha, p.Estagio)) return false;
-            p.Ascender(RegrasDaAscensao.AlmasGanhas(catalogo.Campanha, p.Estagio));
+            long almas = RegrasDaAscensao.AlmasGanhas(catalogo.Campanha, p.Estagio);
+            p.Ascender(almas);
+            p.ReceberCristais(catalogo.Gacha.CristaisDaAscensao + almas * catalogo.Gacha.CristaisPorAlma);
             repositorio.Salvar(p);
             return true;
         }
@@ -562,6 +579,116 @@ namespace ALotOfDamage.Core
             p.MarcarConquistaColetada(c.Id, s.Coletadas + s.Prontas);
             repositorio.Salvar(p);
             return s.CristaisProntos;
+        }
+    }
+
+    public struct ResultadoDaInvocacao
+    {
+        public string FollowerId;
+        public string Nome;
+        public Raridade Raridade;
+        public bool Novo;
+        public int Estrelas;
+        public int CristaisDevolvidos;   // repetido com estrelas no máximo
+    }
+
+    // Gacha: gasta cristais (1 ou 10 de uma vez) e sorteia followers com as taxas públicas e o pity
+    public class Invocar : CasoDeUso
+    {
+        readonly ISorteio sorteio;
+
+        public Invocar(IRepositorioDeProgresso r, ICatalogo c, ISorteio sorteio) : base(r, c) => this.sorteio = sorteio;
+
+        public static int Custo(ParametrosDoGacha g, int quantidade) => quantidade == 10 ? g.CustoDeDez : g.CustoPorInvocacao * quantidade;
+
+        public List<ResultadoDaInvocacao> Executar(int quantidade)
+        {
+            var resultados = new List<ResultadoDaInvocacao>();
+            var g = catalogo.Gacha;
+            var p = repositorio.Carregar();
+            if (quantidade <= 0 || catalogo.Followers.Count == 0 || !p.GastarCristais(Custo(g, quantidade))) return resultados;
+
+            for (int i = 0; i < quantidade; i++)
+            {
+                var raridade = RegrasDoGacha.SortearRaridade(g, sorteio.Proximo(), p.InvocacoesSemEpico, p.InvocacoesSemLendario);
+                var f = Sortear(raridade);
+                var (semEpico, semLendario) = RegrasDoGacha.AposInvocar(f.Raridade, p.InvocacoesSemEpico, p.InvocacoesSemLendario);
+                p.RegistrarPity(semEpico, semLendario);
+                bool novo = p.Estrelas(f.Id) == 0;
+                int devolvidos = 0;
+                if (!p.ReceberFollower(f.Id, g.MaximoDeEstrelas))
+                {
+                    devolvidos = g.CristaisPorEstrelaExtra;
+                    p.ReceberCristais(devolvidos);
+                }
+                resultados.Add(new ResultadoDaInvocacao
+                {
+                    FollowerId = f.Id, Nome = f.Nome, Raridade = f.Raridade, Novo = novo, Estrelas = p.Estrelas(f.Id), CristaisDevolvidos = devolvidos,
+                });
+            }
+            repositorio.Salvar(p);
+            return resultados;
+        }
+
+        // Um follower da raridade sorteada; sem nenhum dela no catálogo, cai para a raridade abaixo mais próxima
+        DefinicaoDeFollower Sortear(Raridade raridade)
+        {
+            for (int r = (int)raridade; r >= 0; r--)
+            {
+                int n = 0;
+                foreach (var f in catalogo.Followers) if ((int)f.Raridade == r) n++;
+                if (n == 0) continue;
+                int escolhido = RegrasDosItens.SortearTipo(n, sorteio.Proximo());
+                foreach (var f in catalogo.Followers)
+                    if ((int)f.Raridade == r && escolhido-- == 0) return f;
+            }
+            return catalogo.Followers[0];
+        }
+    }
+
+    public class EscolherFollower : CasoDeUso
+    {
+        public EscolherFollower(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public bool Executar(string followerId)
+        {
+            var p = repositorio.Carregar();
+            if (catalogo.Follower(followerId) == null || !p.EscolherFollower(followerId)) return false;
+            repositorio.Salvar(p);
+            return true;
+        }
+    }
+
+    public struct SituacaoDoFollower
+    {
+        public DefinicaoDeFollower Definicao;
+        public int Estrelas;        // 0 = ainda não tem
+        public bool Ativo;
+        public double Efeito;       // valor do efeito com as estrelas atuais (ou com 1 estrela, se não tem)
+        public double FracaoDoAutoAtaque;
+    }
+
+    public class ListarFollowers : CasoDeUso
+    {
+        public ListarFollowers(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public List<SituacaoDoFollower> Executar()
+        {
+            var p = repositorio.Carregar();
+            var lista = new List<SituacaoDoFollower>(catalogo.Followers.Count);
+            foreach (var f in catalogo.Followers)
+            {
+                int estrelas = p.Estrelas(f.Id);
+                lista.Add(new SituacaoDoFollower
+                {
+                    Definicao = f,
+                    Estrelas = estrelas,
+                    Ativo = p.FollowerAtivoId == f.Id,
+                    Efeito = f.Efeito == EfeitoDoFollower.DanoExtra ? f.ValorDoEfeito : RegrasDoGacha.Efeito(catalogo.Gacha, f, Math.Max(1, estrelas), f.Efeito),
+                    FracaoDoAutoAtaque = RegrasDoGacha.FracaoDoAutoAtaque(catalogo.Gacha, f, Math.Max(1, estrelas)),
+                });
+            }
+            return lista;
         }
     }
 
@@ -656,14 +783,21 @@ namespace ALotOfDamage.Core
                 * RegrasDasConquistas.Multiplicador(catalogo.ParametrosDasConquistas, p.TotalDeConquistasColetadas);
             double automatico = Valor(IdsDosUpgrades.Automatico) * Mult(AlvoDoItem.Automatico) * almas;
             var follower = catalogo.Follower(p.FollowerAtivoId);
+            int estrelas = Math.Max(1, p.Estrelas(p.FollowerAtivoId));
+            double Efeito(EfeitoDoFollower e) => RegrasDoGacha.Efeito(catalogo.Gacha, follower, estrelas, e);
             return new AtributosDeCombate
             {
                 DanoDoClick = Valor(IdsDosUpgrades.Forca) * Mult(AlvoDoItem.Click) * almas,
                 DanoAutomatico = automatico,
-                ChanceCritica = Valor(IdsDosUpgrades.Precisao),
+                ChanceCritica = Valor(IdsDosUpgrades.Precisao) + Efeito(EfeitoDoFollower.Critico),
                 Classe = catalogo.Classe(p.ClasseId),
                 Follower = follower,
-                DanoDoFollower = RegrasDePersonagem.DanoDoFollower(follower, automatico),
+                EstrelasDoFollower = follower == null ? 0 : estrelas,
+                DanoDoFollower = automatico * RegrasDoGacha.FracaoDoAutoAtaque(catalogo.Gacha, follower, estrelas),
+                BonusNoPontoFraco = Efeito(EfeitoDoFollower.PontoFraco),
+                BonusDeOuro = Efeito(EfeitoDoFollower.Ouro),
+                BonusDeAfk = Efeito(EfeitoDoFollower.Afk),
+                BonusDeDrop = Efeito(EfeitoDoFollower.Drop),
             };
         }
     }

@@ -21,9 +21,17 @@ namespace ALotOfDamage.Core
         public string Id;
         public string Nome;
         public string Descricao;
-        public double FracaoDoAutoAtaque = 0.2;
+        public Raridade Raridade;
+        public double FracaoDoAutoAtaque = 0.2;   // parte do auto-ataque que ele causa a cada ataque
         public float IntervaloDeAtaque = 1.5f;
-        public double BonusNaJanelaDoPontoFraco = 0.3;
+        public EfeitoDoFollower Efeito = EfeitoDoFollower.PontoFraco;
+        public double ValorDoEfeito = 0.3;         // com 1 estrela; RegrasDoGacha.Efeito aplica as estrelas
+
+        // Modelo provisório gerado por código
+        public FamiliaDoFollower Familia = FamiliaDoFollower.Ave;
+        public string Cor = "#8A6A4A";
+        public string CorSecundaria = "#E8D8B0";
+        public float Escala = 1;
     }
 
     // Regras da classe (passiva de fúria) e do follower de suporte
@@ -38,7 +46,7 @@ namespace ALotOfDamage.Core
         public static double DanoDoFollower(DefinicaoDeFollower f, double danoAutomatico) =>
             f == null ? 0 : danoAutomatico * f.FracaoDoAutoAtaque;
 
-        public static float DuracaoDoPontoFraco(DefinicaoDeFollower f, float duracaoBase) =>
-            f == null ? duracaoBase : (float)(duracaoBase * (1 + f.BonusNaJanelaDoPontoFraco));
+        // bonus vem do efeito PontoFraco do follower ativo (AtributosDeCombate.BonusNoPontoFraco)
+        public static float DuracaoDoPontoFraco(double bonus, float duracaoBase) => (float)(duracaoBase * (1 + Math.Max(0, bonus)));
     }
 }

@@ -26,6 +26,12 @@ namespace ALotOfDamage.Testes
                 LimiteDoInventario = 2, CustoDeFabricarEmOuro = 20, MaterialParaFabricar = 3,
                 PrecoDeVenda = new double[] { 10, 20, 30, 40, 50 }, MaterialAoDesmontar = new[] { 1, 2, 3, 4, 5 },
             };
+            public ParametrosDoGacha Gacha { get; set; } = new ParametrosDoGacha
+            {
+                CustoPorInvocacao = 100, CustoDeDez = 900, Taxas = new double[] { 50, 30, 14, 5, 1 }, PityEpico = 30, PityLendario = 90,
+                BonusPorEstrela = 0.2, MaximoDeEstrelas = 5, CristaisPorEstrelaExtra = 50,
+                CristaisPorChefe = 25, CristaisDaAscensao = 200, CristaisPorAlma = 5, VitoriasAfkPorCristal = 20,
+            };
             public IReadOnlyList<DefinicaoDeConquista> Conquistas { get; set; } = new List<DefinicaoDeConquista>
             {
                 new DefinicaoDeConquista { Id = "vitorias", Nome = "Guerreiro incansável", Descricao = "Vença {0} batalhas", Meta = MetaDaConquista.Vitorias, Degraus = new double[] { 1, 3 } },
@@ -667,6 +673,159 @@ namespace ALotOfDamage.Testes
             var lista = new List<Pendencia>();
             new ListarPendencias(repositorio, catalogo).Executar(lista);
             CollectionAssert.Contains(lista.ConvertAll(x => x.Tipo), TipoDePendencia.Conquista);
+        }
+
+        // Gacha: um follower comum (o Pip, que o jogador já tem), um comum novo e um épico
+        void ElencoDoGacha()
+        {
+            catalogo.Followers = new List<DefinicaoDeFollower>
+            {
+                new DefinicaoDeFollower { Id = Progresso.FollowerPadrao, Nome = "Pip", Raridade = Raridade.Comum, FracaoDoAutoAtaque = 0.2, IntervaloDeAtaque = 1.5f, Efeito = EfeitoDoFollower.PontoFraco, ValorDoEfeito = 0.3 },
+                new DefinicaoDeFollower { Id = "lontra", Nome = "Lontra", Raridade = Raridade.Comum, FracaoDoAutoAtaque = 0.2, IntervaloDeAtaque = 1.5f, Efeito = EfeitoDoFollower.Ouro, ValorDoEfeito = 0.5 },
+                new DefinicaoDeFollower { Id = "dragao", Nome = "Dragão", Raridade = Raridade.Epico, FracaoDoAutoAtaque = 0.4, IntervaloDeAtaque = 1.5f, Efeito = EfeitoDoFollower.Critico, ValorDoEfeito = 0.1 },
+            };
+        }
+
+        [Test]
+        public void Jogador_comeca_com_o_pip_ativo_com_uma_estrela()
+        {
+            Assert.AreEqual(1, repositorio.Progresso.Estrelas(Progresso.FollowerPadrao));
+            Assert.AreEqual(0, repositorio.Progresso.Estrelas("lontra"));
+        }
+
+        [Test]
+        public void Invocar_gasta_cristais_e_entrega_o_follower_sorteado()
+        {
+            ElencoDoGacha();
+            repositorio.Progresso.ReceberCristais(100);
+            // raridade comum (0,0), segundo comum da lista (0,6 dá a lontra)
+            var r = new Invocar(repositorio, catalogo, new SorteioEmSequencia(0.0, 0.6)).Executar(1);
+            Assert.AreEqual(1, r.Count);
+            Assert.AreEqual("lontra", r[0].FollowerId);
+            Assert.IsTrue(r[0].Novo);
+            Assert.AreEqual(0, repositorio.Progresso.Cristais);
+            Assert.AreEqual(1, repositorio.Progresso.Estrelas("lontra"));
+        }
+
+        [Test]
+        public void Sem_cristais_nao_invoca()
+        {
+            ElencoDoGacha();
+            repositorio.Progresso.ReceberCristais(99);
+            Assert.IsEmpty(new Invocar(repositorio, catalogo, SemDrop).Executar(1));
+            Assert.AreEqual(99, repositorio.Progresso.Cristais);
+        }
+
+        [Test]
+        public void Dez_invocacoes_custam_novecentos()
+        {
+            ElencoDoGacha();
+            repositorio.Progresso.ReceberCristais(900);
+            var r = new Invocar(repositorio, catalogo, new SorteioFixo { Valor = 0.0 }).Executar(10);
+            Assert.AreEqual(10, r.Count);
+            // gastou os 900; só sobra o que voltou dos repetidos com estrelas no máximo
+            int devolvidos = 0;
+            foreach (var x in r) devolvidos += x.CristaisDevolvidos;
+            Assert.AreEqual(devolvidos, repositorio.Progresso.Cristais);
+        }
+
+        [Test]
+        public void Repetido_vira_estrela_e_no_maximo_vira_cristais()
+        {
+            ElencoDoGacha();
+            repositorio.Progresso.ReceberCristais(600);
+            var invocar = new Invocar(repositorio, catalogo, new SorteioFixo { Valor = 0.0 });   // sempre o Pip
+            for (int i = 0; i < 4; i++) Assert.IsFalse(invocar.Executar(1)[0].Novo);
+            Assert.AreEqual(5, repositorio.Progresso.Estrelas(Progresso.FollowerPadrao));
+            var extra = invocar.Executar(1)[0];
+            Assert.AreEqual(50, extra.CristaisDevolvidos);
+            Assert.AreEqual(5, repositorio.Progresso.Estrelas(Progresso.FollowerPadrao));
+        }
+
+        [Test]
+        public void Pity_garante_epico_na_trigesima()
+        {
+            ElencoDoGacha();
+            repositorio.Progresso.ReceberCristais(30 * 100);
+            var invocar = new Invocar(repositorio, catalogo, new SorteioFixo { Valor = 0.0 });
+            for (int i = 0; i < 29; i++) Assert.AreEqual(Raridade.Comum, invocar.Executar(1)[0].Raridade);
+            var trigesima = invocar.Executar(1)[0];
+            Assert.AreEqual(Raridade.Epico, trigesima.Raridade);
+            Assert.AreEqual("dragao", trigesima.FollowerId);
+        }
+
+        [Test]
+        public void So_pode_escolher_follower_que_tem()
+        {
+            ElencoDoGacha();
+            var escolher = new EscolherFollower(repositorio, catalogo);
+            Assert.IsFalse(escolher.Executar("dragao"));
+            repositorio.Progresso.ReceberFollower("dragao", 5);
+            Assert.IsTrue(escolher.Executar("dragao"));
+            Assert.AreEqual("dragao", repositorio.Progresso.FollowerAtivoId);
+        }
+
+        [Test]
+        public void Efeito_do_follower_ativo_entra_nos_atributos()
+        {
+            ElencoDoGacha();
+            repositorio.Progresso.ReceberFollower("dragao", 5);
+            repositorio.Progresso.ReceberFollower("dragao", 5);   // 2 estrelas
+            new EscolherFollower(repositorio, catalogo).Executar("dragao");
+            var a = new CalcularAtributos(repositorio, catalogo).Executar(null);
+            Assert.AreEqual(0.05 + 0.1 * 1.2, a.ChanceCritica, 1e-9);
+            Assert.AreEqual(5 * 0.4 * 1.2, a.DanoDoFollower, 1e-9);
+            Assert.AreEqual(0, a.BonusNoPontoFraco, 1e-9);
+        }
+
+        [Test]
+        public void Follower_de_ouro_aumenta_o_ouro_da_vitoria()
+        {
+            ElencoDoGacha();
+            repositorio.Progresso.ReceberFollower("lontra", 5);
+            new EscolherFollower(repositorio, catalogo).Executar("lontra");
+            var r = new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar("lobo", false);
+            Assert.AreEqual(50 * 1.5, r.Ouro, 1e-9);
+        }
+
+        [Test]
+        public void Chefe_da_cristais()
+        {
+            new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar("lobo", true);
+            Assert.AreEqual(25, repositorio.Progresso.Cristais);
+        }
+
+        [Test]
+        public void Ascensao_da_cristais_pela_base_e_pelas_almas()
+        {
+            ChegarAoEstagio(3);   // 2 Almas
+            new Ascender(repositorio, catalogo).Executar();
+            Assert.AreEqual(200 + 2 * 5, repositorio.Progresso.Cristais);
+        }
+
+        [Test]
+        public void Afk_da_um_cristal_a_cada_vinte_vitorias()
+        {
+            catalogo.ParametrosDosItens.ChanceDeDrop = 0;
+            var (relogio, consultar, coletar) = Afk();
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(2);
+            Assert.AreEqual(3, consultar.Executar().Cristais, "72 vitórias ÷ 20");
+            coletar.Executar();
+            Assert.AreEqual(3, repositorio.Progresso.Cristais);
+        }
+
+        [Test]
+        public void Followers_possuidos_e_pity_vao_e_voltam_do_save()
+        {
+            var p = repositorio.Progresso;
+            p.ReceberFollower("dragao", 5);
+            p.RegistrarPity(7, 40);
+            var copia = Progresso.Importar(p.Exportar());
+            Assert.AreEqual(1, copia.Estrelas("dragao"));
+            Assert.AreEqual(1, copia.Estrelas(Progresso.FollowerPadrao));
+            Assert.AreEqual(7, copia.InvocacoesSemEpico);
+            Assert.AreEqual(40, copia.InvocacoesSemLendario);
         }
 
         [Test]
