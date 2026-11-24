@@ -161,7 +161,7 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 | Relíquias | Itens únicos de chefes | Fragmentos de chefe | Multiplicadores grandes | Futuro |
 | Afinidade do follower | Presentes e conversa | Presentes | Passivas e falas | Futuro |
 | Conquistas | Metas de todo o jogo | Jogar | % pequeno acumulativo | Futuro |
-| Ascensão | Recomeça estágio e upgrades por Almas | Progresso atual | Multiplicador permanente | Futuro |
+| Ascensão | Libera no estágio 50; recomeça estágio, upgrades e ouro por Almas = (estágio − 45)² ÷ 5 (estágio 50: 5, 60: 45, 80: 245). Mantém itens, materiais, bestiário e o resto | Progresso atual | Cada Alma +10% em todo o dano, para sempre | Implementado |
 
 ### O dilema "o que fazer agora?"
 

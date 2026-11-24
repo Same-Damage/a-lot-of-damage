@@ -19,6 +19,12 @@ namespace ALotOfDamage.Core
         public double LimiteDoAfkEmHoras = 12;
         public double SegundosEntreLutasNoAfk = 5;
         public double MinimoDoAfkEmSegundos = 60;   // menos que isso não abre a janela de recompensa
+
+        // Ascensão: recomeçar em troca de Almas, que multiplicam todo o dano para sempre
+        public int EstagioMinimoDaAscensao = 50;
+        public int EstagioBaseDasAlmas = 45;        // Almas = (estágio − base)² ÷ divisor
+        public double DivisorDasAlmas = 5;
+        public double BonusPorAlma = 0.1;           // cada Alma soma 10% de dano
     }
 
     [Serializable]

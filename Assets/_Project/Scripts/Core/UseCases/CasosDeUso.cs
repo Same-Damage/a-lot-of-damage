@@ -444,6 +444,54 @@ namespace ALotOfDamage.Core
         }
     }
 
+    public struct SituacaoDaAscensao
+    {
+        public bool Pode;
+        public int EstagioMinimo;
+        public long Almas;                  // já acumuladas
+        public long AlmasGanhas;            // se ascender agora
+        public double MultiplicadorAtual;
+        public double MultiplicadorDepois;
+        public int Ascensoes;
+    }
+
+    public class ConsultarAscensao : CasoDeUso
+    {
+        public ConsultarAscensao(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public SituacaoDaAscensao Executar()
+        {
+            var p = repositorio.Carregar();
+            var c = catalogo.Campanha;
+            long ganhas = RegrasDaAscensao.AlmasGanhas(c, p.Estagio);
+            return new SituacaoDaAscensao
+            {
+                Pode = RegrasDaAscensao.PodeAscender(c, p.Estagio),
+                EstagioMinimo = c.EstagioMinimoDaAscensao,
+                Almas = p.Almas,
+                AlmasGanhas = ganhas,
+                MultiplicadorAtual = RegrasDaAscensao.Multiplicador(c, p.Almas),
+                MultiplicadorDepois = RegrasDaAscensao.Multiplicador(c, p.Almas + ganhas),
+                Ascensoes = p.Ascensoes,
+            };
+        }
+    }
+
+    // Troca estágio, upgrades e ouro por Almas; false se ainda não chegou ao estágio mínimo
+    public class Ascender : CasoDeUso
+    {
+        public Ascender(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public bool Executar()
+        {
+            var p = repositorio.Carregar();
+            if (!RegrasDaAscensao.PodeAscender(catalogo.Campanha, p.Estagio)) return false;
+            p.Ascender(RegrasDaAscensao.AlmasGanhas(catalogo.Campanha, p.Estagio));
+            repositorio.Salvar(p);
+            return true;
+        }
+    }
+
     // Vida e recompensa do inimigo conforme o estágio atual da campanha
     public class CalcularInimigo : CasoDeUso
     {
@@ -521,7 +569,7 @@ namespace ALotOfDamage.Core
             RegrasDePoder.Poder(calcularAtributos.Executar(null), RegrasDePoder.MultiplicadorCriticoPadrao);
     }
 
-    // Dano e crítico do jogador contra um tipo de monstro: upgrades × itens equipados × bestiário
+    // Dano e crítico do jogador contra um tipo de monstro: upgrades × itens equipados × bestiário × Almas
     public class CalcularAtributos : CasoDeUso
     {
         public CalcularAtributos(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
@@ -531,11 +579,12 @@ namespace ALotOfDamage.Core
             var p = repositorio.Carregar();
             double Valor(string id) => catalogo.Upgrade(id) is DefinicaoDeUpgrade d ? p.Valor(d) : 0;
             double Mult(AlvoDoItem alvo) => p.MultiplicadorDeDano(alvo, tipoDoMonstro, catalogo.Itens, catalogo.ParametrosDosItens, catalogo.Bestiario);
-            double automatico = Valor(IdsDosUpgrades.Automatico) * Mult(AlvoDoItem.Automatico);
+            double almas = RegrasDaAscensao.Multiplicador(catalogo.Campanha, p.Almas);
+            double automatico = Valor(IdsDosUpgrades.Automatico) * Mult(AlvoDoItem.Automatico) * almas;
             var follower = catalogo.Follower(p.FollowerAtivoId);
             return new AtributosDeCombate
             {
-                DanoDoClick = Valor(IdsDosUpgrades.Forca) * Mult(AlvoDoItem.Click),
+                DanoDoClick = Valor(IdsDosUpgrades.Forca) * Mult(AlvoDoItem.Click) * almas,
                 DanoAutomatico = automatico,
                 ChanceCritica = Valor(IdsDosUpgrades.Precisao),
                 Classe = catalogo.Classe(p.ClasseId),
@@ -548,7 +597,7 @@ namespace ALotOfDamage.Core
 
 namespace ALotOfDamage.Core
 {
-    public enum TipoDePendencia { Upgrade, Forja, Bestiario, Chefe }
+    public enum TipoDePendencia { Upgrade, Forja, Bestiario, Chefe, Ascensao }
 
     public struct Pendencia
     {
@@ -567,6 +616,13 @@ namespace ALotOfDamage.Core
         {
             saida.Clear();
             var p = repositorio.Carregar();
+
+            if (RegrasDaAscensao.PodeAscender(catalogo.Campanha, p.Estagio))
+                saida.Add(new Pendencia
+                {
+                    Tipo = TipoDePendencia.Ascensao,
+                    Texto = $"Ascensão pronta: +{RegrasDaAscensao.AlmasGanhas(catalogo.Campanha, p.Estagio)} Almas",
+                });
 
             if (RegrasDaCampanha.EhEstagioDeChefe(catalogo.Campanha, p.Estagio))
                 saida.Add(new Pendencia { Tipo = TipoDePendencia.Chefe, Texto = $"Chefe do estágio {p.Estagio} apareceu!" });

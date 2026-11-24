@@ -20,10 +20,24 @@ namespace ALotOfDamage.Core
 
         public int Estagio { get; private set; } = 1;
 
+        public long Almas { get; private set; }
+        public int Ascensoes { get; private set; }
+
         // Última vez que o jogo estava aberto (ticks UTC); 0 = nunca. É daí que conta o tempo fora (AFK)
         public long UltimaPresencaUtc { get; private set; }
 
         public void MarcarPresenca(DateTime agoraUtc) => UltimaPresencaUtc = agoraUtc.Ticks;
+
+        // Recomeça estágio, upgrades e ouro; mantém itens, materiais, bestiário e o resto
+        public void Ascender(long almasGanhas)
+        {
+            Almas += Math.Max(0, almasGanhas);
+            Ascensoes++;
+            Estagio = 1;
+            VitoriasNoEstagio = 0;
+            Ouro = 0;
+            niveis.Clear();
+        }
         public int VitoriasNoEstagio { get; private set; }
 
         readonly Dictionary<string, int> niveis = new Dictionary<string, int>();
@@ -172,6 +186,7 @@ namespace ALotOfDamage.Core
             Inventario = new List<ItemDoJogador>(inventario), Equipados = new List<ItemDoJogador>(equipados.Values),
             ProximoIdDeItem = proximoIdDeItem,
             UltimaPresencaUtc = UltimaPresencaUtc,
+            Almas = Almas, Ascensoes = Ascensoes,
         };
 
         public static Progresso Importar(DadosDoProgresso d)
@@ -190,6 +205,8 @@ namespace ALotOfDamage.Core
             Preencher(p.derrotas, d.Derrotas);
             ImportarItens(p, d);
             p.UltimaPresencaUtc = Math.Max(0, d.UltimaPresencaUtc);
+            p.Almas = Math.Max(0, d.Almas);
+            p.Ascensoes = Math.Max(0, d.Ascensoes);
             return p;
         }
 
@@ -280,6 +297,8 @@ namespace ALotOfDamage.Core
         public List<ItemDoJogador> Equipados = new List<ItemDoJogador>();
         public int ProximoIdDeItem = 1;
         public long UltimaPresencaUtc;
+        public long Almas;
+        public int Ascensoes;
         public List<ParDeValor> Materiais = new List<ParDeValor>();
         public List<ParDeValor> Derrotas = new List<ParDeValor>();
     }
