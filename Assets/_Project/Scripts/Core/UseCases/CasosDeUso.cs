@@ -288,7 +288,7 @@ namespace ALotOfDamage.Core
             bool marco = p.RegistrarVitoria(monstro, catalogo.Bestiario);
             int estagioDaLuta = p.Estagio;
             var campanha = p.AvancarCampanha(catalogo.Campanha, chefe);
-            var item = SortearDrop(p, chefe, estagioDaLuta, out bool vendido);
+            var item = DropDeItens.Talvez(p, catalogo, sorteio, chefe, estagioDaLuta, out bool vendido);
             repositorio.Salvar(p);
             return new ResultadoDaVitoria
             {
@@ -305,12 +305,24 @@ namespace ALotOfDamage.Core
             };
         }
 
-        // O item cai do estágio em que a luta aconteceu; com o inventário cheio ele é vendido na hora
-        ItemDoJogador SortearDrop(Progresso p, bool chefe, int estagio, out bool vendido)
+    }
+
+    // Sorteio e entrega de itens: vitória na arena e recompensa AFK
+    static class DropDeItens
+    {
+        // Talvez caia um item (chefe sempre); devolve null se não caiu
+        public static ItemDoJogador Talvez(Progresso p, ICatalogo catalogo, ISorteio sorteio, bool chefe, int estagio, out bool vendido)
+        {
+            vendido = false;
+            if (catalogo.Itens.Count == 0 || !RegrasDosItens.CaiItem(catalogo.ParametrosDosItens, sorteio.Proximo(), chefe)) return null;
+            return Entregar(p, catalogo, sorteio, chefe, estagio, out vendido);
+        }
+
+        // O item é do estágio em que caiu; com o inventário cheio ele é vendido na hora
+        public static ItemDoJogador Entregar(Progresso p, ICatalogo catalogo, ISorteio sorteio, bool chefe, int estagio, out bool vendido)
         {
             vendido = false;
             var regras = catalogo.ParametrosDosItens;
-            if (catalogo.Itens.Count == 0 || !RegrasDosItens.CaiItem(regras, sorteio.Proximo(), chefe)) return null;
             var tipo = catalogo.Itens[RegrasDosItens.SortearTipo(catalogo.Itens.Count, sorteio.Proximo())];
             var raridade = RegrasDosItens.SortearRaridade(regras, sorteio.Proximo(), chefe);
             var item = p.ReceberItem(tipo.Id, tipo.Slot, raridade, estagio, regras.LimiteDoInventario);
@@ -319,6 +331,116 @@ namespace ALotOfDamage.Core
             item = new ItemDoJogador { TipoId = tipo.Id, Slot = tipo.Slot, Raridade = raridade, Estagio = estagio };
             p.ReceberOuro(RegrasDosItens.PrecoDeVenda(regras, item));
             return item;
+        }
+    }
+
+    public struct RecompensaAfk
+    {
+        public bool TemRecompensa;     // tempo fora passou do mínimo e há o que coletar
+        public double Segundos;        // tempo que conta (até o limite)
+        public long Vitorias;
+        public double Ouro;
+        public List<ParDeValor> Materiais;
+        public int Itens;
+    }
+
+    // Marca que o jogo está aberto agora: o tempo fora (AFK) conta a partir daqui
+    public class RegistrarPresenca : CasoDeUso
+    {
+        readonly IRelogio relogio;
+
+        public RegistrarPresenca(IRepositorioDeProgresso r, ICatalogo c, IRelogio relogio) : base(r, c) => this.relogio = relogio;
+
+        public void Executar()
+        {
+            var p = repositorio.Carregar();
+            p.MarcarPresenca(relogio.AgoraUtc);
+            repositorio.Salvar(p);
+        }
+    }
+
+    // O que o herói ganhou lutando sozinho desde a última presença (sem aplicar nada)
+    public class ConsultarRecompensaAfk : CasoDeUso
+    {
+        readonly IRelogio relogio;
+        readonly CalcularAtributos atributos;
+
+        public ConsultarRecompensaAfk(IRepositorioDeProgresso r, ICatalogo c, IRelogio relogio, CalcularAtributos atributos) : base(r, c)
+        {
+            this.relogio = relogio;
+            this.atributos = atributos;
+        }
+
+        public RecompensaAfk Executar() => Calcular(repositorio.Carregar(), catalogo, relogio, atributos);
+
+        internal static RecompensaAfk Calcular(Progresso p, ICatalogo catalogo, IRelogio relogio, CalcularAtributos atributos)
+        {
+            var c = catalogo.Campanha;
+            if (p.UltimaPresencaUtc <= 0) return new RecompensaAfk { Materiais = new List<ParDeValor>() };
+            double fora = (relogio.AgoraUtc - new DateTime(p.UltimaPresencaUtc, DateTimeKind.Utc)).TotalSeconds;
+            double segundos = RegrasDoAfk.SegundosQueContam(c, fora);
+
+            var a = atributos.Executar(null);
+            double porSegundo = a.DanoAutomatico + (a.Follower == null ? 0 : a.DanoDoFollower / Math.Max(0.1, a.Follower.IntervaloDeAtaque));
+            var inimigo = CalcularInimigo.Para(p, catalogo, null, false);
+            long vitorias = (long)Math.Floor(RegrasDoAfk.Vitorias(c, segundos, porSegundo, inimigo.Vida));
+
+            // o material vem dos monstros da região atual, em partes iguais
+            var materiais = new List<ParDeValor>();
+            var regiao = RegrasDaCampanha.Regiao(c, catalogo.Regioes, p.Estagio);
+            if (regiao != null && regiao.Monstros.Count > 0)
+                for (int i = 0; i < regiao.Monstros.Count; i++)
+                {
+                    var m = catalogo.Monstro(regiao.Monstros[i]);
+                    if (m == null || string.IsNullOrEmpty(m.MaterialId)) continue;
+                    long lutas = vitorias / regiao.Monstros.Count + (i < vitorias % regiao.Monstros.Count ? 1 : 0);
+                    if (lutas > 0) materiais.Add(new ParDeValor { Id = m.MaterialId, Valor = (int)Math.Min(int.MaxValue, lutas * m.MaterialPorVitoria) });
+                }
+
+            return new RecompensaAfk
+            {
+                TemRecompensa = fora >= c.MinimoDoAfkEmSegundos && vitorias > 0,
+                Segundos = segundos,
+                Vitorias = vitorias,
+                Ouro = vitorias * inimigo.Ouro,
+                Materiais = materiais,
+                Itens = RegrasDoAfk.Itens(vitorias, catalogo.ParametrosDosItens.ChanceDeDrop),
+            };
+        }
+    }
+
+    // Entrega a recompensa AFK (ouro, material e itens sorteados) e recomeça a contar o tempo fora
+    public class ColetarRecompensaAfk : CasoDeUso
+    {
+        // teto de sorteios por coleta: o resto do que cairia vira ouro pela média, sem laço gigante
+        const int MaximoDeItensSorteados = 200;
+
+        readonly IRelogio relogio;
+        readonly CalcularAtributos atributos;
+        readonly ISorteio sorteio;
+
+        public ColetarRecompensaAfk(IRepositorioDeProgresso r, ICatalogo c, IRelogio relogio, CalcularAtributos atributos, ISorteio sorteio) : base(r, c)
+        {
+            this.relogio = relogio;
+            this.atributos = atributos;
+            this.sorteio = sorteio;
+        }
+
+        public RecompensaAfk Executar()
+        {
+            var p = repositorio.Carregar();
+            var r = ConsultarRecompensaAfk.Calcular(p, catalogo, relogio, atributos);
+            if (r.TemRecompensa)
+            {
+                p.ReceberOuro(r.Ouro);
+                foreach (var m in r.Materiais) p.AdicionarMaterial(m.Id, m.Valor);
+                if (catalogo.Itens.Count > 0)
+                    for (int i = 0; i < Math.Min(r.Itens, MaximoDeItensSorteados); i++)
+                        DropDeItens.Entregar(p, catalogo, sorteio, false, p.Estagio, out _);
+            }
+            p.MarcarPresenca(relogio.AgoraUtc);
+            repositorio.Salvar(p);
+            return r;
         }
     }
 

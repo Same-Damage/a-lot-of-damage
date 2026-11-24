@@ -19,6 +19,11 @@ namespace ALotOfDamage.Core
         public string HeroiId { get; private set; } = "";
 
         public int Estagio { get; private set; } = 1;
+
+        // Última vez que o jogo estava aberto (ticks UTC); 0 = nunca. É daí que conta o tempo fora (AFK)
+        public long UltimaPresencaUtc { get; private set; }
+
+        public void MarcarPresenca(DateTime agoraUtc) => UltimaPresencaUtc = agoraUtc.Ticks;
         public int VitoriasNoEstagio { get; private set; }
 
         readonly Dictionary<string, int> niveis = new Dictionary<string, int>();
@@ -166,6 +171,7 @@ namespace ALotOfDamage.Core
             Niveis = Pares(niveis), Materiais = Pares(materiais), Derrotas = Pares(derrotas),
             Inventario = new List<ItemDoJogador>(inventario), Equipados = new List<ItemDoJogador>(equipados.Values),
             ProximoIdDeItem = proximoIdDeItem,
+            UltimaPresencaUtc = UltimaPresencaUtc,
         };
 
         public static Progresso Importar(DadosDoProgresso d)
@@ -183,6 +189,7 @@ namespace ALotOfDamage.Core
             Preencher(p.materiais, d.Materiais);
             Preencher(p.derrotas, d.Derrotas);
             ImportarItens(p, d);
+            p.UltimaPresencaUtc = Math.Max(0, d.UltimaPresencaUtc);
             return p;
         }
 
@@ -272,6 +279,7 @@ namespace ALotOfDamage.Core
         public List<ItemDoJogador> Inventario = new List<ItemDoJogador>();
         public List<ItemDoJogador> Equipados = new List<ItemDoJogador>();
         public int ProximoIdDeItem = 1;
+        public long UltimaPresencaUtc;
         public List<ParDeValor> Materiais = new List<ParDeValor>();
         public List<ParDeValor> Derrotas = new List<ParDeValor>();
     }

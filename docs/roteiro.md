@@ -176,7 +176,7 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 - **Chefe a cada 5 estágios** (implementado): aparece no mapa maior e avermelhado, com ×10 de vida; só derrotá-lo avança.
 - Regiões trocam a cada 10 estágios.
 - Futuro: capítulos de história antes dos estágios infinitos; torre infinita.
-- **Recompensa AFK** (futuro): o personagem continua lutando offline no estágio alcançado; ao voltar, coleta ouro e materiais, com limite de 12 h. No online, calculada no servidor pelo tempo e pelo poder.
+- **Recompensa AFK** (implementado): enquanto o jogador está fora, o herói luta sozinho no estágio atual só com auto-ataque e follower (cada luta dura vida ÷ dano por segundo, mais 5 s entre lutas). Rende **25%** dessas lutas em ouro, material dos monstros da região e itens pela chance de drop, até **12 h**. Ao abrir o mapa, uma janela mostra o tempo, as vitórias e o que foi ganho, com o botão Coletar. A presença é marcada a cada 30 s e ao pausar ou fechar o jogo. No online, calculada no servidor pelo tempo e pelo poder.
 - **Save** (implementado): progresso salvo em JSON no dispositivo, com gravação segura (temporário + troca).
 
 ## 9. Social e online (futuro)

@@ -13,6 +13,12 @@ namespace ALotOfDamage.Core
         public int ChefeACada = 5;
         public double MultiplicadorDeVidaDoChefe = 10;
         public int EstagiosPorRegiao = 10;
+
+        // Recompensa AFK: o herói luta sozinho (só auto-ataque e follower) no estágio atual enquanto o jogador está fora
+        public double FracaoDoAfk = 0.25;           // parte das lutas que vira recompensa
+        public double LimiteDoAfkEmHoras = 12;
+        public double SegundosEntreLutasNoAfk = 5;
+        public double MinimoDoAfkEmSegundos = 60;   // menos que isso não abre a janela de recompensa
     }
 
     [Serializable]
