@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace ALotOfDamage.Core
@@ -169,6 +170,21 @@ namespace ALotOfDamage.Core
                 Forma = m?.Forma ?? FormaDoMonstro.Gosma,
                 Cor = m?.Cor ?? "#4CE64C",
             };
+        }
+    }
+
+    // Brilho da arma do herói: segue o item de click mais forjado
+    public class ConsultarBrilhoDaArma : CasoDeUso
+    {
+        public ConsultarBrilhoDaArma(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public float Executar()
+        {
+            var p = repositorio.Carregar();
+            int nivel = 0;
+            foreach (var item in catalogo.Itens)
+                if (item.Alvo == AlvoDoItem.Click) nivel = Math.Max(nivel, p.NivelDoItem(item.Id));
+            return RegrasDeAparencia.BrilhoDaArma(nivel);
         }
     }
 

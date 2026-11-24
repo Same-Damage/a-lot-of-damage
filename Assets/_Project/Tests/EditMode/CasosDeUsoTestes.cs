@@ -241,6 +241,31 @@ namespace ALotOfDamage.Testes
         }
 
         [Test]
+        public void Brilho_da_arma_segue_o_item_de_click_mais_forjado()
+        {
+            var brilho = new ConsultarBrilhoDaArma(repositorio, catalogo);
+            Assert.AreEqual(0, brilho.Executar(), 1e-6);
+
+            repositorio.Progresso.ReceberOuro(10);
+            repositorio.Progresso.AdicionarMaterial("presa", 1);
+            new ForjarItem(repositorio, catalogo, new SorteioFixo { Valor = 0.99 }).Executar("espada");
+            Assert.AreEqual(RegrasDeAparencia.BrilhoDaArma(1), brilho.Executar(), 1e-6);
+        }
+
+        [Test]
+        public void Item_de_auto_ataque_nao_acende_a_arma()
+        {
+            catalogo.Itens = new List<DefinicaoDeItem>
+            {
+                new DefinicaoDeItem { Id = "anel", Alvo = AlvoDoItem.Automatico, CustoBaseEmOuro = 10, MaterialId = "presa", MaterialPorNivel = 1 },
+            };
+            repositorio.Progresso.ReceberOuro(10);
+            repositorio.Progresso.AdicionarMaterial("presa", 1);
+            new ForjarItem(repositorio, catalogo, new SorteioFixo { Valor = 0.99 }).Executar("anel");
+            Assert.AreEqual(0, new ConsultarBrilhoDaArma(repositorio, catalogo).Executar(), 1e-6);
+        }
+
+        [Test]
         public void Repositorio_em_memoria_devolve_o_mesmo_progresso()
         {
             var r = new RepositorioDeProgressoEmMemoria();

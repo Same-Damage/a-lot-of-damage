@@ -458,6 +458,7 @@ namespace ALotOfDamage.Ferramentas
         static HeroisDaCena CriarHerois(Transform pai, Vector3 pes, float altura, Quaternion rotacao)
         {
             var grupo = new GameObject("Herois").AddComponent<HeroisDaCena>();
+            grupo.gameObject.AddComponent<BrilhoDasArmas>();
             grupo.transform.SetParent(pai, false);
             grupo.herois = new PersonagemVisual[Herois.Length];
             for (int i = 0; i < Herois.Length; i++)
