@@ -47,7 +47,7 @@ namespace ALotOfDamage.UI
 
         protected virtual void AtualizarConteudo()
         {
-            AtualizarConteudo();
+            for (int i = 0; i < Linhas; i++) AtualizarLinha(i);
         }
 
         public bool Aberta => aberta == this;
@@ -82,7 +82,8 @@ namespace ALotOfDamage.UI
             painel.gameObject.SetActive(false);
         }
 
-        protected void Alternar()
+        // Abre a janela fechada ou fecha a aberta (botão, tecla e testes)
+        public void Alternar()
         {
             aberta = Aberta ? null : this;
             proximaAtualizacao = 0;
