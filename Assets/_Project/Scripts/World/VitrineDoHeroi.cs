@@ -10,6 +10,7 @@ namespace ALotOfDamage.World
     {
         public HeroisDaCena herois;
         public JanelaDeInventario janela;
+        public BrilhoDasArmas brilho;
         public Vector3 estudio = new Vector3(0, -500, 0);
         public float alturaDaCamera = 1.25f, distancia = 4.6f, campoDeVisao = 30f;
 
@@ -17,6 +18,7 @@ namespace ALotOfDamage.World
         RenderTexture textura;
         GameObject copia;
         PersonagemVisual copiaDe;
+        int versaoCopiada = -1;
         float giro = 180;   // de frente para a câmera
 
         void Start()
@@ -46,7 +48,8 @@ namespace ALotOfDamage.World
             if (!aberta) return;
 
             var ativo = HeroiAtivo();
-            if (ativo != copiaDe) Copiar(ativo);
+            // copia de novo quando o herói ou a arma equipada mudam
+            if (ativo != copiaDe || (brilho && brilho.Versao != versaoCopiada)) Copiar(ativo);
             if (copia) copia.transform.rotation = Quaternion.Euler(0, giro, 0);
         }
 
@@ -66,6 +69,11 @@ namespace ALotOfDamage.World
             copia.name = "Herói da vitrine";
             copia.transform.localScale = heroi.transform.lossyScale;
             foreach (var p in copia.GetComponentsInChildren<PersonagemVisual>()) Destroy(p);
+            if (brilho)
+            {
+                brilho.AplicarEm(copia);
+                versaoCopiada = brilho.Versao;
+            }
         }
 
         void OnDestroy()

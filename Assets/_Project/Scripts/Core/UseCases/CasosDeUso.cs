@@ -345,17 +345,28 @@ namespace ALotOfDamage.Core
         }
     }
 
-    // Brilho da arma do herói: segue o item de click equipado mais refinado
-    public class ConsultarBrilhoDaArma : CasoDeUso
+    public struct VisualDoHeroi
     {
-        public ConsultarBrilhoDaArma(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+        public bool TemArma;
+        public Raridade RaridadeDaArma;
+        public float Brilho;   // RegrasDeAparencia.BrilhoDoItem da arma; 0 sem arma
+    }
 
-        public float Executar()
+    // O que o herói mostra: a arma do slot Arma, com a cor da raridade e o brilho do refino
+    public class ConsultarVisualDoHeroi : CasoDeUso
+    {
+        public ConsultarVisualDoHeroi(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public VisualDoHeroi Executar()
         {
-            int nivel = 0;
-            foreach (var item in repositorio.Carregar().Equipados)
-                if (catalogo.Item(item.TipoId)?.Alvo == AlvoDoItem.Click) nivel = Math.Max(nivel, item.Nivel);
-            return RegrasDeAparencia.BrilhoDaArma(nivel);
+            var arma = repositorio.Carregar().Equipado(SlotDeItem.Arma);
+            if (arma == null) return default;
+            return new VisualDoHeroi
+            {
+                TemArma = true,
+                RaridadeDaArma = arma.Raridade,
+                Brilho = RegrasDeAparencia.BrilhoDoItem(arma.Raridade, arma.Nivel),
+            };
         }
     }
 

@@ -2,34 +2,39 @@ using UnityEngine;
 
 namespace ALotOfDamage.Visual
 {
-    // Arma ou acessório rígido preso a um osso do herói; o brilho mostra o poder da forja no brilho de borda do PersonagemPintado
+    // Arma ou acessório rígido preso a um osso do herói. A arma mostra o item equipado no slot Arma:
+    // some sem item, e com item ganha a cor da raridade no brilho de borda e na emissão do PersonagemPintado.
     public class PecaDeEquipamento : MonoBehaviour
     {
-        public Color corSemForja = new Color(1f, 0.86f, 0.55f);
-        public Color corNoMaximo = new Color(1f, 0.95f, 0.6f);
-        public float bordaSemForja = 0.5f;
+        [Tooltip("Arma da mão: aparece só com item no slot Arma. Acessórios (aljava) ficam sempre")]
+        public bool ehArma;
+        public float bordaSemBrilho = 0.5f;
         public float bordaNoMaximo = 3f;
+        public float emissaoNoMaximo = 2.5f;
 
         static readonly int ForcaDaBorda = Shader.PropertyToID("_ForcaDaBorda");
         static readonly int CorDaBorda = Shader.PropertyToID("_CorDaBorda");
+        static readonly int CorDaEmissao = Shader.PropertyToID("_CorDaEmissao");
+        static readonly int ForcaDaEmissao = Shader.PropertyToID("_ForcaDaEmissao");
 
         Renderer[] renderers;
         MaterialPropertyBlock bloco;
+        Color corAtual = Color.clear;
         float brilhoAtual = -1;
 
-        // 0 sem forja, perto de 1 muito forjada (RegrasDeAparencia.BrilhoDaArma)
-        public float Brilho
+        // cor da raridade e brilho de 0 a quase 1 (RegrasDeAparencia.BrilhoDoItem)
+        public void Mostrar(Color cor, float brilho)
         {
-            set
-            {
-                if (Mathf.Approximately(value, brilhoAtual)) return;
-                brilhoAtual = value;
-                if (renderers == null) renderers = GetComponentsInChildren<Renderer>(true);
-                bloco ??= new MaterialPropertyBlock();
-                bloco.SetFloat(ForcaDaBorda, Mathf.Lerp(bordaSemForja, bordaNoMaximo, value));
-                bloco.SetColor(CorDaBorda, Color.Lerp(corSemForja, corNoMaximo, value) * (1 + value));
-                foreach (var r in renderers) r.SetPropertyBlock(bloco);
-            }
+            if (cor == corAtual && Mathf.Approximately(brilho, brilhoAtual)) return;
+            corAtual = cor;
+            brilhoAtual = brilho;
+            if (renderers == null) renderers = GetComponentsInChildren<Renderer>(true);
+            bloco ??= new MaterialPropertyBlock();
+            bloco.SetFloat(ForcaDaBorda, Mathf.Lerp(bordaSemBrilho, bordaNoMaximo, brilho));
+            bloco.SetColor(CorDaBorda, Color.Lerp(Color.white, cor, 0.5f + 0.5f * brilho) * (1 + brilho));
+            bloco.SetColor(CorDaEmissao, cor);
+            bloco.SetFloat(ForcaDaEmissao, brilho * emissaoNoMaximo);
+            foreach (var r in renderers) r.SetPropertyBlock(bloco);
         }
     }
 }

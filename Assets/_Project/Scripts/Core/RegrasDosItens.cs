@@ -41,6 +41,11 @@ namespace ALotOfDamage.Core
     {
         public static readonly string[] NomesDasRaridades = { "Comum", "Incomum", "Raro", "Épico", "Lendário" };
 
+        // Cor de cada raridade, a mesma nas molduras do inventário e no brilho da arma do herói
+        static readonly string[] CoresDasRaridades = { "#9E9E9E", "#59D959", "#4D99FF", "#B359FF", "#FF9926" };
+
+        public static string CorDaRaridade(Raridade r) => CoresDasRaridades[(int)r];
+
         static T Da<T>(T[] tabela, Raridade r) => tabela[Math.Min((int)r, tabela.Length - 1)];
 
         // sorteio em [0, 1)

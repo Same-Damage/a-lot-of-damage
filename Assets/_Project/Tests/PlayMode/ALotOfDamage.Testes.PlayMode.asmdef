@@ -8,6 +8,7 @@
         "ALotOfDamage.Infraestrutura",
         "ALotOfDamage.Combat",
         "ALotOfDamage.World",
+        "ALotOfDamage.UI",
         "VContainer"
     ],
     "includePlatforms": [],

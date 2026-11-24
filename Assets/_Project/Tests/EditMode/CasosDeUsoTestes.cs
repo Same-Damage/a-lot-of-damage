@@ -414,24 +414,35 @@ namespace ALotOfDamage.Testes
         }
 
         [Test]
-        public void Brilho_da_arma_segue_o_item_de_click_equipado_mais_refinado()
+        public void Sem_arma_equipada_o_heroi_fica_de_mao_vazia()
         {
-            var brilho = new ConsultarBrilhoDaArma(repositorio, catalogo);
-            Assert.AreEqual(0, brilho.Executar(), 1e-6);
-
-            EspadaEquipada().Nivel = 3;
-            Assert.AreEqual(RegrasDeAparencia.BrilhoDaArma(3), brilho.Executar(), 1e-6);
+            var v = new ConsultarVisualDoHeroi(repositorio, catalogo).Executar();
+            Assert.IsFalse(v.TemArma);
+            Assert.AreEqual(0, v.Brilho, 1e-6);
         }
 
         [Test]
-        public void Item_de_auto_ataque_ou_guardado_nao_acende_a_arma()
+        public void Arma_equipada_mostra_raridade_e_brilho_com_refino()
         {
             var p = repositorio.Progresso;
-            var anel = p.ReceberItem("anel", SlotDeItem.Anel, Raridade.Comum, 1, 10);
+            var espada = p.ReceberItem("espada", SlotDeItem.Arma, Raridade.Epico, 1, 10);
+            p.Equipar(espada.Id);
+            espada.Nivel = 3;
+
+            var v = new ConsultarVisualDoHeroi(repositorio, catalogo).Executar();
+            Assert.IsTrue(v.TemArma);
+            Assert.AreEqual(Raridade.Epico, v.RaridadeDaArma);
+            Assert.AreEqual(RegrasDeAparencia.BrilhoDoItem(Raridade.Epico, 3), v.Brilho, 1e-6);
+        }
+
+        [Test]
+        public void Item_guardado_ou_de_outro_slot_nao_vira_arma_na_mao()
+        {
+            var p = repositorio.Progresso;
+            var anel = p.ReceberItem("anel", SlotDeItem.Anel, Raridade.Lendario, 1, 10);
             p.Equipar(anel.Id);
-            anel.Nivel = 5;
-            p.ReceberItem("espada", SlotDeItem.Arma, Raridade.Comum, 1, 10).Nivel = 5;
-            Assert.AreEqual(0, new ConsultarBrilhoDaArma(repositorio, catalogo).Executar(), 1e-6);
+            p.ReceberItem("espada", SlotDeItem.Arma, Raridade.Lendario, 1, 10);
+            Assert.IsFalse(new ConsultarVisualDoHeroi(repositorio, catalogo).Executar().TemArma);
         }
 
         [Test]
