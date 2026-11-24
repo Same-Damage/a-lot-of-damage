@@ -113,5 +113,16 @@ namespace ALotOfDamage.Testes
             }
             LogAssert.NoUnexpectedReceived();
         }
+
+        [UnityTest]
+        public IEnumerator Follower_ativo_aparece_com_o_modelo_dele()
+        {
+            yield return Carregar(FluxoDeEncontro.CenaDoMapa);
+            for (int i = 0; i < 5; i++) yield return null;
+            var follower = Object.FindAnyObjectByType<FollowerDaCena>();
+            Assert.IsNotNull(follower);
+            Assert.AreEqual(Progresso.FollowerPadrao, follower.modelo.IdMontado);
+            Assert.Greater(follower.modelo.GetComponentsInChildren<MeshRenderer>().Length, 0);
+        }
     }
 }
