@@ -61,6 +61,8 @@ namespace ALotOfDamage.Infrastructure
         public IReadOnlyList<DefinicaoDeFollower> Followers { get; }
         public ParametrosDaCampanha Campanha { get; }
         public ParametrosDosItens ParametrosDosItens { get; }
+        public IReadOnlyList<DefinicaoDeConquista> Conquistas { get; }
+        public ParametrosDasConquistas ParametrosDasConquistas { get; }
         public IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
 
         public CatalogoDeBalanceamento()
@@ -78,6 +80,9 @@ namespace ALotOfDamage.Infrastructure
             var campanha = BalanceamentoDaCampanha.Carregar();
             Campanha = campanha.parametros;
             Regioes = campanha.regioes;
+            var conquistas = BalanceamentoDasConquistas.Carregar();
+            Conquistas = conquistas.conquistas;
+            ParametrosDasConquistas = conquistas.parametros;
         }
     }
 

@@ -26,6 +26,12 @@ namespace ALotOfDamage.Testes
                 LimiteDoInventario = 2, CustoDeFabricarEmOuro = 20, MaterialParaFabricar = 3,
                 PrecoDeVenda = new double[] { 10, 20, 30, 40, 50 }, MaterialAoDesmontar = new[] { 1, 2, 3, 4, 5 },
             };
+            public IReadOnlyList<DefinicaoDeConquista> Conquistas { get; set; } = new List<DefinicaoDeConquista>
+            {
+                new DefinicaoDeConquista { Id = "vitorias", Nome = "Guerreiro incansável", Descricao = "Vença {0} batalhas", Meta = MetaDaConquista.Vitorias, Degraus = new double[] { 1, 3 } },
+                new DefinicaoDeConquista { Id = "chefes", Nome = "Caçador de chefes", Descricao = "Derrote {0} chefes", Meta = MetaDaConquista.ChefesDerrotados, Degraus = new double[] { 1 } },
+            };
+            public ParametrosDasConquistas ParametrosDasConquistas { get; set; } = new ParametrosDasConquistas { BonusPorConquista = 0.01, CristaisBase = 10 };
             public IReadOnlyList<DefinicaoDeRegiao> Regioes { get; set; } = new List<DefinicaoDeRegiao>
             {
                 new DefinicaoDeRegiao { Nome = "Campos" },
@@ -605,6 +611,62 @@ namespace ALotOfDamage.Testes
             var lista = new List<Pendencia>();
             new ListarPendencias(repositorio, catalogo).Executar(lista);
             CollectionAssert.Contains(lista.ConvertAll(x => x.Tipo), TipoDePendencia.Ascensao);
+        }
+
+        SituacaoDaConquista Conquista(string id) =>
+            new ListarConquistas(repositorio, catalogo).Executar().Find(c => c.Id == id);
+
+        [Test]
+        public void Conquista_mostra_progresso_e_fica_pronta_ao_passar_do_degrau()
+        {
+            var c = Conquista("vitorias");
+            Assert.AreEqual(0, c.Valor, 1e-9);
+            Assert.AreEqual(1, c.ProximaMeta, 1e-9);
+            Assert.AreEqual(0, c.Prontas);
+            Assert.AreEqual("Vença 1 batalhas", c.Texto);
+
+            new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar("lobo", false);
+            Assert.AreEqual(1, Conquista("vitorias").Prontas);
+        }
+
+        [Test]
+        public void Coletar_da_cristais_e_um_por_cento_de_dano_por_degrau()
+        {
+            var vitoria = new RegistrarVitoria(repositorio, catalogo, SemDrop);
+            for (int i = 0; i < 3; i++) vitoria.Executar("lobo", false);
+            double antes = new CalcularAtributos(repositorio, catalogo).Executar(null).DanoAutomatico;
+
+            Assert.AreEqual(10 + 40, new ColetarConquista(repositorio, catalogo).Executar("vitorias"));
+            Assert.AreEqual(50, repositorio.Progresso.Cristais);
+            var c = Conquista("vitorias");
+            Assert.AreEqual(0, c.Prontas);
+            Assert.AreEqual(2, c.Coletadas);
+            Assert.IsTrue(c.Completa);
+            Assert.AreEqual(antes * 1.02, new CalcularAtributos(repositorio, catalogo).Executar(null).DanoAutomatico, 1e-9);
+        }
+
+        [Test]
+        public void Coletar_sem_nada_pronto_nao_da_nada()
+        {
+            Assert.AreEqual(0, new ColetarConquista(repositorio, catalogo).Executar("vitorias"));
+            Assert.AreEqual(0, new ColetarConquista(repositorio, catalogo).Executar("nao_existe"));
+            Assert.AreEqual(0, repositorio.Progresso.Cristais);
+        }
+
+        [Test]
+        public void Chefe_derrotado_conta_para_a_conquista_de_chefes()
+        {
+            new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar("lobo", true);
+            Assert.AreEqual(1, Conquista("chefes").Prontas);
+        }
+
+        [Test]
+        public void Conquista_pronta_vira_pendencia()
+        {
+            new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar("lobo", false);
+            var lista = new List<Pendencia>();
+            new ListarPendencias(repositorio, catalogo).Executar(lista);
+            CollectionAssert.Contains(lista.ConvertAll(x => x.Tipo), TipoDePendencia.Conquista);
         }
 
         [Test]

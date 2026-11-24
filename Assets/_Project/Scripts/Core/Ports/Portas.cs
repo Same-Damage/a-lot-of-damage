@@ -21,6 +21,8 @@ namespace ALotOfDamage.Core
         ParametrosDaCampanha Campanha { get; }
         ParametrosDosItens ParametrosDosItens { get; }
         IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
+        IReadOnlyList<DefinicaoDeConquista> Conquistas { get; }
+        ParametrosDasConquistas ParametrosDasConquistas { get; }
     }
 
     // Hora atual (UTC), para o teste controlar o tempo; no online, a hora do servidor
