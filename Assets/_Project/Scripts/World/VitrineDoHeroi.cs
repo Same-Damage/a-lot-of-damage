@@ -23,7 +23,7 @@ namespace ALotOfDamage.World
 
         void Start()
         {
-            textura = new RenderTexture(512, 768, 24) { name = "Vitrine do herói" };
+            textura = new RenderTexture(768, 1152, 24) { name = "Vitrine do herói", antiAliasing = 4 };
             var go = new GameObject("Câmera da vitrine");
             go.transform.SetParent(transform, false);
             cameraDaVitrine = go.AddComponent<Camera>();
