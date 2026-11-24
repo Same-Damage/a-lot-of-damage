@@ -112,9 +112,11 @@ namespace ALotOfDamage.Ferramentas
             var locomocao = c.CreateBlendTreeInController("Locomocao", out var arvore);
             arvore.blendParameter = PersonagemAnimado3D.ParametroDeLocomocao;
             arvore.useAutomaticThresholds = false;
+            // sem Correr, o andar vai até o fim da árvore (só acelera, sem trocar de passo)
+            var correr = Clipe(nome, "Correr");
             arvore.AddChild(Clipe(nome, "Parada"), 0f);
-            arvore.AddChild(Clipe(nome, "Andar"), 0.5f);
-            arvore.AddChild(Clipe(nome, "Correr"), 1f);
+            arvore.AddChild(Clipe(nome, "Andar"), correr ? 0.5f : 1f);
+            if (correr) arvore.AddChild(correr, 1f);
             sm.defaultState = locomocao;
 
             Acao(sm, locomocao, Clipe(nome, "Golpe"), PersonagemAnimado3D.ParametroDoGolpe, PersonagemAnimado3D.ParametroDaVelocidadeDoGolpe);
