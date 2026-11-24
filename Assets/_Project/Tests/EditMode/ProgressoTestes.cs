@@ -256,6 +256,15 @@ namespace ALotOfDamage.Testes
         }
 
         [Test]
+        public void Almas_e_ascensoes_vao_e_voltam_do_save()
+        {
+            progresso.Ascender(7);
+            var copia = Progresso.Importar(progresso.Exportar());
+            Assert.AreEqual(7, copia.Almas);
+            Assert.AreEqual(1, copia.Ascensoes);
+        }
+
+        [Test]
         public void Heroi_escolhido_vai_e_volta_do_save()
         {
             var p = new Progresso();

@@ -540,6 +540,73 @@ namespace ALotOfDamage.Testes
             Assert.AreEqual(72 * 50 + 19 * 10, repositorio.Progresso.Ouro, 1e-6);
         }
 
+        // Ascensão: a campanha de teste libera no estágio 3 (base 1, divisor 2): estágio 3 dá (3 − 1)² ÷ 2 = 2 Almas
+        void ChegarAoEstagio(int estagio)
+        {
+            var c = catalogo.Campanha;
+            c.EstagioMinimoDaAscensao = 3; c.EstagioBaseDasAlmas = 1; c.DivisorDasAlmas = 2; c.BonusPorAlma = 0.1; c.ChefeACada = 0;
+            var vitoria = new RegistrarVitoria(repositorio, catalogo, SemDrop);
+            while (repositorio.Progresso.Estagio < estagio) vitoria.Executar("lobo", false);
+        }
+
+        [Test]
+        public void Ascensao_indisponivel_antes_do_estagio_minimo()
+        {
+            ChegarAoEstagio(2);
+            var a = new ConsultarAscensao(repositorio, catalogo).Executar();
+            Assert.IsFalse(a.Pode);
+            Assert.AreEqual(3, a.EstagioMinimo);
+            Assert.IsFalse(new Ascender(repositorio, catalogo).Executar());
+            Assert.AreEqual(2, repositorio.Progresso.Estagio);
+        }
+
+        [Test]
+        public void Ascender_zera_estagio_upgrades_e_ouro_e_da_almas()
+        {
+            ChegarAoEstagio(3);
+            var p = repositorio.Progresso;
+            p.ReceberOuro(1000);
+            new ComprarUpgrade(repositorio, catalogo).Executar(IdsDosUpgrades.Forca, 2);
+            p.AdicionarMaterial("presa", 7);
+            var espada = EspadaEquipada();
+
+            var antes = new ConsultarAscensao(repositorio, catalogo).Executar();
+            Assert.IsTrue(antes.Pode);
+            Assert.AreEqual(2, antes.AlmasGanhas);
+            Assert.AreEqual(1.2, antes.MultiplicadorDepois, 1e-9);
+
+            Assert.IsTrue(new Ascender(repositorio, catalogo).Executar());
+            Assert.AreEqual(1, p.Estagio);
+            Assert.AreEqual(0, p.VitoriasNoEstagio);
+            Assert.AreEqual(0, p.Ouro, 1e-9);
+            Assert.AreEqual(1, p.Nivel(IdsDosUpgrades.Forca), "upgrades voltam ao nível 1");
+            Assert.AreEqual(2, p.Almas);
+            Assert.AreEqual(1, p.Ascensoes);
+            Assert.GreaterOrEqual(p.Material("presa"), 7, "materiais ficam");
+            Assert.AreSame(espada, p.Equipado(SlotDeItem.Arma), "equipamento fica");
+            Assert.Greater(p.Derrotas("lobo"), 0, "bestiário fica");
+        }
+
+        [Test]
+        public void Almas_multiplicam_o_dano_do_click_e_do_auto_ataque()
+        {
+            ChegarAoEstagio(3);
+            new Ascender(repositorio, catalogo).Executar();
+            var a = new CalcularAtributos(repositorio, catalogo).Executar(null);
+            double bestiario = RegrasDoBestiario.MultiplicadorGeral(catalogo.Bestiario, new[] { repositorio.Progresso.Derrotas("lobo") });
+            Assert.AreEqual(3 * 1.2 * bestiario * RegrasDoBestiario.MultiplicadorContraTipo(catalogo.Bestiario, 0), a.DanoDoClick, 1e-9);
+            Assert.AreEqual(5 * 1.2 * bestiario * RegrasDoBestiario.MultiplicadorContraTipo(catalogo.Bestiario, 0), a.DanoAutomatico, 1e-9);
+        }
+
+        [Test]
+        public void Ascensao_disponivel_vira_pendencia()
+        {
+            ChegarAoEstagio(3);
+            var lista = new List<Pendencia>();
+            new ListarPendencias(repositorio, catalogo).Executar(lista);
+            CollectionAssert.Contains(lista.ConvertAll(x => x.Tipo), TipoDePendencia.Ascensao);
+        }
+
         [Test]
         public void Repositorio_em_memoria_devolve_o_mesmo_progresso()
         {
