@@ -79,9 +79,12 @@ namespace ALotOfDamage.Ferramentas
                 origem.name = clipe;
                 origem.loopTime = emLaco;
                 origem.loopPose = emLaco;
-                origem.lockRootRotation = true;
+                // Nos ciclos, o deslocamento e o giro do quadril saem como root motion, que é descartado
+                // (applyRootMotion desligado). Se ficassem na pose, uma corrida que não é "In Place" ou que faz
+                // curva levaria o corpo para o lado ao longo do ciclo e daria um tranco de volta a cada repetição.
+                origem.lockRootRotation = !emLaco;
                 origem.lockRootHeightY = true;
-                origem.lockRootPositionXZ = true;
+                origem.lockRootPositionXZ = !emLaco;
                 origem.keepOriginalOrientation = true;
                 origem.keepOriginalPositionY = true;
                 origem.keepOriginalPositionXZ = true;
