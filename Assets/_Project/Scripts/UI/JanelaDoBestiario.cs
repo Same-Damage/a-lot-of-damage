@@ -9,7 +9,9 @@ namespace ALotOfDamage.UI
     {
         protected override string Titulo => "Bestiário";
         protected override Key Tecla => Key.B;
-        protected override int Ordem => 2;
+        protected override int Ordem => 5;
+        protected override IconeDoHud Icone => IconeDoHud.Bestiario;
+        protected override TipoDePendencia? Pendencia => TipoDePendencia.Bestiario;
         // Linha 0 é o bônus geral; as outras, um monstro cada
         protected override int Linhas => catalogo.Monstros.Count + 1;
         protected override float AlturaDaLinha => 90;

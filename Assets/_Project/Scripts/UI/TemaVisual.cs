@@ -53,6 +53,44 @@ namespace ALotOfDamage.UI
             return cache;
         }
 
+        // Peças leves do HUD, sobre o cenário: placa translúcida de cantos redondos com filete e disco dos botões de ícone
+        const int RaioDaPlaca = 18;
+        static Texture2D placa, disco, discoClaro;
+        static Sprite spritePlaca, spriteDisco, spriteDiscoClaro;
+
+        public static Texture2D TexturaDaPlaca => placa ??= CriarArredondado(64, RaioDaPlaca, new Color(0.05f, 0.045f, 0.06f, 0.72f), new Color(0.85f, 0.66f, 0.3f, 0.5f), 1.5f);
+        public static Texture2D TexturaDoDisco => disco ??= CriarArredondado(128, 64, new Color(0.06f, 0.05f, 0.06f, 0.74f), new Color(0.85f, 0.66f, 0.3f, 0.9f), 4f);
+        public static Texture2D TexturaDoDiscoClaro => discoClaro ??= CriarArredondado(128, 64, new Color(0.3f, 0.21f, 0.1f, 0.9f), new Color(1f, 0.86f, 0.5f, 1f), 5f);
+
+        public static Sprite Placa => spritePlaca ? spritePlaca : spritePlaca = Sprite.Create(TexturaDaPlaca, new Rect(0, 0, 64, 64), new Vector2(0.5f, 0.5f), 100, 0,
+            SpriteMeshType.FullRect, Vector4.one * (RaioDaPlaca + 2));
+        public static Sprite Disco => spriteDisco ? spriteDisco : spriteDisco = Inteiro(TexturaDoDisco);
+        public static Sprite DiscoClaro => spriteDiscoClaro ? spriteDiscoClaro : spriteDiscoClaro = Inteiro(TexturaDoDiscoClaro);
+
+        // Círculo branco liso (selos e preenchimento da ultimate), tingido pela cor da imagem
+        static Sprite circulo;
+        public static Sprite Circulo => circulo ? circulo : circulo = Inteiro(CriarArredondado(128, 64, Color.white, Color.white, 1f));
+
+        static Sprite Inteiro(Texture2D t) => Sprite.Create(t, new Rect(0, 0, t.width, t.height), new Vector2(0.5f, 0.5f), 100);
+
+        static Texture2D CriarArredondado(int tamanho, float raio, Color miolo, Color filete, float espessura)
+        {
+            var t = Novo(tamanho, tamanho);
+            var px = new Color[tamanho * tamanho];
+            float meio = tamanho * 0.5f;
+            for (int y = 0; y < tamanho; y++)
+            for (int x = 0; x < tamanho; x++)
+            {
+                float d = DesenhoDeIcone.Caixa(x + 0.5f - meio, y + 0.5f - meio, meio - raio, meio - raio) - raio + 1;
+                var c = Color.Lerp(miolo, filete, Mathf.Clamp01(d + espessura + 0.5f));
+                c.a *= Mathf.Clamp01(0.5f - d);
+                px[y * tamanho + x] = c;
+            }
+            t.SetPixels(px);
+            t.Apply();
+            return t;
+        }
+
         static readonly System.Collections.Generic.Dictionary<string, Sprite> artesInteiras = new();
 
         // Arte pintada usada inteira, sem esticar as bordas (molduras das casas, faixa do Poder); null se ainda não existe

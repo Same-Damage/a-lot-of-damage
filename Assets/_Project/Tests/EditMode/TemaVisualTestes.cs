@@ -60,6 +60,55 @@ namespace ALotOfDamage.Testes.EditMode
         }
 
         [Test]
+        public void Placa_do_hud_deixa_o_cenario_aparecer()
+        {
+            var t = TemaVisual.TexturaDaPlaca;
+            Assert.That(t.GetPixel(t.width / 2, t.height / 2).a, Is.InRange(0.4f, 0.75f));
+            Assert.Less(t.GetPixel(0, 0).a, 0.05f, "cantos redondos");
+            Assert.Greater(TemaVisual.Placa.border.x, 0);
+        }
+
+        [Test]
+        public void Disco_do_hud_e_redondo_com_aro_dourado()
+        {
+            var t = TemaVisual.TexturaDoDisco;
+            Assert.Less(t.GetPixel(2, 2).a, 0.05f);
+            Color aro = t.GetPixel(t.width / 2, 3);
+            Assert.Greater(aro.r, aro.b + 0.2f);
+        }
+
+        [Test]
+        public void Todo_icone_do_hud_tem_desenho()
+        {
+            foreach (IconeDoHud i in System.Enum.GetValues(typeof(IconeDoHud)))
+            {
+                var t = IconesDoHud.Do(i).texture;
+                float cheio = 0;
+                foreach (var p in t.GetPixels32(0)) cheio += p.a / 255f;
+                Assert.That(cheio / (t.width * t.height), Is.InRange(0.08f, 0.8f), i.ToString());
+            }
+        }
+
+        [Test]
+        public void Selo_do_botao_de_icone_so_aparece_com_pendencia()
+        {
+            var raiz = new GameObject("Raiz", typeof(RectTransform));
+            try
+            {
+                var b = new BotaoDeIcone("Forja", raiz.transform, IconeDoHud.Forja, "Forja", 72, () => { });
+                Assert.IsFalse(b.ComSelo);
+                b.Selo(2);
+                Assert.IsTrue(b.ComSelo);
+                b.Selo(0);
+                Assert.IsFalse(b.ComSelo);
+            }
+            finally
+            {
+                Object.DestroyImmediate(raiz);
+            }
+        }
+
+        [Test]
         public void Ruido_e_deterministico()
         {
             Assert.AreEqual(TemaVisual.Ruido(10, 20), TemaVisual.Ruido(10, 20));

@@ -13,7 +13,9 @@ namespace ALotOfDamage.UI
 
         protected override string Titulo => "Ascensão";
         protected override Key Tecla => Key.K;
-        protected override int Ordem => 4;
+        protected override int Ordem => 6;
+        protected override IconeDoHud Icone => IconeDoHud.Ascensao;
+        protected override TipoDePendencia? Pendencia => TipoDePendencia.Ascensao;
         protected override int Linhas => 1;
         protected override float AlturaDaLinha => 300;
 

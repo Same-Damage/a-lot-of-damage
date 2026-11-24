@@ -10,7 +10,9 @@ namespace ALotOfDamage.UI
     {
         protected override string Titulo => "Upgrades";
         protected override Key Tecla => Key.U;
-        protected override int Ordem => 0;
+        protected override int Ordem => 1;
+        protected override IconeDoHud Icone => IconeDoHud.Upgrades;
+        protected override TipoDePendencia? Pendencia => TipoDePendencia.Upgrade;
         protected override int Linhas => catalogo.Upgrades.Count;
         protected override float AlturaDaLinha => 130;
 

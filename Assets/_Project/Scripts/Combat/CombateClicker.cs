@@ -85,7 +85,7 @@ namespace ALotOfDamage.Combat
             if (herois) heroi = herois.Mostrar(escolhaDeHeroi.Atual(herois.Nomes));
             limitador = new LimitadorDeCliques(cliquesPorSegundoMaximo);
             atributos = calcularAtributos.Executar(Tipo);
-            hud = new HudDaBatalha(Fugir);
+            hud = new HudDaBatalha(Fugir, PedirUltimate);
             feedback = gameObject.AddComponent<FeedbackDoGolpe>();
             feedback.alvo = visualDoInimigo;
             hud.PodeFugir(EmEncontro);
@@ -117,7 +117,7 @@ namespace ALotOfDamage.Combat
                 if (inimigo.Chefe) cor = Color.Lerp(cor, new Color(0.7f, 0.1f, 0.1f), 0.5f);
                 modeloDoInimigo.Montar(inimigo.Forma, cor);
             }
-            hud.Inimigo(inimigo.Nome, atributos.Follower?.Nome);
+            hud.Inimigo(inimigo.Nome);
             AtualizarVida();
         }
 
@@ -169,7 +169,8 @@ namespace ALotOfDamage.Combat
 
             var ponteiro = Pointer.current;
             if (ponteiro != null && ponteiro.press.wasPressedThisFrame && !SobreAInterface()) AoClicar(agora);
-            if (teclado != null && teclado.spaceKey.wasPressedThisFrame && ultimate >= 100) DispararUltimate();
+            var controle = Gamepad.current;
+            if ((teclado != null && teclado.spaceKey.wasPressedThisFrame) || (controle != null && controle.buttonNorth.wasPressedThisFrame)) PedirUltimate();
 
             hud.Combo(combo, RegrasDePersonagem.AcumulosDeFuria(atributos.Classe, combo), atributos.Classe?.NomeDaPassiva);
             hud.Ultimate(ultimate);
@@ -209,6 +210,12 @@ namespace ALotOfDamage.Combat
 
             if (heroi) heroi.Golpear(1.6f);
             Acertar(dano, tipo, cor, tamanho);
+        }
+
+        // Botão do HUD, Espaço ou Y no controle
+        void PedirUltimate()
+        {
+            if (voltarEm < 0 && ultimate >= 100) DispararUltimate();
         }
 
         void DispararUltimate()
@@ -263,7 +270,7 @@ namespace ALotOfDamage.Combat
             double ouro = repositorio.Carregar().Ouro;
             if (ouro == ouroMostrado) return;
             ouroMostrado = ouro;
-            hud.Ouro($"Ouro {FormatadorDeNumeros.Formatar(ouro)}");
+            hud.Ouro(FormatadorDeNumeros.Formatar(ouro));
         }
     }
 }
