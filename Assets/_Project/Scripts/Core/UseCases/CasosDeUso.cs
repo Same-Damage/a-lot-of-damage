@@ -63,6 +63,33 @@ namespace ALotOfDamage.Core
         }
     }
 
+    // Qual herói aparece no mapa e na batalha, entre os que o jogo tem
+    public class EscolhaDeHeroi : CasoDeUso
+    {
+        public EscolhaDeHeroi(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public string Atual(IReadOnlyList<string> herois)
+        {
+            string id = repositorio.Carregar().HeroiId;
+            for (int i = 0; i < herois.Count; i++) if (herois[i] == id) return id;
+            return herois.Count > 0 ? herois[0] : "";
+        }
+
+        // Passa para o próximo da lista, voltando ao primeiro no fim
+        public string Trocar(IReadOnlyList<string> herois)
+        {
+            if (herois.Count == 0) return "";
+            int i = 0;
+            string atual = Atual(herois);
+            while (herois[i] != atual) i++;
+            string proximo = herois[(i + 1) % herois.Count];
+            var p = repositorio.Carregar();
+            p.TrocarHeroi(proximo);
+            repositorio.Salvar(p);
+            return proximo;
+        }
+    }
+
     public class ComprarUpgrade : CasoDeUso
     {
         public ComprarUpgrade(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }

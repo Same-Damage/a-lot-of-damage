@@ -247,5 +247,30 @@ namespace ALotOfDamage.Testes
             r.Carregar().ReceberOuro(5);
             Assert.AreEqual(5, r.Carregar().Ouro, 1e-9);
         }
+
+        static readonly string[] Herois = { "Cavaleiro", "Arqueira" };
+
+        [Test]
+        public void Sem_heroi_escolhido_usa_o_primeiro()
+        {
+            Assert.AreEqual("Cavaleiro", new EscolhaDeHeroi(repositorio, catalogo).Atual(Herois));
+        }
+
+        [Test]
+        public void Trocar_heroi_passa_para_o_proximo_volta_ao_primeiro_e_salva()
+        {
+            var escolha = new EscolhaDeHeroi(repositorio, catalogo);
+            Assert.AreEqual("Arqueira", escolha.Trocar(Herois));
+            Assert.AreEqual("Arqueira", escolha.Atual(Herois));
+            Assert.AreEqual(1, repositorio.Salvamentos);
+            Assert.AreEqual("Cavaleiro", escolha.Trocar(Herois));
+        }
+
+        [Test]
+        public void Heroi_salvo_que_saiu_do_jogo_volta_para_o_primeiro()
+        {
+            repositorio.Progresso.TrocarHeroi("Mago");
+            Assert.AreEqual("Cavaleiro", new EscolhaDeHeroi(repositorio, catalogo).Atual(Herois));
+        }
     }
 }

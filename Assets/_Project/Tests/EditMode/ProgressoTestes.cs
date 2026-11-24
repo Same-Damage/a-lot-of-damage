@@ -132,5 +132,14 @@ namespace ALotOfDamage.Testes
             Assert.IsNotNull(b.Find(u => u.Id == IdsDosUpgrades.Automatico));
             Assert.IsNotNull(b.Find(u => u.Id == IdsDosUpgrades.Precisao));
         }
+
+        [Test]
+        public void Heroi_escolhido_vai_e_volta_do_save()
+        {
+            var p = new Progresso();
+            p.TrocarHeroi("Arqueira");
+            Assert.AreEqual("Arqueira", Progresso.Importar(p.Exportar()).HeroiId);
+            Assert.AreEqual("", Progresso.Importar(new DadosDoProgresso()).HeroiId);
+        }
     }
 }

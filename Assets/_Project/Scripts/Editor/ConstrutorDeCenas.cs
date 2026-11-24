@@ -87,11 +87,16 @@ namespace ALotOfDamage.Ferramentas
             var movimento = jogador.AddComponent<MovimentoDoJogador>();
             jogador.AddComponent<AtaqueNoMapa>();
 
-            // Arqueira 3D com shader pintado, com os pés na base do CharacterController
-            var boneco = ConstrutorDePersonagens3D.Criar("Arqueira", jogador.transform, new Vector3(0, -1f, 0), AlturaDoPersonagem3D);
+            // Herói 3D com shader pintado, com os pés na base do CharacterController
+            var herois = CriarHerois(jogador.transform, new Vector3(0, -1f, 0), AlturaDoPersonagem3D, Quaternion.identity);
+            var boneco = herois.herois[0];
             CriarSombra(jogador.transform, new Vector3(0, -0.98f, 0), 0.9f, 0.5f, 0.6f);
             movimento.boneco = boneco;
             jogador.GetComponent<AtaqueNoMapa>().boneco = boneco;
+            var troca = jogador.AddComponent<TrocaDeHeroi>();
+            troca.herois = herois;
+            troca.movimento = movimento;
+            troca.ataque = jogador.GetComponent<AtaqueNoMapa>();
 
             // Follower (Pip, o falcão) acompanhando o jogador
             var follower = CriarFollower(new Vector3(-1.6f, 2.8f, 0));
@@ -226,20 +231,6 @@ namespace ALotOfDamage.Ferramentas
             material = new Material(shader);
             AssetDatabase.CreateAsset(material, caminho);
             return material;
-        }
-
-        // Personagem de pé (pés em "pes"), animado pelo BonecoDeRecorte
-        static BonecoDeRecorte CriarBoneco(string personagem, Transform pai, Vector3 pes)
-        {
-            var r = MontarRecorte(personagem, pai, pes, false);
-            var b = r.Raiz.AddComponent<BonecoDeRecorte>();
-            b.corpo = r.Corpo;
-            b.desenhoOlhaParaDireita = r.OlhaParaDireita;
-            b.tronco = r.Osso("tronco"); b.cabeca = r.Osso("cabeca"); b.capa = r.Osso("capa");
-            b.bracoFrente = r.Osso("braco_frente"); b.antebracoFrente = r.Osso("antebraco_frente"); b.espada = r.Osso("espada");
-            b.bracoTras = r.Osso("braco_tras"); b.antebracoTras = r.Osso("antebraco_tras");
-            b.pernaFrente = r.Osso("perna_frente"); b.pernaTras = r.Osso("perna_tras");
-            return b;
         }
 
         // Ave voando (centro em "centro"), animada pela AveDeRecorte
@@ -445,14 +436,13 @@ namespace ALotOfDamage.Ferramentas
 
             CriarFollower(new Vector3(-1.6f, 2.4f, -1.2f));
 
-            var heroi = ConstrutorDePersonagens3D.Criar("Arqueira", null, new Vector3(-2.4f, 0, -0.6f), 1.8f);
-            // de três quartos, virada para o inimigo e um pouco para a câmera
-            heroi.transform.rotation = Quaternion.LookRotation(new Vector3(1, 0, -0.6f));
+            // de três quartos, virados para o inimigo e um pouco para a câmera
+            var herois = CriarHerois(null, new Vector3(-2.4f, 0, -0.6f), 1.8f, Quaternion.LookRotation(new Vector3(1, 0, -0.6f)));
 
             var combate = new GameObject("Combate").AddComponent<CombateClicker>();
             combate.visualDoInimigo = corpo.transform;
             combate.modeloDoInimigo = corpo;
-            combate.heroi = heroi;
+            combate.herois = herois;
 
             Salvar(cena, "Batalha");
         }
@@ -461,7 +451,26 @@ namespace ALotOfDamage.Ferramentas
         // Altura no mapa dos personagens 3D, parecida com a do boneco de recorte para comparar
         const float AlturaDoPersonagem3D = 2.3f;
 
-        // Cena só para avaliar a direção de arte: o Guerreiro de recorte ao lado da Arqueira 3D, com a câmera do mapa.
+        // Heróis que o jogador alterna no mapa (pastas de Art/Characters); o primeiro é o padrão
+        static readonly string[] Herois = { "Cavaleiro", "Arqueira" };
+
+        // Todos os heróis no mesmo lugar, um ativo por vez (TrocaDeHeroi no mapa, CombateClicker na batalha)
+        static HeroisDaCena CriarHerois(Transform pai, Vector3 pes, float altura, Quaternion rotacao)
+        {
+            var grupo = new GameObject("Herois").AddComponent<HeroisDaCena>();
+            grupo.transform.SetParent(pai, false);
+            grupo.herois = new PersonagemVisual[Herois.Length];
+            for (int i = 0; i < Herois.Length; i++)
+            {
+                var h = ConstrutorDePersonagens3D.Criar(Herois[i], grupo.transform, pes, altura);
+                h.transform.rotation = rotacao;
+                h.gameObject.SetActive(i == 0);
+                grupo.herois[i] = h;
+            }
+            return grupo;
+        }
+
+        // Cena só para avaliar a direção de arte: os personagens 3D lado a lado, com a câmera do mapa.
         // Não entra no build.
         [MenuItem("A Lot of Damage/Criar cena: Comparação de personagens")]
         public static void CriarComparacao()
@@ -473,16 +482,15 @@ namespace ALotOfDamage.Ferramentas
             chao.name = "Chao";
             chao.GetComponent<MeshRenderer>().sharedMaterial = MaterialDoMapa("Cenario", "Universal Render Pipeline/Lit");
 
-            var guerreiro = CriarBoneco("Guerreiro", null, new Vector3(-1.6f, 0, 0));
-            guerreiro.gameObject.AddComponent<Billboard>().lockVertical = false;
-            guerreiro.transform.localScale = Vector3.one * EscalaNoMapa;
-            CriarSombra(guerreiro.transform, new Vector3(0.15f, 0.02f, 0.15f), 0.85f, 0.35f, 0.65f);
-
-            var lugarDaArqueira = new GameObject("Lugar da Arqueira").transform;
-            lugarDaArqueira.position = new Vector3(1.6f, 0, 0);
-            var arqueira = ConstrutorDePersonagens3D.Criar("Arqueira", lugarDaArqueira, Vector3.zero, AlturaDoPersonagem3D);
-            arqueira.transform.rotation = Quaternion.LookRotation(new Vector3(-0.4f, 0, -1));
-            CriarSombra(lugarDaArqueira, new Vector3(0, 0.02f, 0), 0.9f, 0.5f, 0.6f);
+            var personagens = Herois;
+            for (int i = 0; i < personagens.Length; i++)
+            {
+                var lugar = new GameObject("Lugar de " + personagens[i]).transform;
+                lugar.position = new Vector3((i - (personagens.Length - 1) * 0.5f) * 3.2f, 0, 0);
+                var p = ConstrutorDePersonagens3D.Criar(personagens[i], lugar, Vector3.zero, AlturaDoPersonagem3D);
+                p.transform.rotation = Quaternion.LookRotation(new Vector3(-0.4f, 0, -1));
+                CriarSombra(lugar, new Vector3(0, 0.02f, 0), 0.9f, 0.5f, 0.6f);
+            }
 
             var cam = Camera.main;
             var foco = new GameObject("Foco").transform;

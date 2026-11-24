@@ -79,9 +79,12 @@ namespace ALotOfDamage.Ferramentas
                 origem.name = clipe;
                 origem.loopTime = emLaco;
                 origem.loopPose = emLaco;
-                origem.lockRootRotation = true;
+                // Nos ciclos, o deslocamento e o giro do quadril saem como root motion, que é descartado
+                // (applyRootMotion desligado). Se ficassem na pose, uma corrida que não é "In Place" ou que faz
+                // curva levaria o corpo para o lado ao longo do ciclo e daria um tranco de volta a cada repetição.
+                origem.lockRootRotation = !emLaco;
                 origem.lockRootHeightY = true;
-                origem.lockRootPositionXZ = true;
+                origem.lockRootPositionXZ = !emLaco;
                 origem.keepOriginalOrientation = true;
                 origem.keepOriginalPositionY = true;
                 origem.keepOriginalPositionXZ = true;
@@ -112,9 +115,11 @@ namespace ALotOfDamage.Ferramentas
             var locomocao = c.CreateBlendTreeInController("Locomocao", out var arvore);
             arvore.blendParameter = PersonagemAnimado3D.ParametroDeLocomocao;
             arvore.useAutomaticThresholds = false;
+            // sem Correr, o andar vai até o fim da árvore (só acelera, sem trocar de passo)
+            var correr = Clipe(nome, "Correr");
             arvore.AddChild(Clipe(nome, "Parada"), 0f);
-            arvore.AddChild(Clipe(nome, "Andar"), 0.5f);
-            arvore.AddChild(Clipe(nome, "Correr"), 1f);
+            arvore.AddChild(Clipe(nome, "Andar"), correr ? 0.5f : 1f);
+            if (correr) arvore.AddChild(correr, 1f);
             sm.defaultState = locomocao;
 
             Acao(sm, locomocao, Clipe(nome, "Golpe"), PersonagemAnimado3D.ParametroDoGolpe, PersonagemAnimado3D.ParametroDaVelocidadeDoGolpe);

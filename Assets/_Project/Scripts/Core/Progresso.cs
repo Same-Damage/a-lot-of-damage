@@ -15,6 +15,8 @@ namespace ALotOfDamage.Core
         // Por enquanto só existe o Guerreiro e um follower; a escolha e o gacha vêm depois
         public string ClasseId { get; private set; } = ClassePadrao;
         public string FollowerAtivoId { get; private set; } = FollowerPadrao;
+        // Modelo do herói no mapa e na batalha; só aparência, não muda a classe. Vazio = o padrão do jogo
+        public string HeroiId { get; private set; } = "";
 
         public int Estagio { get; private set; } = 1;
         public int VitoriasNoEstagio { get; private set; }
@@ -34,6 +36,8 @@ namespace ALotOfDamage.Core
         public IEnumerable<int> TodasAsDerrotas => derrotas.Values;
 
         public double Valor(DefinicaoDeUpgrade d) => RegrasDeUpgrade.Valor(d, Nivel(d.Id));
+
+        public void TrocarHeroi(string id) => HeroiId = id ?? "";
 
         public void ReceberOuro(double quantidade)
         {
@@ -87,7 +91,7 @@ namespace ALotOfDamage.Core
         // Cópia simples de tudo, para salvar em arquivo ou mandar ao servidor
         public DadosDoProgresso Exportar() => new DadosDoProgresso
         {
-            Ouro = Ouro, Vitorias = Vitorias, ClasseId = ClasseId, FollowerAtivoId = FollowerAtivoId,
+            Ouro = Ouro, Vitorias = Vitorias, ClasseId = ClasseId, FollowerAtivoId = FollowerAtivoId, HeroiId = HeroiId,
             Estagio = Estagio, VitoriasNoEstagio = VitoriasNoEstagio,
             Niveis = Pares(niveis), NiveisDosItens = Pares(niveisDosItens), Materiais = Pares(materiais), Derrotas = Pares(derrotas),
         };
@@ -100,6 +104,7 @@ namespace ALotOfDamage.Core
             p.Vitorias = Math.Max(0, d.Vitorias);
             if (!string.IsNullOrEmpty(d.ClasseId)) p.ClasseId = d.ClasseId;
             if (!string.IsNullOrEmpty(d.FollowerAtivoId)) p.FollowerAtivoId = d.FollowerAtivoId;
+            p.HeroiId = d.HeroiId ?? "";
             p.Estagio = Math.Max(1, d.Estagio);
             p.VitoriasNoEstagio = Math.Max(0, d.VitoriasNoEstagio);
             Preencher(p.niveis, d.Niveis);
@@ -151,6 +156,7 @@ namespace ALotOfDamage.Core
         public int Vitorias;
         public string ClasseId;
         public string FollowerAtivoId;
+        public string HeroiId;
         public int Estagio = 1;
         public int VitoriasNoEstagio;
         public List<ParDeValor> Niveis = new List<ParDeValor>();
