@@ -10,6 +10,8 @@ namespace ALotOfDamage.Ferramentas
     //   <nome>.fbx         modelo com pele e esqueleto (vira o avatar humanoide)
     //   <nome>@<Clipe>.fbx  uma animação por arquivo (Parada, Andar, Correr, Golpe, Dano, Morte)
     //   <nome>_Cor.png      textura de cor
+    //   <nome>_Malha.asset  opcional: malha com cabeça própria (submalhas corpo e cabeça) no esqueleto do FBX,
+    //                       com a textura da cabeça em <nome>_Cabeca_Cor.png
     public static class ConstrutorDePersonagens3D
     {
         const string PastaDosPersonagens = "Assets/_Project/Art/Characters";
@@ -31,10 +33,16 @@ namespace ALotOfDamage.Ferramentas
             go.transform.localPosition = pes;
 
             var material = Material(nome);
+            var malhaComCabeca = AssetDatabase.LoadAssetAtPath<Mesh>($"{Pasta(nome)}/{nome}_Malha.asset");
             float alturaDoModelo = 0;
             foreach (var r in go.GetComponentsInChildren<SkinnedMeshRenderer>())
             {
                 r.sharedMaterials = Enumerable.Repeat(material, r.sharedMaterials.Length).ToArray();
+                if (malhaComCabeca)
+                {
+                    r.sharedMesh = malhaComCabeca;
+                    r.sharedMaterials = new[] { material, MaterialEm(Pasta(nome), $"{nome}_Cabeca") };
+                }
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; // a sombra é a SombraDeContato
                 r.updateWhenOffscreen = false;
                 alturaDoModelo = Mathf.Max(alturaDoModelo, r.sharedMesh.bounds.size.y * r.transform.lossyScale.y);
