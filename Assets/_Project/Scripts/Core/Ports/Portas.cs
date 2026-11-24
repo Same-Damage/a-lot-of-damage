@@ -9,7 +9,7 @@ namespace ALotOfDamage.Core
         void Salvar(Progresso progresso);
     }
 
-    // Dados de balanceamento: upgrades, itens da forja, monstros e bônus do bestiário
+    // Dados de balanceamento: upgrades, tipos de item e regras de drop, monstros e bônus do bestiário
     public interface ICatalogo
     {
         IReadOnlyList<DefinicaoDeUpgrade> Upgrades { get; }
@@ -19,6 +19,7 @@ namespace ALotOfDamage.Core
         IReadOnlyList<DefinicaoDeClasse> Classes { get; }
         IReadOnlyList<DefinicaoDeFollower> Followers { get; }
         ParametrosDaCampanha Campanha { get; }
+        ParametrosDosItens ParametrosDosItens { get; }
         IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
     }
 

@@ -30,6 +30,15 @@ namespace ALotOfDamage.Core
         public int Derrotas;
         public bool AvancouEstagio;
         public int Estagio;
+        public ItemDoJogador ItemGanho;            // null se não caiu item
+        public string NomeDoItem;
+        public bool ItemVendidoPorFaltaDeEspaco;   // inventário cheio: o item virou ouro na hora
+    }
+
+    public struct ResultadoDaFabricacao
+    {
+        public bool Fabricou;
+        public ItemDoJogador Item;
     }
 
     public struct InimigoDaBatalha
@@ -106,26 +115,112 @@ namespace ALotOfDamage.Core
         }
     }
 
-    public class ForjarItem : CasoDeUso
+    // Refino na forja: sobe o +N de um item do jogador
+    public class RefinarItem : CasoDeUso
     {
         readonly ISorteio sorteio;
 
-        public ForjarItem(IRepositorioDeProgresso r, ICatalogo c, ISorteio sorteio) : base(r, c) => this.sorteio = sorteio;
+        public RefinarItem(IRepositorioDeProgresso r, ICatalogo c, ISorteio sorteio) : base(r, c) => this.sorteio = sorteio;
 
-        public ResultadoDaForja Executar(string idDoItem)
+        public ResultadoDaForja Executar(int idDoItem)
         {
-            var d = catalogo.Item(idDoItem);
             var p = repositorio.Carregar();
-            if (d == null) return new ResultadoDaForja { OuroRestante = p.Ouro };
-            var r = p.Forjar(d, sorteio.Proximo());
+            var item = p.BuscarItem(idDoItem);
+            var tipo = item == null ? null : catalogo.Item(item.TipoId);
+            if (tipo == null) return new ResultadoDaForja { OuroRestante = p.Ouro };
+            var r = p.Refinar(idDoItem, tipo, sorteio.Proximo());
             if (r.Forjou) repositorio.Salvar(p);
             return r;
         }
     }
 
+    // Forja fabrica um item novo do tipo escolhido, com raridade sorteada, no estágio atual
+    public class FabricarItem : CasoDeUso
+    {
+        readonly ISorteio sorteio;
+
+        public FabricarItem(IRepositorioDeProgresso r, ICatalogo c, ISorteio sorteio) : base(r, c) => this.sorteio = sorteio;
+
+        public ResultadoDaFabricacao Executar(string tipoId)
+        {
+            var tipo = catalogo.Item(tipoId);
+            var p = repositorio.Carregar();
+            var regras = catalogo.ParametrosDosItens;
+            if (tipo == null || p.Inventario.Count >= regras.LimiteDoInventario) return default;
+            if (!p.Gastar(RegrasDosItens.CustoDeFabricar(regras, p.Estagio), tipo.MaterialId, regras.MaterialParaFabricar)) return default;
+            var raridade = RegrasDosItens.SortearRaridade(regras, sorteio.Proximo(), false);
+            var item = p.ReceberItem(tipo.Id, tipo.Slot, raridade, p.Estagio, regras.LimiteDoInventario);
+            repositorio.Salvar(p);
+            return new ResultadoDaFabricacao { Fabricou = true, Item = item };
+        }
+    }
+
+    // Vende um item guardado; devolve o ouro recebido (0 se não vendeu)
+    public class VenderItem : CasoDeUso
+    {
+        public VenderItem(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public double Executar(int idDoItem)
+        {
+            var p = repositorio.Carregar();
+            var item = p.RemoverDoInventario(idDoItem);
+            if (item == null) return 0;
+            double ouro = RegrasDosItens.PrecoDeVenda(catalogo.ParametrosDosItens, item);
+            p.ReceberOuro(ouro);
+            repositorio.Salvar(p);
+            return ouro;
+        }
+    }
+
+    // Desmonta um item guardado em material da forja do tipo dele; devolve a quantidade (0 se não desmontou)
+    public class DesmontarItem : CasoDeUso
+    {
+        public DesmontarItem(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public int Executar(int idDoItem)
+        {
+            var p = repositorio.Carregar();
+            var item = p.BuscarItem(idDoItem);
+            var tipo = item == null ? null : catalogo.Item(item.TipoId);
+            if (tipo == null || p.RemoverDoInventario(idDoItem) == null) return 0;
+            int material = RegrasDosItens.MaterialAoDesmontar(catalogo.ParametrosDosItens, item);
+            p.AdicionarMaterial(tipo.MaterialId, material);
+            repositorio.Salvar(p);
+            return material;
+        }
+    }
+
+    public class EquiparItem : CasoDeUso
+    {
+        public EquiparItem(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public bool Executar(int idDoItem)
+        {
+            var p = repositorio.Carregar();
+            if (!p.Equipar(idDoItem)) return false;
+            repositorio.Salvar(p);
+            return true;
+        }
+    }
+
+    public class DesequiparItem : CasoDeUso
+    {
+        public DesequiparItem(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public bool Executar(SlotDeItem slot)
+        {
+            var p = repositorio.Carregar();
+            if (!p.Desequipar(slot, catalogo.ParametrosDosItens.LimiteDoInventario)) return false;
+            repositorio.Salvar(p);
+            return true;
+        }
+    }
+
     public class RegistrarVitoria : CasoDeUso
     {
-        public RegistrarVitoria(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+        readonly ISorteio sorteio;
+
+        public RegistrarVitoria(IRepositorioDeProgresso r, ICatalogo c, ISorteio sorteio) : base(r, c) => this.sorteio = sorteio;
 
         // tipoDoMonstro pode ser null (ex.: cena de Batalha aberta direto, sem encontro)
         public ResultadoDaVitoria Executar(string tipoDoMonstro, bool chefe)
@@ -135,10 +230,15 @@ namespace ALotOfDamage.Core
             double ouro = CalcularInimigo.Para(p, catalogo, monstro, chefe).Ouro;
             p.ReceberOuro(ouro);
             bool marco = p.RegistrarVitoria(monstro, catalogo.Bestiario);
+            int estagioDaLuta = p.Estagio;
             var campanha = p.AvancarCampanha(catalogo.Campanha, chefe);
+            var item = SortearDrop(p, chefe, estagioDaLuta, out bool vendido);
             repositorio.Salvar(p);
             return new ResultadoDaVitoria
             {
+                ItemGanho = item,
+                NomeDoItem = item == null ? null : catalogo.Item(item.TipoId)?.Nome,
+                ItemVendidoPorFaltaDeEspaco = vendido,
                 Ouro = ouro,
                 Monstro = monstro,
                 MaterialGanho = monstro?.MaterialPorVitoria ?? 0,
@@ -147,6 +247,22 @@ namespace ALotOfDamage.Core
                 AvancouEstagio = campanha.Avancou,
                 Estagio = campanha.Estagio,
             };
+        }
+
+        // O item cai do estágio em que a luta aconteceu; com o inventário cheio ele é vendido na hora
+        ItemDoJogador SortearDrop(Progresso p, bool chefe, int estagio, out bool vendido)
+        {
+            vendido = false;
+            var regras = catalogo.ParametrosDosItens;
+            if (catalogo.Itens.Count == 0 || !RegrasDosItens.CaiItem(regras, sorteio.Proximo(), chefe)) return null;
+            var tipo = catalogo.Itens[RegrasDosItens.SortearTipo(catalogo.Itens.Count, sorteio.Proximo())];
+            var raridade = RegrasDosItens.SortearRaridade(regras, sorteio.Proximo(), chefe);
+            var item = p.ReceberItem(tipo.Id, tipo.Slot, raridade, estagio, regras.LimiteDoInventario);
+            if (item != null) return item;
+            vendido = true;
+            item = new ItemDoJogador { TipoId = tipo.Id, Slot = tipo.Slot, Raridade = raridade, Estagio = estagio };
+            p.ReceberOuro(RegrasDosItens.PrecoDeVenda(regras, item));
+            return item;
         }
     }
 
@@ -173,17 +289,16 @@ namespace ALotOfDamage.Core
         }
     }
 
-    // Brilho da arma do herói: segue o item de click mais forjado
+    // Brilho da arma do herói: segue o item de click equipado mais refinado
     public class ConsultarBrilhoDaArma : CasoDeUso
     {
         public ConsultarBrilhoDaArma(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
 
         public float Executar()
         {
-            var p = repositorio.Carregar();
             int nivel = 0;
-            foreach (var item in catalogo.Itens)
-                if (item.Alvo == AlvoDoItem.Click) nivel = Math.Max(nivel, p.NivelDoItem(item.Id));
+            foreach (var item in repositorio.Carregar().Equipados)
+                if (catalogo.Item(item.TipoId)?.Alvo == AlvoDoItem.Click) nivel = Math.Max(nivel, item.Nivel);
             return RegrasDeAparencia.BrilhoDaArma(nivel);
         }
     }
@@ -217,7 +332,7 @@ namespace ALotOfDamage.Core
             RegrasDePoder.Poder(calcularAtributos.Executar(null), RegrasDePoder.MultiplicadorCriticoPadrao);
     }
 
-    // Dano e crítico do jogador contra um tipo de monstro: upgrades × forja × bestiário
+    // Dano e crítico do jogador contra um tipo de monstro: upgrades × itens equipados × bestiário
     public class CalcularAtributos : CasoDeUso
     {
         public CalcularAtributos(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
@@ -226,7 +341,7 @@ namespace ALotOfDamage.Core
         {
             var p = repositorio.Carregar();
             double Valor(string id) => catalogo.Upgrade(id) is DefinicaoDeUpgrade d ? p.Valor(d) : 0;
-            double Mult(AlvoDoItem alvo) => p.MultiplicadorDeDano(alvo, tipoDoMonstro, catalogo.Itens, catalogo.Bestiario);
+            double Mult(AlvoDoItem alvo) => p.MultiplicadorDeDano(alvo, tipoDoMonstro, catalogo.Itens, catalogo.ParametrosDosItens, catalogo.Bestiario);
             double automatico = Valor(IdsDosUpgrades.Automatico) * Mult(AlvoDoItem.Automatico);
             var follower = catalogo.Follower(p.FollowerAtivoId);
             return new AtributosDeCombate
@@ -274,11 +389,11 @@ namespace ALotOfDamage.Core
                 saida.Add(new Pendencia { Tipo = TipoDePendencia.Upgrade, Texto = $"Upgrade pronto: {u.Nome}" });
             }
 
-            foreach (var i in catalogo.Itens)
+            foreach (var item in p.Equipados)
             {
-                int nivel = p.NivelDoItem(i.Id);
-                if (RegrasDaForja.CustoEmOuro(i, nivel) > p.Ouro || RegrasDaForja.CustoEmMaterial(i, nivel) > p.Material(i.MaterialId)) continue;
-                saida.Add(new Pendencia { Tipo = TipoDePendencia.Forja, Texto = $"Forja pronta: {i.Nome} +{nivel + 1}" });
+                var t = catalogo.Item(item.TipoId);
+                if (t == null || RegrasDaForja.CustoEmOuro(t, item.Nivel) > p.Ouro || RegrasDaForja.CustoEmMaterial(t, item.Nivel) > p.Material(t.MaterialId)) continue;
+                saida.Add(new Pendencia { Tipo = TipoDePendencia.Forja, Texto = $"Forja pronta: {t.Nome} +{item.Nivel + 1}" });
             }
 
             foreach (var m in catalogo.Monstros)

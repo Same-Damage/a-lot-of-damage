@@ -121,6 +121,7 @@ Decisões já tomadas. Mudar qualquer uma delas é decisão de design, não de i
 - Gacha só de followers, só com moeda ganha jogando, com pity e taxas públicas. Duplicata vira estrela/fragmento.
 - Fontes de poder fora do combate: forja, bestiário, taverna própria, expedições, coleta no mapa, alquimia, relíquias, afinidade do follower, conquistas e Ascensão (prestígio). Um sistema novo é liberado por capítulo, na ordem do roteiro.
 - Ascensão reinicia nível e estágios em troca de Almas (multiplicador permanente); mantém equipamentos, relíquias, followers, bestiário, taverna e conquistas.
+- **Itens**: 8 slots (Arma, Elmo, Peitoral, Luvas, Botas, Cinto, Anel, Colar) e 5 raridades (Comum a Lendário). Caem de monstros (com chance) e sempre de chefes (raridade mínima), e a forja também fabrica item do slot escolhido. O refino (+N) fica no próprio item; item novo começa em +0. Item guardado pode ser vendido (ouro) ou desmontado (material). Inventário com limite de casas; cheio, o drop é vendido na hora. Só item equipado dá bônus. Regras em `RegrasDosItens`, números em `BalanceamentoDaForja` (tipos de item e `ParametrosDosItens`).
 - Recompensa AFK com limite de 12 h acumuladas. Sem energia/stamina: o limite é só tempo e recurso.
 
 ### Online (futuro)
@@ -190,9 +191,9 @@ O cliente segue a arquitetura hexagonal (portas e adaptadores). O domínio fica 
 
 | Camada | Onde | O que tem |
 |---|---|---|
-| Domínio | `Core/` | Regras puras (`RegrasDeUpgrade`, `RegrasDaForja`, `RegrasDoBestiario`, `RegrasDoClick`, `RegrasDoEncontro`, `RegrasDePoder`, `RegrasDePersonagem`, `RegrasDaCampanha`, `RegrasDeFeedback`, `RegrasDeAnimacao`, `RegrasDoCenario`, `FormatadorDeNumeros`...), definições (`DefinicaoDeUpgrade`...) e a entidade `Progresso` |
+| Domínio | `Core/` | Regras puras (`RegrasDeUpgrade`, `RegrasDaForja`, `RegrasDosItens`, `RegrasDoBestiario`, `RegrasDoClick`, `RegrasDoEncontro`, `RegrasDePoder`, `RegrasDePersonagem`, `RegrasDaCampanha`, `RegrasDeFeedback`, `RegrasDeAnimacao`, `RegrasDoCenario`, `FormatadorDeNumeros`...), definições (`DefinicaoDeUpgrade`...) e a entidade `Progresso` |
 | Portas | `Core/Ports/` | `IRepositorioDeProgresso`, `ICatalogo`, `ISorteio` |
-| Casos de uso | `Core/UseCases/` | `ComprarUpgrade`, `ForjarItem`, `RegistrarVitoria`, `CalcularAtributos`, `CalcularPoder`, `CalcularInimigo`, `ConsultarCampanha`, `ListarPendencias`: carregam o progresso, aplicam a regra e salvam |
+| Casos de uso | `Core/UseCases/` | `ComprarUpgrade`, `RefinarItem`, `FabricarItem`, `EquiparItem`, `DesequiparItem`, `VenderItem`, `DesmontarItem`, `RegistrarVitoria` (com drop de item), `CalcularAtributos`, `CalcularPoder`, `CalcularInimigo`, `ConsultarCampanha`, `ListarPendencias`: carregam o progresso, aplicam a regra e salvam |
 | Adaptadores de saída | `Infrastructure/` | `RepositorioDeProgressoEmArquivo` (save em JSON), `RepositorioDeProgressoEmMemoria`, `CatalogoDeBalanceamento` (lê os ScriptableObjects), `SorteioDaUnity`, `FluxoDeEncontro` (troca de cena) |
 | Adaptadores de entrada | `Combat/`, `World/`, `UI/` | `MonoBehaviour`s: leem input, chamam casos de uso, desenham |
 | Composição | `Infrastructure/EscopoDoJogo`, `EscopoDaCena` | VContainer monta tudo |

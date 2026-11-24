@@ -141,7 +141,7 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 | Opção nas configurações | 4,7e15 (notação científica) |
 
 - **Upgrades:** custo em progressão geométrica (ex.: Força do Golpe 10 × 1,07^nível); dano com marcos multiplicativos (×2 a cada 10 níveis, ×4 a cada 25, ×10 a cada 100). A planilha `docs/balanceamento.csv` é gerada pelas mesmas fórmulas do jogo.
-- **Fontes de poder se multiplicam entre si:** upgrades × forja × bestiário contra o tipo × bestiário geral.
+- **Fontes de poder se multiplicam entre si:** upgrades × itens equipados × bestiário contra o tipo × bestiário geral.
 - **Poder Total** em destaque, com contador animado em escala logarítmica e o ganho relativo (+38%, ×4) a cada melhoria.
 - Tecnicamente: `double` por enquanto; acima de ~1e300, migrar para BigDouble (BreakInfinity.cs).
 
@@ -150,7 +150,9 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 | Sistema | O que faz | Consome | Bônus | Estado |
 |---|---|---|---|---|
 | Upgrades | Força do Golpe, Ataque Automático, Precisão | Ouro | Dano e crítico com marcos | Implementado |
-| Forja | Itens de +0 para cima; sucesso crítico (+2 níveis, 10%) | Ouro + material do monstro | ×1,5 a ×2 por nível | Implementado |
+| Itens | 8 slots (Arma, Elmo, Peitoral, Luvas, Botas, Cinto, Anel, Colar), 5 raridades; caem de monstros (25%) e sempre de chefes (Incomum ou melhor); inventário de 48 casas, cheio vende o drop na hora | Batalhas | Bônus pela raridade, crescendo com o estágio em que o item caiu; Arma, Luvas e Anel no click, o resto no auto-ataque | Regras implementadas, tela de inventário a seguir |
+| Forja | Refina o item (+N fica no próprio item, item novo começa em +0, sucesso crítico +2) e fabrica item novo do slot escolhido com raridade sorteada | Ouro + material do tipo do item | ×1,3 a ×1,5 por nível de refino | Implementado |
+| Venda e desmonte | Item guardado vira ouro ou material da forja | Item | Abre espaço e financia a forja | Implementado |
 | Bestiário | Marcos em 10, 100, 1.000 derrotas por tipo | Batalhas | +25% contra o tipo, +2% geral por marco | Implementado |
 | Taverna própria | Base que gera ouro sozinha | Ouro + madeira + pedra | Ouro/s e buffs | Futuro |
 | Expedições | Followers fora de uso em missões com timer | Tempo + followers | Materiais, cristais | Futuro |
@@ -165,7 +167,7 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 
 - Recursos compartilhados (o ouro serve a vários sistemas) e timers diferentes.
 - Materiais por monstro/região: a forja manda o jogador de volta a lutar contra um tipo específico.
-- **Painel "Pronto para fazer"** (implementado): chefe disponível, upgrade ou forja ao alcance, bestiário perto do marco.
+- **Painel "Pronto para fazer"** (implementado): chefe disponível, upgrade ou refino do item equipado ao alcance, bestiário perto do marco.
 - Um sistema novo liberado por capítulo, na ordem do roteiro. Sem energia nem stamina.
 
 ## 8. Campanha infinita e AFK

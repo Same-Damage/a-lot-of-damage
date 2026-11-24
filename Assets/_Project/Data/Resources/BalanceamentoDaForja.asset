@@ -11,11 +11,12 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e288763d266cf44295011bc6e22c18b, type: 3}
   m_Name: BalanceamentoDaForja
-  m_EditorClassIdentifier: ALotOfDamage.Core::ALotOfDamage.Core.BalanceamentoDaForja
+  m_EditorClassIdentifier: ALotOfDamage.Infraestrutura::ALotOfDamage.Infrastructure.BalanceamentoDaForja
   itens:
   - Id: espada
     Nome: Espada
     Descricao: Dano do click
+    Slot: 0
     Alvo: 0
     BonusPorNivel: 0.5
     CustoBaseEmOuro: 50
@@ -23,23 +24,107 @@ MonoBehaviour:
     MaterialId: presa
     MaterialPorNivel: 2
     ChanceDeSucessoCritico: 0.1
-  - Id: anel
-    Nome: Anel
+  - Id: elmo
+    Nome: Elmo
     Descricao: Dano do auto-ataque
+    Slot: 1
     Alvo: 1
-    BonusPorNivel: 0.5
-    CustoBaseEmOuro: 75
+    BonusPorNivel: 0.3
+    CustoBaseEmOuro: 60
     CrescimentoDoCusto: 1.6
-    MaterialId: gosma
+    MaterialId: pedra_runica
+    MaterialPorNivel: 2
+    ChanceDeSucessoCritico: 0.1
+  - Id: peitoral
+    Nome: Peitoral
+    Descricao: Dano do auto-ataque
+    Slot: 2
+    Alvo: 1
+    BonusPorNivel: 0.4
+    CustoBaseEmOuro: 80
+    CrescimentoDoCusto: 1.6
+    MaterialId: pedra_runica
     MaterialPorNivel: 3
     ChanceDeSucessoCritico: 0.1
   - Id: manopla
     Nome: Manopla
     Descricao: Dano do click
+    Slot: 3
     Alvo: 0
-    BonusPorNivel: 1
-    CustoBaseEmOuro: 500
-    CrescimentoDoCusto: 1.8
+    BonusPorNivel: 0.4
+    CustoBaseEmOuro: 70
+    CrescimentoDoCusto: 1.6
     MaterialId: pedra_runica
+    MaterialPorNivel: 2
+    ChanceDeSucessoCritico: 0.1
+  - Id: botas
+    Nome: Botas
+    Descricao: Dano do auto-ataque
+    Slot: 4
+    Alvo: 1
+    BonusPorNivel: 0.3
+    CustoBaseEmOuro: 60
+    CrescimentoDoCusto: 1.6
+    MaterialId: presa
+    MaterialPorNivel: 2
+    ChanceDeSucessoCritico: 0.1
+  - Id: cinto
+    Nome: Cinto
+    Descricao: Dano do auto-ataque
+    Slot: 5
+    Alvo: 1
+    BonusPorNivel: 0.3
+    CustoBaseEmOuro: 60
+    CrescimentoDoCusto: 1.6
+    MaterialId: gosma
+    MaterialPorNivel: 2
+    ChanceDeSucessoCritico: 0.1
+  - Id: anel
+    Nome: Anel
+    Descricao: Dano do click
+    Slot: 6
+    Alvo: 0
+    BonusPorNivel: 0.4
+    CustoBaseEmOuro: 75
+    CrescimentoDoCusto: 1.6
+    MaterialId: gosma
     MaterialPorNivel: 3
     ChanceDeSucessoCritico: 0.1
+  - Id: colar
+    Nome: Colar
+    Descricao: Dano do auto-ataque
+    Slot: 7
+    Alvo: 1
+    BonusPorNivel: 0.4
+    CustoBaseEmOuro: 75
+    CrescimentoDoCusto: 1.6
+    MaterialId: gosma
+    MaterialPorNivel: 3
+    ChanceDeSucessoCritico: 0.1
+  parametros:
+    ChanceDeDrop: 0.25
+    PesosDaRaridade:
+    - 60
+    - 25
+    - 10
+    - 4
+    - 1
+    RaridadeMinimaDoChefe: 1
+    BonusDaRaridade:
+    - 0.1
+    - 0.25
+    - 0.5
+    - 1
+    - 2
+    CrescimentoPorEstagio: 1.05
+    CrescimentoDoPreco: 1.15
+    LimiteDoInventario: 48
+    CustoDeFabricarEmOuro: 200
+    MaterialParaFabricar: 5
+    PrecoDeVenda:
+    - 10
+    - 30
+    - 90
+    - 300
+    - 1000
+    MaterialAoDesmontar: 0100000002000000040000000800000010000000i

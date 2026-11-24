@@ -19,6 +19,13 @@ namespace ALotOfDamage.Testes
             {
                 VidaBase = 100, CrescimentoPorEstagio = 2, OuroPorVida = 0.5, VitoriasParaAvancar = 2, ChefeACada = 5, MultiplicadorDeVidaDoChefe = 10,
             };
+            public ParametrosDosItens ParametrosDosItens { get; set; } = new ParametrosDosItens
+            {
+                ChanceDeDrop = 0.3, PesosDaRaridade = new double[] { 1, 0, 0, 0, 0 }, RaridadeMinimaDoChefe = Raridade.Raro,
+                BonusDaRaridade = new[] { 1.0, 2, 3, 4, 5 }, CrescimentoPorEstagio = 1, CrescimentoDoPreco = 1,
+                LimiteDoInventario = 2, CustoDeFabricarEmOuro = 20, MaterialParaFabricar = 3,
+                PrecoDeVenda = new double[] { 10, 20, 30, 40, 50 }, MaterialAoDesmontar = new[] { 1, 2, 3, 4, 5 },
+            };
             public IReadOnlyList<DefinicaoDeRegiao> Regioes { get; set; } = new List<DefinicaoDeRegiao>
             {
                 new DefinicaoDeRegiao { Nome = "Campos" },
@@ -39,6 +46,17 @@ namespace ALotOfDamage.Testes
             public double Proximo() => Valor;
         }
 
+        // Devolve os valores na ordem e depois repete o último
+        class SorteioEmSequencia : ISorteio
+        {
+            readonly double[] valores;
+            int i;
+            public SorteioEmSequencia(params double[] valores) => this.valores = valores;
+            public double Proximo() => valores[System.Math.Min(i++, valores.Length - 1)];
+        }
+
+        static readonly ISorteio SemDrop = new SorteioFixo { Valor = 0.99 };
+
         RepositorioQueConta repositorio;
         CatalogoFalso catalogo;
 
@@ -56,13 +74,21 @@ namespace ALotOfDamage.Testes
                 },
                 Itens = new List<DefinicaoDeItem>
                 {
-                    new DefinicaoDeItem { Id = "espada", Alvo = AlvoDoItem.Click, BonusPorNivel = 1, CustoBaseEmOuro = 10, MaterialId = "presa", MaterialPorNivel = 1, ChanceDeSucessoCritico = 0.1 },
+                    new DefinicaoDeItem { Id = "espada", Nome = "Espada", Slot = SlotDeItem.Arma, Alvo = AlvoDoItem.Click, BonusPorNivel = 1, CustoBaseEmOuro = 10, MaterialId = "presa", MaterialPorNivel = 1, ChanceDeSucessoCritico = 0.1 },
+                    new DefinicaoDeItem { Id = "anel", Nome = "Anel", Slot = SlotDeItem.Anel, Alvo = AlvoDoItem.Automatico, BonusPorNivel = 1, CustoBaseEmOuro = 10, MaterialId = "gosma", MaterialPorNivel = 1 },
                 },
                 Monstros = new List<DefinicaoDeMonstro>
                 {
                     new DefinicaoDeMonstro { Id = "lobo", MaterialId = "presa", MaterialPorVitoria = 2, Forma = FormaDoMonstro.Quadrupede, Cor = "#9999A6" },
                 },
             };
+        }
+
+        ItemDoJogador EspadaEquipada()
+        {
+            var item = repositorio.Progresso.ReceberItem("espada", SlotDeItem.Arma, Raridade.Comum, 1, 10);
+            repositorio.Progresso.Equipar(item.Id);
+            return item;
         }
 
         [Test]
@@ -91,20 +117,141 @@ namespace ALotOfDamage.Testes
         }
 
         [Test]
-        public void Forjar_usa_o_sorteio_injetado()
+        public void Refinar_usa_o_sorteio_injetado()
         {
+            var espada = EspadaEquipada();
             repositorio.Progresso.ReceberOuro(10);
             repositorio.Progresso.AdicionarMaterial("presa", 1);
-            var r = new ForjarItem(repositorio, catalogo, new SorteioFixo { Valor = 0.05 }).Executar("espada");
+            var r = new RefinarItem(repositorio, catalogo, new SorteioFixo { Valor = 0.05 }).Executar(espada.Id);
             Assert.IsTrue(r.SucessoCritico);
-            Assert.AreEqual(2, repositorio.Progresso.NivelDoItem("espada"));
+            Assert.AreEqual(2, espada.Nivel);
             Assert.AreEqual(1, repositorio.Salvamentos);
+        }
+
+        [Test]
+        public void Refinar_item_inexistente_nao_faz_nada()
+        {
+            repositorio.Progresso.ReceberOuro(1000);
+            Assert.IsFalse(new RefinarItem(repositorio, catalogo, SemDrop).Executar(42).Forjou);
+        }
+
+        [Test]
+        public void Vitoria_abaixo_da_chance_dropa_item_no_inventario()
+        {
+            // cai item (0,1), tipo: o segundo da lista (0,6 dá o anel), raridade comum
+            var r = new RegistrarVitoria(repositorio, catalogo, new SorteioEmSequencia(0.1, 0.6, 0.0)).Executar("lobo", false);
+            Assert.IsNotNull(r.ItemGanho);
+            Assert.AreEqual("anel", r.ItemGanho.TipoId);
+            Assert.AreEqual(SlotDeItem.Anel, r.ItemGanho.Slot);
+            Assert.AreEqual(Raridade.Comum, r.ItemGanho.Raridade);
+            Assert.AreEqual(1, r.ItemGanho.Estagio);
+            CollectionAssert.Contains(repositorio.Progresso.Inventario, r.ItemGanho);
+        }
+
+        [Test]
+        public void Vitoria_acima_da_chance_nao_dropa()
+        {
+            var r = new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar("lobo", false);
+            Assert.IsNull(r.ItemGanho);
+            Assert.IsEmpty(repositorio.Progresso.Inventario);
+        }
+
+        [Test]
+        public void Chefe_sempre_dropa_com_raridade_minima()
+        {
+            var r = new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar("lobo", true);
+            Assert.IsNotNull(r.ItemGanho);
+            Assert.AreEqual(Raridade.Raro, r.ItemGanho.Raridade);
+        }
+
+        [Test]
+        public void Drop_com_inventario_cheio_e_vendido_na_hora()
+        {
+            var p = repositorio.Progresso;
+            p.ReceberItem("espada", SlotDeItem.Arma, Raridade.Comum, 1, 10);
+            p.ReceberItem("espada", SlotDeItem.Arma, Raridade.Comum, 1, 10);
+            double antes = p.Ouro;
+            var r = new RegistrarVitoria(repositorio, catalogo, new SorteioEmSequencia(0.1, 0.0, 0.0)).Executar(null, false);
+            Assert.IsNotNull(r.ItemGanho);
+            Assert.IsTrue(r.ItemVendidoPorFaltaDeEspaco);
+            Assert.AreEqual(2, p.Inventario.Count);
+            Assert.AreEqual(antes + r.Ouro + 10, p.Ouro, 1e-9);
+        }
+
+        [Test]
+        public void Fabricar_cria_item_do_tipo_escolhido_e_gasta_ouro_e_material()
+        {
+            var p = repositorio.Progresso;
+            p.ReceberOuro(25);
+            p.AdicionarMaterial("gosma", 3);
+            var r = new FabricarItem(repositorio, catalogo, new SorteioFixo { Valor = 0.0 }).Executar("anel");
+            Assert.IsTrue(r.Fabricou);
+            Assert.AreEqual("anel", r.Item.TipoId);
+            Assert.AreEqual(5, p.Ouro, 1e-9);
+            Assert.AreEqual(0, p.Material("gosma"));
+            CollectionAssert.Contains(p.Inventario, r.Item);
+            Assert.AreEqual(1, repositorio.Salvamentos);
+        }
+
+        [Test]
+        public void Fabricar_sem_recurso_ou_sem_espaco_nao_faz_nada()
+        {
+            var p = repositorio.Progresso;
+            p.ReceberOuro(25);
+            Assert.IsFalse(new FabricarItem(repositorio, catalogo, SemDrop).Executar("anel").Fabricou, "sem material");
+
+            p.AdicionarMaterial("gosma", 3);
+            p.ReceberItem("espada", SlotDeItem.Arma, Raridade.Comum, 1, 10);
+            p.ReceberItem("espada", SlotDeItem.Arma, Raridade.Comum, 1, 10);
+            Assert.IsFalse(new FabricarItem(repositorio, catalogo, SemDrop).Executar("anel").Fabricou, "inventário cheio");
+            Assert.AreEqual(25, p.Ouro, 1e-9);
+            Assert.AreEqual(3, p.Material("gosma"));
+            Assert.AreEqual(0, repositorio.Salvamentos);
+        }
+
+        [Test]
+        public void Vender_tira_do_inventario_e_da_ouro()
+        {
+            var item = repositorio.Progresso.ReceberItem("espada", SlotDeItem.Arma, Raridade.Incomum, 1, 10);
+            Assert.AreEqual(20, new VenderItem(repositorio, catalogo).Executar(item.Id), 1e-9);
+            Assert.AreEqual(20, repositorio.Progresso.Ouro, 1e-9);
+            Assert.IsEmpty(repositorio.Progresso.Inventario);
+        }
+
+        [Test]
+        public void Item_equipado_nao_e_vendido_nem_desmontado()
+        {
+            var espada = EspadaEquipada();
+            Assert.AreEqual(0, new VenderItem(repositorio, catalogo).Executar(espada.Id), 1e-9);
+            Assert.AreEqual(0, new DesmontarItem(repositorio, catalogo).Executar(espada.Id));
+            Assert.AreSame(espada, repositorio.Progresso.Equipado(SlotDeItem.Arma));
+        }
+
+        [Test]
+        public void Desmontar_devolve_o_material_do_tipo()
+        {
+            var item = repositorio.Progresso.ReceberItem("espada", SlotDeItem.Arma, Raridade.Raro, 1, 10);
+            item.Nivel = 2;
+            Assert.AreEqual(5, new DesmontarItem(repositorio, catalogo).Executar(item.Id));
+            Assert.AreEqual(5, repositorio.Progresso.Material("presa"));
+            Assert.IsEmpty(repositorio.Progresso.Inventario);
+        }
+
+        [Test]
+        public void Equipar_e_desequipar_pelos_casos_de_uso()
+        {
+            var item = repositorio.Progresso.ReceberItem("espada", SlotDeItem.Arma, Raridade.Comum, 1, 10);
+            Assert.IsTrue(new EquiparItem(repositorio, catalogo).Executar(item.Id));
+            Assert.AreSame(item, repositorio.Progresso.Equipado(SlotDeItem.Arma));
+            Assert.IsTrue(new DesequiparItem(repositorio, catalogo).Executar(SlotDeItem.Arma));
+            Assert.IsNull(repositorio.Progresso.Equipado(SlotDeItem.Arma));
+            Assert.AreEqual(2, repositorio.Salvamentos);
         }
 
         [Test]
         public void Vitoria_da_ouro_material_e_conta_no_bestiario()
         {
-            var r = new RegistrarVitoria(repositorio, catalogo).Executar("lobo", false);
+            var r = new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar("lobo", false);
             Assert.AreEqual(50, repositorio.Progresso.Ouro, 1e-9);
             Assert.AreEqual(2, repositorio.Progresso.Material("presa"));
             Assert.AreEqual(1, r.Derrotas);
@@ -115,7 +262,7 @@ namespace ALotOfDamage.Testes
         [Test]
         public void Vitoria_sem_tipo_so_da_ouro()
         {
-            var r = new RegistrarVitoria(repositorio, catalogo).Executar(null, false);
+            var r = new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar(null, false);
             Assert.IsNull(r.Monstro);
             Assert.AreEqual(50, repositorio.Progresso.Ouro, 1e-9);
         }
@@ -123,9 +270,7 @@ namespace ALotOfDamage.Testes
         [Test]
         public void Atributos_multiplicam_upgrade_forja_e_bestiario()
         {
-            repositorio.Progresso.ReceberOuro(10);
-            repositorio.Progresso.AdicionarMaterial("presa", 1);
-            new ForjarItem(repositorio, catalogo, new SorteioFixo { Valor = 0.99 }).Executar("espada"); // ×2 no click
+            EspadaEquipada(); // comum: ×2 no click
 
             var a = new CalcularAtributos(repositorio, catalogo).Executar("lobo");
             Assert.AreEqual(3 * 2, a.DanoDoClick, 1e-9);
@@ -168,7 +313,7 @@ namespace ALotOfDamage.Testes
         [Test]
         public void Vitorias_avancam_a_campanha_e_o_inimigo_fica_mais_forte()
         {
-            var vitoria = new RegistrarVitoria(repositorio, catalogo);
+            var vitoria = new RegistrarVitoria(repositorio, catalogo, SemDrop);
             var inimigo = new CalcularInimigo(repositorio, catalogo);
             Assert.AreEqual(100, inimigo.Executar("lobo", false).Vida, 1e-9);
 
@@ -217,6 +362,7 @@ namespace ALotOfDamage.Testes
         [Test]
         public void Pendencias_mostram_upgrade_forja_e_bestiario_prontos()
         {
+            EspadaEquipada();
             repositorio.Progresso.ReceberOuro(10);
             repositorio.Progresso.AdicionarMaterial("presa", 1);
             var lobo = catalogo.Monstros[0];
@@ -241,27 +387,23 @@ namespace ALotOfDamage.Testes
         }
 
         [Test]
-        public void Brilho_da_arma_segue_o_item_de_click_mais_forjado()
+        public void Brilho_da_arma_segue_o_item_de_click_equipado_mais_refinado()
         {
             var brilho = new ConsultarBrilhoDaArma(repositorio, catalogo);
             Assert.AreEqual(0, brilho.Executar(), 1e-6);
 
-            repositorio.Progresso.ReceberOuro(10);
-            repositorio.Progresso.AdicionarMaterial("presa", 1);
-            new ForjarItem(repositorio, catalogo, new SorteioFixo { Valor = 0.99 }).Executar("espada");
-            Assert.AreEqual(RegrasDeAparencia.BrilhoDaArma(1), brilho.Executar(), 1e-6);
+            EspadaEquipada().Nivel = 3;
+            Assert.AreEqual(RegrasDeAparencia.BrilhoDaArma(3), brilho.Executar(), 1e-6);
         }
 
         [Test]
-        public void Item_de_auto_ataque_nao_acende_a_arma()
+        public void Item_de_auto_ataque_ou_guardado_nao_acende_a_arma()
         {
-            catalogo.Itens = new List<DefinicaoDeItem>
-            {
-                new DefinicaoDeItem { Id = "anel", Alvo = AlvoDoItem.Automatico, CustoBaseEmOuro = 10, MaterialId = "presa", MaterialPorNivel = 1 },
-            };
-            repositorio.Progresso.ReceberOuro(10);
-            repositorio.Progresso.AdicionarMaterial("presa", 1);
-            new ForjarItem(repositorio, catalogo, new SorteioFixo { Valor = 0.99 }).Executar("anel");
+            var p = repositorio.Progresso;
+            var anel = p.ReceberItem("anel", SlotDeItem.Anel, Raridade.Comum, 1, 10);
+            p.Equipar(anel.Id);
+            anel.Nivel = 5;
+            p.ReceberItem("espada", SlotDeItem.Arma, Raridade.Comum, 1, 10).Nivel = 5;
             Assert.AreEqual(0, new ConsultarBrilhoDaArma(repositorio, catalogo).Executar(), 1e-6);
         }
 

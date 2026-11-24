@@ -4,12 +4,15 @@ namespace ALotOfDamage.Core
 {
     public enum AlvoDoItem { Click, Automatico }
 
+    // Tipo de item (Espada, Elmo...): o slot, o que o bônus aumenta e o custo do refino na forja.
+    // Os itens do jogador (ItemDoJogador) apontam para um tipo pelo Id.
     [Serializable]
     public class DefinicaoDeItem
     {
         public string Id;
         public string Nome;
         public string Descricao;
+        public SlotDeItem Slot;
         public AlvoDoItem Alvo;
         public double BonusPorNivel = 0.25;
         public double CustoBaseEmOuro = 100;
@@ -28,7 +31,7 @@ namespace ALotOfDamage.Core
         public int MaterialRestante;
     }
 
-    // Forja: cada nível do item multiplica o dano; o item começa em +0
+    // Refino na forja: cada nível (+N) do item multiplica o bônus dele; o item começa em +0
     public static class RegrasDaForja
     {
         public static double Multiplicador(DefinicaoDeItem d, int nivel) => Math.Pow(1 + d.BonusPorNivel, nivel);

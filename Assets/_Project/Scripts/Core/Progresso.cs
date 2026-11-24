@@ -22,7 +22,9 @@ namespace ALotOfDamage.Core
         public int VitoriasNoEstagio { get; private set; }
 
         readonly Dictionary<string, int> niveis = new Dictionary<string, int>();
-        readonly Dictionary<string, int> niveisDosItens = new Dictionary<string, int>();
+        readonly List<ItemDoJogador> inventario = new List<ItemDoJogador>();
+        readonly Dictionary<SlotDeItem, ItemDoJogador> equipados = new Dictionary<SlotDeItem, ItemDoJogador>();
+        int proximoIdDeItem = 1;
         readonly Dictionary<string, int> materiais = new Dictionary<string, int>();
         readonly Dictionary<string, int> derrotas = new Dictionary<string, int>();
 
@@ -30,7 +32,10 @@ namespace ALotOfDamage.Core
             id != null && d.TryGetValue(id, out var n) ? n : padrao;
 
         public int Nivel(string idDoUpgrade) => Ler(niveis, idDoUpgrade, 1);
-        public int NivelDoItem(string id) => Ler(niveisDosItens, id);
+        // Itens guardados (sem os equipados)
+        public IReadOnlyList<ItemDoJogador> Inventario => inventario;
+        public IEnumerable<ItemDoJogador> Equipados => equipados.Values;
+        public ItemDoJogador Equipado(SlotDeItem slot) => equipados.TryGetValue(slot, out var i) ? i : null;
         public int Material(string id) => Ler(materiais, id);
         public int Derrotas(string tipo) => Ler(derrotas, tipo);
         public IEnumerable<int> TodasAsDerrotas => derrotas.Values;
@@ -59,13 +64,69 @@ namespace ALotOfDamage.Core
             return r;
         }
 
-        public ResultadoDaForja Forjar(DefinicaoDeItem d, double sorteio)
+        // Tira ouro e material juntos, só se tiver os dois
+        public bool Gastar(double ouro, string materialId, int material)
         {
-            var r = RegrasDaForja.Forjar(d, NivelDoItem(d.Id), Ouro, Material(d.MaterialId), sorteio);
+            if (ouro > Ouro || material > Material(materialId)) return false;
+            Ouro -= ouro;
+            if (material > 0) materiais[materialId] = Material(materialId) - material;
+            return true;
+        }
+
+        // Item novo no inventário (+0); null se o inventário estiver cheio
+        public ItemDoJogador ReceberItem(string tipoId, SlotDeItem slot, Raridade raridade, int estagio, int limite)
+        {
+            if (inventario.Count >= limite) return null;
+            var item = new ItemDoJogador { Id = proximoIdDeItem++, TipoId = tipoId, Slot = slot, Raridade = raridade, Estagio = Math.Max(1, estagio) };
+            inventario.Add(item);
+            return item;
+        }
+
+        public ItemDoJogador BuscarItem(int id)
+        {
+            foreach (var i in inventario) if (i.Id == id) return i;
+            foreach (var i in equipados.Values) if (i.Id == id) return i;
+            return null;
+        }
+
+        // Tira um item guardado (para vender ou desmontar); item equipado não sai por aqui
+        public ItemDoJogador RemoverDoInventario(int id)
+        {
+            int i = inventario.FindIndex(x => x.Id == id);
+            if (i < 0) return null;
+            var item = inventario[i];
+            inventario.RemoveAt(i);
+            return item;
+        }
+
+        // Equipa um item guardado no slot dele; o que estava no slot volta para o inventário
+        public bool Equipar(int id)
+        {
+            var item = RemoverDoInventario(id);
+            if (item == null) return false;
+            if (equipados.TryGetValue(item.Slot, out var antigo)) inventario.Add(antigo);
+            equipados[item.Slot] = item;
+            return true;
+        }
+
+        public bool Desequipar(SlotDeItem slot, int limite)
+        {
+            if (!equipados.TryGetValue(slot, out var item) || inventario.Count >= limite) return false;
+            equipados.Remove(slot);
+            inventario.Add(item);
+            return true;
+        }
+
+        // Refino na forja: sobe o +N do próprio item, esteja guardado ou equipado
+        public ResultadoDaForja Refinar(int id, DefinicaoDeItem tipo, double sorteio)
+        {
+            var item = BuscarItem(id);
+            if (item == null || tipo == null) return new ResultadoDaForja { OuroRestante = Ouro };
+            var r = RegrasDaForja.Forjar(tipo, item.Nivel, Ouro, Material(tipo.MaterialId), sorteio);
             if (!r.Forjou) return r;
-            niveisDosItens[d.Id] = r.NovoNivel;
+            item.Nivel = r.NovoNivel;
             Ouro = r.OuroRestante;
-            materiais[d.MaterialId] = r.MaterialRestante;
+            materiais[tipo.MaterialId] = r.MaterialRestante;
             return r;
         }
 
@@ -93,7 +154,9 @@ namespace ALotOfDamage.Core
         {
             Ouro = Ouro, Vitorias = Vitorias, ClasseId = ClasseId, FollowerAtivoId = FollowerAtivoId, HeroiId = HeroiId,
             Estagio = Estagio, VitoriasNoEstagio = VitoriasNoEstagio,
-            Niveis = Pares(niveis), NiveisDosItens = Pares(niveisDosItens), Materiais = Pares(materiais), Derrotas = Pares(derrotas),
+            Niveis = Pares(niveis), Materiais = Pares(materiais), Derrotas = Pares(derrotas),
+            Inventario = new List<ItemDoJogador>(inventario), Equipados = new List<ItemDoJogador>(equipados.Values),
+            ProximoIdDeItem = proximoIdDeItem,
         };
 
         public static Progresso Importar(DadosDoProgresso d)
@@ -108,10 +171,36 @@ namespace ALotOfDamage.Core
             p.Estagio = Math.Max(1, d.Estagio);
             p.VitoriasNoEstagio = Math.Max(0, d.VitoriasNoEstagio);
             Preencher(p.niveis, d.Niveis);
-            Preencher(p.niveisDosItens, d.NiveisDosItens);
             Preencher(p.materiais, d.Materiais);
             Preencher(p.derrotas, d.Derrotas);
+            ImportarItens(p, d);
             return p;
+        }
+
+        // Tipos da forja antiga (um nível por tipo) e o slot em que viram item
+        static readonly Dictionary<string, SlotDeItem> SlotsDaForjaAntiga = new Dictionary<string, SlotDeItem>
+        {
+            ["espada"] = SlotDeItem.Arma, ["manopla"] = SlotDeItem.Luvas, ["anel"] = SlotDeItem.Anel,
+        };
+
+        static void ImportarItens(Progresso p, DadosDoProgresso d)
+        {
+            int maiorId = 0;
+            if (d.Inventario != null)
+                foreach (var i in d.Inventario) if (i != null) { p.inventario.Add(i); maiorId = Math.Max(maiorId, i.Id); }
+            if (d.Equipados != null)
+                foreach (var i in d.Equipados) if (i != null) { p.equipados[i.Slot] = i; maiorId = Math.Max(maiorId, i.Id); }
+            p.proximoIdDeItem = Math.Max(d.ProximoIdDeItem, maiorId + 1);
+
+            // save de antes dos itens: cada nível da forja vira um item comum equipado com o mesmo +N
+            if (d.NiveisDosItens == null || maiorId > 0) return;
+            foreach (var par in d.NiveisDosItens)
+            {
+                if (par.Valor <= 0 || !SlotsDaForjaAntiga.TryGetValue(par.Id ?? "", out var slot)) continue;
+                var item = p.ReceberItem(par.Id, slot, Raridade.Comum, 1, int.MaxValue);
+                item.Nivel = par.Valor;
+                p.Equipar(item.Id);
+            }
         }
 
         static List<ParDeValor> Pares(Dictionary<string, int> d)
@@ -127,12 +216,21 @@ namespace ALotOfDamage.Core
             foreach (var par in pares) if (!string.IsNullOrEmpty(par.Id)) d[par.Id] = par.Valor;
         }
 
-        // Forja × bestiário contra o tipo × bestiário geral: as fontes se multiplicam
-        public double MultiplicadorDeDano(AlvoDoItem alvo, string tipo, IEnumerable<DefinicaoDeItem> itens, ParametrosDoBestiario p)
+        public static DefinicaoDeItem Tipo(IEnumerable<DefinicaoDeItem> tipos, string id)
+        {
+            foreach (var t in tipos) if (t.Id == id) return t;
+            return null;
+        }
+
+        // Itens equipados × bestiário contra o tipo × bestiário geral: as fontes se multiplicam
+        public double MultiplicadorDeDano(AlvoDoItem alvo, string tipo, IEnumerable<DefinicaoDeItem> tipos, ParametrosDosItens itens, ParametrosDoBestiario p)
         {
             double m = 1;
-            foreach (var item in itens)
-                if (item.Alvo == alvo) m *= RegrasDaForja.Multiplicador(item, NivelDoItem(item.Id));
+            foreach (var item in equipados.Values)
+            {
+                var t = Tipo(tipos, item.TipoId);
+                if (t != null && t.Alvo == alvo) m *= RegrasDosItens.Multiplicador(itens, t, item);
+            }
             m *= RegrasDoBestiario.MultiplicadorContraTipo(p, Derrotas(tipo));
             return m * RegrasDoBestiario.MultiplicadorGeral(p, derrotas.Values);
         }
@@ -160,7 +258,11 @@ namespace ALotOfDamage.Core
         public int Estagio = 1;
         public int VitoriasNoEstagio;
         public List<ParDeValor> Niveis = new List<ParDeValor>();
+        // forja antiga (um nível por tipo), lida só para converter saves de antes dos itens
         public List<ParDeValor> NiveisDosItens = new List<ParDeValor>();
+        public List<ItemDoJogador> Inventario = new List<ItemDoJogador>();
+        public List<ItemDoJogador> Equipados = new List<ItemDoJogador>();
+        public int ProximoIdDeItem = 1;
         public List<ParDeValor> Materiais = new List<ParDeValor>();
         public List<ParDeValor> Derrotas = new List<ParDeValor>();
     }
