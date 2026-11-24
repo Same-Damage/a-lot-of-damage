@@ -39,9 +39,45 @@ namespace ALotOfDamage.Ferramentas
                 r.updateWhenOffscreen = false;
                 alturaDoModelo = Mathf.Max(alturaDoModelo, r.sharedMesh.bounds.size.y * r.transform.lossyScale.y);
             }
-            if (alturaDoModelo > 0) go.transform.localScale *= altura / alturaDoModelo;
 
             var animator = go.GetComponent<Animator>() ?? go.AddComponent<Animator>();
+            // as peças entram antes da escala, no tamanho real do modelo, e crescem junto com ele
+            if (Equipamento.TryGetValue(nome, out var encaixes))
+            {
+                // o encaixe é medido na pose parada (a pose padrão de cada FBX varia): braços caídos, mãos ao lado do corpo
+                // (clipe humanoide só posa os ossos pelo AnimationMode; ao sair, os ossos voltam e as peças ficam com o encaixe local)
+                var parada = Clipe(nome, "Parada");
+                bool amostrou = parada && !AnimationMode.InAnimationMode();
+                if (amostrou)
+                {
+                    AnimationMode.StartAnimationMode();
+                    AnimationMode.BeginSampling();
+                    AnimationMode.SampleAnimationClip(go, parada, 0);
+                    AnimationMode.EndSampling();
+                }
+                var pecas = new System.Collections.Generic.List<(Transform t, Vector3 pos, Quaternion rot)>();
+                foreach (var e in encaixes)
+                {
+                    var t = Encaixar(animator, e);
+                    if (t) pecas.Add((t, t.localPosition, t.localRotation));
+                }
+                if (amostrou)
+                {
+                    AnimationMode.StopAnimationMode();
+                    foreach (var (t, pos, rot) in pecas) { t.localPosition = pos; t.localRotation = rot; }
+                }
+                // ajuste feito à mão no editor (menu "Salvar encaixes das peças") vale mais que a conta
+                foreach (var (t, _, _) in pecas)
+                {
+                    var salvo = EncaixesSalvos.Buscar(nome, t.name);
+                    if (salvo == null) continue;
+                    t.localPosition = salvo.Posicao;
+                    t.localRotation = salvo.Rotacao;
+                    t.localScale = salvo.Escala;
+                }
+            }
+            if (alturaDoModelo > 0) go.transform.localScale *= altura / alturaDoModelo;
+
             animator.runtimeAnimatorController = Controlador(nome);
             animator.applyRootMotion = false;
             animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
@@ -49,6 +85,84 @@ namespace ALotOfDamage.Ferramentas
         }
 
         static string Pasta(string nome) => $"{PastaDosPersonagens}/{nome}";
+
+        const string PastaDoEquipamento = "Assets/_Project/Art/Equipment";
+
+        // Onde cada peça vai, medido na pose parada no referencial do corpo (+z para a frente, +x para a direita, +y para cima),
+        // em metros de um humano de 1,7 m: "pega" é o ponto da peça que fica na palma ou nas costas (em coordenadas da peça)
+        // e "afastamento" leva o osso até esse ponto
+        struct Encaixe
+        {
+            public string Peca;
+            public HumanBodyBones Osso;
+            public Vector3 Pega, Afastamento, Rotacao;
+        }
+
+        static readonly System.Collections.Generic.Dictionary<string, Encaixe[]> Equipamento = new()
+        {
+            ["Arqueira"] = new[]
+            {
+                // arco em pé na mão esquerda, ao lado da perna
+                new Encaixe { Peca = "Arco", Osso = HumanBodyBones.LeftHand, Pega = Vector3.zero, Afastamento = new Vector3(0, -0.08f, 0.02f), Rotacao = new Vector3(0, 90, 0) },
+                // aljava atravessada nas costas, com as flechas por cima do ombro direito
+                new Encaixe { Peca = "Aljava", Osso = HumanBodyBones.UpperChest, Pega = Vector3.zero, Afastamento = new Vector3(0, -0.05f, -0.17f), Rotacao = new Vector3(0, 0, -30) },
+            },
+            ["Cavaleiro"] = new[]
+            {
+                // espada na mão direita, lâmina para a frente e um pouco para baixo
+                new Encaixe { Peca = "Espada", Osso = HumanBodyBones.RightHand, Pega = new Vector3(0, 0.36f, 0), Afastamento = new Vector3(0, -0.08f, 0.03f), Rotacao = new Vector3(-60, 0, 0) },
+            },
+        };
+
+        // Distância do quadril à cabeça num humano de 1,7 m: as peças são modeladas nessa escala
+        const float DoQuadrilACabeca = 0.62f;
+
+        static Transform Encaixar(Animator animator, Encaixe e)
+        {
+            var osso = animator.GetBoneTransform(e.Osso);
+            if (!osso && e.Osso == HumanBodyBones.UpperChest) osso = animator.GetBoneTransform(HumanBodyBones.Chest);
+            var modelo = Peca(e.Peca);
+            if (!osso || !modelo) { Debug.LogWarning($"Sem osso {e.Osso} ou peça {e.Peca} para {animator.name}"); return null; }
+
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(modelo);
+            PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            go.name = e.Peca;
+            // referencial do corpo tirado dos ossos (o nó raiz de cada FBX pode vir girado)
+            var cima = (animator.GetBoneTransform(HumanBodyBones.Head).position - animator.GetBoneTransform(HumanBodyBones.Hips).position).normalized;
+            var direita = (animator.GetBoneTransform(HumanBodyBones.RightUpperArm).position - animator.GetBoneTransform(HumanBodyBones.LeftUpperArm).position).normalized;
+            var corpo = Quaternion.LookRotation(Vector3.Cross(direita, cima), cima);
+            float escala = Vector3.Distance(animator.GetBoneTransform(HumanBodyBones.Head).position, animator.GetBoneTransform(HumanBodyBones.Hips).position) / DoQuadrilACabeca;
+            var rotacao = corpo * Quaternion.Euler(e.Rotacao);
+            // o FBX de uma malha só vem com o giro de eixo (Blender z-para-cima) no próprio nó raiz: ele é mantido
+            go.transform.localScale = modelo.transform.localScale * escala;
+            go.transform.SetPositionAndRotation(
+                osso.position + corpo * e.Afastamento * escala - rotacao * e.Pega * escala, rotacao * modelo.transform.localRotation);
+            go.transform.SetParent(osso, true);
+            var material = MaterialEm($"{PastaDoEquipamento}/{e.Peca}", e.Peca);
+            foreach (var r in go.GetComponentsInChildren<Renderer>())
+            {
+                r.sharedMaterials = Enumerable.Repeat(material, r.sharedMaterials.Length).ToArray();
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            go.AddComponent<PecaDeEquipamento>();
+            return go.transform;
+        }
+
+        // Peça rígida de Art/Equipment/<peça>/ (<peça>.fbx e <peça>_Cor.png), com o mesmo shader pintado dos heróis
+        static GameObject Peca(string peca)
+        {
+            string pasta = $"{PastaDoEquipamento}/{peca}";
+            var imp = (ModelImporter)AssetImporter.GetAtPath($"{pasta}/{peca}.fbx");
+            if (imp == null) return null;
+            if (imp.materialImportMode != ModelImporterMaterialImportMode.None || imp.importAnimation)
+            {
+                imp.materialImportMode = ModelImporterMaterialImportMode.None;
+                imp.importAnimation = false;
+                imp.animationType = ModelImporterAnimationType.None;
+                imp.SaveAndReimport();
+            }
+            return AssetDatabase.LoadAssetAtPath<GameObject>($"{pasta}/{peca}.fbx");
+        }
 
         // Humanoide com avatar próprio no modelo; as animações usam o avatar dele e ficam no lugar (sem root motion)
         static void ConfigurarImportacao(string nome)
@@ -145,16 +259,19 @@ namespace ALotOfDamage.Ferramentas
             saida.duration = 0.15f;
         }
 
-        static Material Material(string nome)
+        static Material Material(string nome) => MaterialEm(Pasta(nome), nome);
+
+        // <pasta>/<nome>.mat com o shader pintado e a textura <nome>_Cor.png
+        static Material MaterialEm(string pasta, string nome)
         {
-            string caminho = $"{Pasta(nome)}/{nome}.mat";
+            string caminho = $"{pasta}/{nome}.mat";
             var m = AssetDatabase.LoadAssetAtPath<Material>(caminho);
             if (!m)
             {
                 m = new Material(UnityEngine.Shader.Find(Shader));
                 AssetDatabase.CreateAsset(m, caminho);
             }
-            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>($"{Pasta(nome)}/{nome}_Cor.png");
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>($"{pasta}/{nome}_Cor.png");
             if (tex) m.SetTexture("_BaseMap", tex);
             EditorUtility.SetDirty(m);
             return m;
