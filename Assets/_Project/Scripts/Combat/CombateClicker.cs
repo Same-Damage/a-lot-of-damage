@@ -164,7 +164,7 @@ namespace ALotOfDamage.Combat
             else if (timerPontoFraco >= pontoFracoACada)
             {
                 timerPontoFraco = 0;
-                pontoFracoRestante = RegrasDePersonagem.DuracaoDoPontoFraco(follower, duracaoDoPontoFraco);
+                pontoFracoRestante = RegrasDePersonagem.DuracaoDoPontoFraco(atributos.BonusNoPontoFraco, duracaoDoPontoFraco);
             }
 
             var ponteiro = Pointer.current;

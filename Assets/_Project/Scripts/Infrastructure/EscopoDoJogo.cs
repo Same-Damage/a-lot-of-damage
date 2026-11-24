@@ -57,6 +57,9 @@ namespace ALotOfDamage.Infrastructure
             builder.Register<ConsultarAscensao>(Lifetime.Singleton);
             builder.Register<Ascender>(Lifetime.Singleton);
             builder.Register<ListarConquistas>(Lifetime.Singleton);
+            builder.Register<Invocar>(Lifetime.Singleton);
+            builder.Register<EscolherFollower>(Lifetime.Singleton);
+            builder.Register<ListarFollowers>(Lifetime.Singleton);
             builder.Register<ColetarConquista>(Lifetime.Singleton);
             builder.Register<ConsultarRecompensaAfk>(Lifetime.Singleton);
             builder.Register<ColetarRecompensaAfk>(Lifetime.Singleton);

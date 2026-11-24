@@ -34,6 +34,35 @@ namespace ALotOfDamage.Core
         public int ItensFabricados { get; private set; }
         public double OuroTotalGanho { get; private set; }
 
+        // Followers que o jogador tem e as estrelas de cada um; o Pip vem de início
+        readonly Dictionary<string, int> followers = new Dictionary<string, int> { [FollowerPadrao] = 1 };
+        public int Estrelas(string followerId) => Ler(followers, followerId);
+        public IReadOnlyDictionary<string, int> Followers => followers;
+        public int InvocacoesSemEpico { get; private set; }
+        public int InvocacoesSemLendario { get; private set; }
+
+        // Novo follower (1 estrela) ou +1 estrela no repetido; false se já estava no máximo
+        public bool ReceberFollower(string id, int maximoDeEstrelas)
+        {
+            int estrelas = Estrelas(id);
+            if (estrelas >= maximoDeEstrelas) return false;
+            followers[id] = estrelas + 1;
+            return true;
+        }
+
+        public void RegistrarPity(int semEpico, int semLendario)
+        {
+            InvocacoesSemEpico = Math.Max(0, semEpico);
+            InvocacoesSemLendario = Math.Max(0, semLendario);
+        }
+
+        public bool EscolherFollower(string id)
+        {
+            if (Estrelas(id) <= 0) return false;
+            FollowerAtivoId = id;
+            return true;
+        }
+
         readonly Dictionary<string, int> conquistasColetadas = new Dictionary<string, int>();
         public int ConquistasColetadas(string id) => Ler(conquistasColetadas, id);
         public int TotalDeConquistasColetadas
@@ -224,6 +253,7 @@ namespace ALotOfDamage.Core
             ChefesDerrotados = ChefesDerrotados, EstagioMaximo = EstagioMaximo, ItensEpicosObtidos = ItensEpicosObtidos,
             MaiorRefino = MaiorRefino, ItensFabricados = ItensFabricados, OuroTotalGanho = OuroTotalGanho,
             ConquistasColetadas = Pares(conquistasColetadas),
+            Followers = Pares(followers), InvocacoesSemEpico = InvocacoesSemEpico, InvocacoesSemLendario = InvocacoesSemLendario,
         };
 
         public static Progresso Importar(DadosDoProgresso d)
@@ -253,6 +283,9 @@ namespace ALotOfDamage.Core
             // save de antes das conquistas: o ouro guardado é o mínimo que já foi ganho
             p.OuroTotalGanho = Math.Max(p.Ouro, d.OuroTotalGanho);
             Preencher(p.conquistasColetadas, d.ConquistasColetadas);
+            Preencher(p.followers, d.Followers);
+            if (p.Estrelas(FollowerPadrao) <= 0) p.followers[FollowerPadrao] = 1;
+            p.RegistrarPity(d.InvocacoesSemEpico, d.InvocacoesSemLendario);
             return p;
         }
 
@@ -353,6 +386,9 @@ namespace ALotOfDamage.Core
         public int ItensFabricados;
         public double OuroTotalGanho;
         public List<ParDeValor> ConquistasColetadas = new List<ParDeValor>();
+        public List<ParDeValor> Followers = new List<ParDeValor>();
+        public int InvocacoesSemEpico;
+        public int InvocacoesSemLendario;
         public List<ParDeValor> Materiais = new List<ParDeValor>();
         public List<ParDeValor> Derrotas = new List<ParDeValor>();
     }

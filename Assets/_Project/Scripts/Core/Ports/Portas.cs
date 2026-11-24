@@ -18,6 +18,7 @@ namespace ALotOfDamage.Core
         ParametrosDoBestiario Bestiario { get; }
         IReadOnlyList<DefinicaoDeClasse> Classes { get; }
         IReadOnlyList<DefinicaoDeFollower> Followers { get; }
+        ParametrosDoGacha Gacha { get; }
         ParametrosDaCampanha Campanha { get; }
         ParametrosDosItens ParametrosDosItens { get; }
         IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }

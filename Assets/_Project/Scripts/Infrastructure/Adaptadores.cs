@@ -59,6 +59,7 @@ namespace ALotOfDamage.Infrastructure
         public ParametrosDoBestiario Bestiario { get; }
         public IReadOnlyList<DefinicaoDeClasse> Classes { get; }
         public IReadOnlyList<DefinicaoDeFollower> Followers { get; }
+        public ParametrosDoGacha Gacha { get; }
         public ParametrosDaCampanha Campanha { get; }
         public ParametrosDosItens ParametrosDosItens { get; }
         public IReadOnlyList<DefinicaoDeConquista> Conquistas { get; }
@@ -77,6 +78,7 @@ namespace ALotOfDamage.Infrastructure
             var personagens = BalanceamentoDePersonagens.Carregar();
             Classes = personagens.classes;
             Followers = personagens.followers;
+            Gacha = personagens.gacha;
             var campanha = BalanceamentoDaCampanha.Carregar();
             Campanha = campanha.parametros;
             Regioes = campanha.regioes;

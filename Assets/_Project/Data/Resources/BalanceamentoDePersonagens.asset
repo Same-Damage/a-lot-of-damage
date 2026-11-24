@@ -21,10 +21,502 @@ MonoBehaviour:
     MaximoDeAcumulos: 10
     NomeDaUltimate: Golpe Devastador
     MultiplicadorDaUltimate: 50
+  gacha:
+    CustoPorInvocacao: 100
+    CustoDeDez: 900
+    Taxas:
+    - 50
+    - 30
+    - 14
+    - 5
+    - 1
+    PityEpico: 30
+    PityLendario: 90
+    BonusPorEstrela: 0.2
+    MaximoDeEstrelas: 5
+    CristaisPorEstrelaExtra: 50
+    CristaisPorChefe: 25
+    CristaisDaAscensao: 200
+    CristaisPorAlma: 5
+    VitoriasAfkPorCristal: 20
   followers:
   - Id: pip
-    Nome: Pip
-    Descricao: "Falc\xE3o que ataca junto e marca o ponto fraco"
+    Nome: "Pip, o falc\xE3o"
+    Descricao: Deixa o ponto fraco aberto por mais tempo
+    Raridade: 0
     FracaoDoAutoAtaque: 0.2
     IntervaloDeAtaque: 1.5
-    BonusNaJanelaDoPontoFraco: 0.3
+    Efeito: 1
+    ValorDoEfeito: 0.3
+    Familia: 2
+    Cor: '#8A6A4A'
+    CorSecundaria: '#E8D8B0'
+    Escala: 1
+  - Id: escudeiro
+    Nome: Escudeiro Tobias
+    Descricao: "Ataca com muito mais for\xE7a"
+    Raridade: 0
+    FracaoDoAutoAtaque: 0.2
+    IntervaloDeAtaque: 1.5
+    Efeito: 0
+    ValorDoEfeito: 0.1
+    Familia: 0
+    Cor: '#6E7C8A'
+    CorSecundaria: '#C9A86A'
+    Escala: 1
+  - Id: aprendiz
+    Nome: Aprendiz Lia
+    Descricao: "Mais chance de golpe cr\xEDtico"
+    Raridade: 0
+    FracaoDoAutoAtaque: 0.2
+    IntervaloDeAtaque: 1.5
+    Efeito: 4
+    ValorDoEfeito: 0.02
+    Familia: 0
+    Cor: '#5A4AA0'
+    CorSecundaria: '#E6D2A0'
+    Escala: 1
+  - Id: mercador
+    Nome: Mercador Bento
+    Descricao: "Mais ouro a cada vit\xF3ria"
+    Raridade: 0
+    FracaoDoAutoAtaque: 0.2
+    IntervaloDeAtaque: 1.5
+    Efeito: 2
+    ValorDoEfeito: 0.1
+    Familia: 0
+    Cor: '#8C5A2E'
+    CorSecundaria: '#D8B060'
+    Escala: 1
+  - Id: goblin_ladrao
+    Nome: "Goblin Ladr\xE3o"
+    Descricao: Mais chance de item cair
+    Raridade: 0
+    FracaoDoAutoAtaque: 0.2
+    IntervaloDeAtaque: 1.5
+    Efeito: 5
+    ValorDoEfeito: 0.1
+    Familia: 0
+    Cor: '#5E8C3A'
+    CorSecundaria: '#6A4A2E'
+    Escala: 0.75
+  - Id: lobo_cinzento
+    Nome: Lobo Cinzento
+    Descricao: "Ataca com muito mais for\xE7a"
+    Raridade: 0
+    FracaoDoAutoAtaque: 0.2
+    IntervaloDeAtaque: 1.5
+    Efeito: 0
+    ValorDoEfeito: 0.1
+    Familia: 1
+    Cor: '#8C8C96'
+    CorSecundaria: '#D8D8E0'
+    Escala: 1
+  - Id: javali
+    Nome: Javali Bravo
+    Descricao: "Luta mais enquanto voc\xEA est\xE1 fora"
+    Raridade: 0
+    FracaoDoAutoAtaque: 0.2
+    IntervaloDeAtaque: 1.5
+    Efeito: 3
+    ValorDoEfeito: 0.1
+    Familia: 1
+    Cor: '#6A4A32'
+    CorSecundaria: '#D8C8A8'
+    Escala: 1
+  - Id: raposa
+    Nome: "Raposa \xC1gil"
+    Descricao: "Mais chance de golpe cr\xEDtico"
+    Raridade: 0
+    FracaoDoAutoAtaque: 0.2
+    IntervaloDeAtaque: 1.5
+    Efeito: 4
+    ValorDoEfeito: 0.02
+    Familia: 1
+    Cor: '#D2703A'
+    CorSecundaria: '#F4EAD8'
+    Escala: 0.8
+  - Id: corvo
+    Nome: Corvo Mensageiro
+    Descricao: Mais chance de item cair
+    Raridade: 0
+    FracaoDoAutoAtaque: 0.2
+    IntervaloDeAtaque: 1.5
+    Efeito: 5
+    ValorDoEfeito: 0.1
+    Familia: 2
+    Cor: '#2A2A36'
+    CorSecundaria: '#6A6A80'
+    Escala: 0.8
+  - Id: coruja
+    Nome: "Coruja S\xE1bia"
+    Descricao: Deixa o ponto fraco aberto por mais tempo
+    Raridade: 0
+    FracaoDoAutoAtaque: 0.2
+    IntervaloDeAtaque: 1.5
+    Efeito: 1
+    ValorDoEfeito: 0.3
+    Familia: 2
+    Cor: '#9A7A52'
+    CorSecundaria: '#E8D8B8'
+    Escala: 1
+  - Id: fada_jardim
+    Nome: Fada do Jardim
+    Descricao: "Luta mais enquanto voc\xEA est\xE1 fora"
+    Raridade: 0
+    FracaoDoAutoAtaque: 0.2
+    IntervaloDeAtaque: 1.5
+    Efeito: 3
+    ValorDoEfeito: 0.1
+    Familia: 5
+    Cor: '#7AD88A'
+    CorSecundaria: '#F4F0A0'
+    Escala: 0.6
+  - Id: fogo_fatuo
+    Nome: "Fogo-f\xE1tuo"
+    Descricao: "Mais ouro a cada vit\xF3ria"
+    Raridade: 0
+    FracaoDoAutoAtaque: 0.2
+    IntervaloDeAtaque: 1.5
+    Efeito: 2
+    ValorDoEfeito: 0.1
+    Familia: 5
+    Cor: '#5AC8FF'
+    CorSecundaria: '#E0F8FF'
+    Escala: 0.6
+  - Id: boneco_lata
+    Nome: Boneco de Lata
+    Descricao: "Ataca com muito mais for\xE7a"
+    Raridade: 0
+    FracaoDoAutoAtaque: 0.2
+    IntervaloDeAtaque: 1.5
+    Efeito: 0
+    ValorDoEfeito: 0.1
+    Familia: 6
+    Cor: '#9AA0A8'
+    CorSecundaria: '#C8A050'
+    Escala: 0.85
+  - Id: cogumelo
+    Nome: Cogumelo Saltitante
+    Descricao: "Luta mais enquanto voc\xEA est\xE1 fora"
+    Raridade: 0
+    FracaoDoAutoAtaque: 0.2
+    IntervaloDeAtaque: 1.5
+    Efeito: 3
+    ValorDoEfeito: 0.1
+    Familia: 4
+    Cor: '#C84A4A'
+    CorSecundaria: '#F4EAD8'
+    Escala: 0.7
+  - Id: arqueira_elfa
+    Nome: "Arqueira \xC9lfica"
+    Descricao: "Mais chance de golpe cr\xEDtico"
+    Raridade: 1
+    FracaoDoAutoAtaque: 0.25
+    IntervaloDeAtaque: 1.5
+    Efeito: 4
+    ValorDoEfeito: 0.03
+    Familia: 0
+    Cor: '#3A8A5A'
+    CorSecundaria: '#E8D090'
+    Escala: 1
+  - Id: anao_ferreiro
+    Nome: "An\xE3o Ferreiro"
+    Descricao: Mais chance de item cair
+    Raridade: 1
+    FracaoDoAutoAtaque: 0.25
+    IntervaloDeAtaque: 1.5
+    Efeito: 5
+    ValorDoEfeito: 0.15
+    Familia: 0
+    Cor: '#8A4A2A'
+    CorSecundaria: '#D8A040'
+    Escala: 0.8
+  - Id: monge
+    Nome: Monge Errante
+    Descricao: Deixa o ponto fraco aberto por mais tempo
+    Raridade: 1
+    FracaoDoAutoAtaque: 0.25
+    IntervaloDeAtaque: 1.5
+    Efeito: 1
+    ValorDoEfeito: 0.4
+    Familia: 0
+    Cor: '#D88A2A'
+    CorSecundaria: '#F4E2B8'
+    Escala: 1
+  - Id: urso_pardo
+    Nome: Urso Pardo
+    Descricao: "Ataca com muito mais for\xE7a"
+    Raridade: 1
+    FracaoDoAutoAtaque: 0.25
+    IntervaloDeAtaque: 1.5
+    Efeito: 0
+    ValorDoEfeito: 0.15
+    Familia: 1
+    Cor: '#5A3A22'
+    CorSecundaria: '#A87A52'
+    Escala: 1.25
+  - Id: pantera
+    Nome: Pantera das Sombras
+    Descricao: "Mais chance de golpe cr\xEDtico"
+    Raridade: 1
+    FracaoDoAutoAtaque: 0.25
+    IntervaloDeAtaque: 1.5
+    Efeito: 4
+    ValorDoEfeito: 0.03
+    Familia: 1
+    Cor: '#22222E'
+    CorSecundaria: '#6A4AA0'
+    Escala: 1
+  - Id: aguia_real
+    Nome: "\xC1guia Real"
+    Descricao: "Mais ouro a cada vit\xF3ria"
+    Raridade: 1
+    FracaoDoAutoAtaque: 0.25
+    IntervaloDeAtaque: 1.5
+    Efeito: 2
+    ValorDoEfeito: 0.15
+    Familia: 2
+    Cor: '#6A4A2A'
+    CorSecundaria: '#F4F0E8'
+    Escala: 1.1
+  - Id: golem_musgo
+    Nome: Golem de Musgo
+    Descricao: "Luta mais enquanto voc\xEA est\xE1 fora"
+    Raridade: 1
+    FracaoDoAutoAtaque: 0.25
+    IntervaloDeAtaque: 1.5
+    Efeito: 3
+    ValorDoEfeito: 0.15
+    Familia: 6
+    Cor: '#6A7A5A'
+    CorSecundaria: '#7AB84A'
+    Escala: 1.1
+  - Id: automato
+    Nome: "Aut\xF4mato de Cobre"
+    Descricao: Mais chance de item cair
+    Raridade: 1
+    FracaoDoAutoAtaque: 0.25
+    IntervaloDeAtaque: 1.5
+    Efeito: 5
+    ValorDoEfeito: 0.15
+    Familia: 6
+    Cor: '#B87A4A'
+    CorSecundaria: '#5AC8C8'
+    Escala: 1
+  - Id: salamandra
+    Nome: Salamandra
+    Descricao: "Ataca com muito mais for\xE7a"
+    Raridade: 1
+    FracaoDoAutoAtaque: 0.25
+    IntervaloDeAtaque: 1.5
+    Efeito: 0
+    ValorDoEfeito: 0.15
+    Familia: 3
+    Cor: '#E8602A'
+    CorSecundaria: '#F4C82A'
+    Escala: 0.7
+  - Id: espirito_lago
+    Nome: "Esp\xEDrito do Lago"
+    Descricao: "Mais ouro a cada vit\xF3ria"
+    Raridade: 1
+    FracaoDoAutoAtaque: 0.25
+    IntervaloDeAtaque: 1.5
+    Efeito: 2
+    ValorDoEfeito: 0.15
+    Familia: 5
+    Cor: '#4AA8E8'
+    CorSecundaria: '#C8F0FF'
+    Escala: 0.8
+  - Id: cavaleira
+    Nome: Cavaleira de Prata
+    Descricao: "Ataca com muito mais for\xE7a"
+    Raridade: 2
+    FracaoDoAutoAtaque: 0.35
+    IntervaloDeAtaque: 1.5
+    Efeito: 0
+    ValorDoEfeito: 0.25
+    Familia: 0
+    Cor: '#C8CCD8'
+    CorSecundaria: '#D8B050'
+    Escala: 1
+  - Id: feiticeira
+    Nome: Feiticeira Rubra
+    Descricao: "Mais chance de golpe cr\xEDtico"
+    Raridade: 2
+    FracaoDoAutoAtaque: 0.35
+    IntervaloDeAtaque: 1.5
+    Efeito: 4
+    ValorDoEfeito: 0.05
+    Familia: 0
+    Cor: '#A82A3A'
+    CorSecundaria: '#F4C860'
+    Escala: 1
+  - Id: robo_guardiao
+    Nome: "Rob\xF4 Guardi\xE3o"
+    Descricao: "Luta mais enquanto voc\xEA est\xE1 fora"
+    Raridade: 2
+    FracaoDoAutoAtaque: 0.35
+    IntervaloDeAtaque: 1.5
+    Efeito: 3
+    ValorDoEfeito: 0.25
+    Familia: 6
+    Cor: '#5A6A8A'
+    CorSecundaria: '#5AE8FF'
+    Escala: 1.15
+  - Id: lobo_gelido
+    Nome: "Lobo G\xE9lido"
+    Descricao: Deixa o ponto fraco aberto por mais tempo
+    Raridade: 2
+    FracaoDoAutoAtaque: 0.35
+    IntervaloDeAtaque: 1.5
+    Efeito: 1
+    ValorDoEfeito: 0.55
+    Familia: 1
+    Cor: '#B8D8F0'
+    CorSecundaria: '#5AA8E8'
+    Escala: 1.1
+  - Id: grifo
+    Nome: Grifo
+    Descricao: Mais chance de item cair
+    Raridade: 2
+    FracaoDoAutoAtaque: 0.35
+    IntervaloDeAtaque: 1.5
+    Efeito: 5
+    ValorDoEfeito: 0.25
+    Familia: 4
+    Cor: '#C8963A'
+    CorSecundaria: '#F4F0E8'
+    Escala: 1.2
+  - Id: dragonete
+    Nome: Dragonete Verde
+    Descricao: "Mais ouro a cada vit\xF3ria"
+    Raridade: 2
+    FracaoDoAutoAtaque: 0.35
+    IntervaloDeAtaque: 1.5
+    Efeito: 2
+    ValorDoEfeito: 0.25
+    Familia: 3
+    Cor: '#3A9A4A'
+    CorSecundaria: '#E8D860'
+    Escala: 0.85
+  - Id: unicornio
+    Nome: "Unic\xF3rnio"
+    Descricao: "Luta mais enquanto voc\xEA est\xE1 fora"
+    Raridade: 2
+    FracaoDoAutoAtaque: 0.35
+    IntervaloDeAtaque: 1.5
+    Efeito: 3
+    ValorDoEfeito: 0.25
+    Familia: 4
+    Cor: '#F4F0F8'
+    CorSecundaria: '#C88AE8'
+    Escala: 1.15
+  - Id: sombra
+    Nome: Sombra Errante
+    Descricao: "Mais chance de golpe cr\xEDtico"
+    Raridade: 2
+    FracaoDoAutoAtaque: 0.35
+    IntervaloDeAtaque: 1.5
+    Efeito: 4
+    ValorDoEfeito: 0.05
+    Familia: 5
+    Cor: '#3A2A5A'
+    CorSecundaria: '#A85AE8'
+    Escala: 1
+  - Id: draconato
+    Nome: Draconato Guerreiro
+    Descricao: "Ataca com muito mais for\xE7a"
+    Raridade: 3
+    FracaoDoAutoAtaque: 0.5
+    IntervaloDeAtaque: 1.5
+    Efeito: 0
+    ValorDoEfeito: 0.4
+    Familia: 3
+    Cor: '#8A2A2A'
+    CorSecundaria: '#E8B040'
+    Escala: 1.2
+  - Id: fenix
+    Nome: "F\xEAnix"
+    Descricao: "Luta mais enquanto voc\xEA est\xE1 fora"
+    Raridade: 3
+    FracaoDoAutoAtaque: 0.5
+    IntervaloDeAtaque: 1.5
+    Efeito: 3
+    ValorDoEfeito: 0.4
+    Familia: 2
+    Cor: '#F4602A'
+    CorSecundaria: '#F4E02A'
+    Escala: 1.3
+  - Id: quimera
+    Nome: Quimera
+    Descricao: "Mais chance de golpe cr\xEDtico"
+    Raridade: 3
+    FracaoDoAutoAtaque: 0.5
+    IntervaloDeAtaque: 1.5
+    Efeito: 4
+    ValorDoEfeito: 0.08
+    Familia: 4
+    Cor: '#B8782A'
+    CorSecundaria: '#6A3A8A'
+    Escala: 1.3
+  - Id: tita_runico
+    Nome: "Tit\xE3 R\xFAnico"
+    Descricao: Mais chance de item cair
+    Raridade: 3
+    FracaoDoAutoAtaque: 0.5
+    IntervaloDeAtaque: 1.5
+    Efeito: 5
+    ValorDoEfeito: 0.4
+    Familia: 6
+    Cor: '#5A5A6A'
+    CorSecundaria: '#5AE8A8'
+    Escala: 1.4
+  - Id: rainha_fada
+    Nome: Rainha das Fadas
+    Descricao: "Mais ouro a cada vit\xF3ria"
+    Raridade: 3
+    FracaoDoAutoAtaque: 0.5
+    IntervaloDeAtaque: 1.5
+    Efeito: 2
+    ValorDoEfeito: 0.4
+    Familia: 5
+    Cor: '#E88AD8'
+    CorSecundaria: '#F4F0A0'
+    Escala: 0.9
+  - Id: dragao_ancestral
+    Nome: "Drag\xE3o Ancestral"
+    Descricao: "Ataca com muito mais for\xE7a"
+    Raridade: 4
+    FracaoDoAutoAtaque: 0.75
+    IntervaloDeAtaque: 1.5
+    Efeito: 0
+    ValorDoEfeito: 0.6
+    Familia: 3
+    Cor: '#2A2A3A'
+    CorSecundaria: '#E84A2A'
+    Escala: 1.6
+  - Id: leviata
+    Nome: "Leviat\xE3 das Nuvens"
+    Descricao: Deixa o ponto fraco aberto por mais tempo
+    Raridade: 4
+    FracaoDoAutoAtaque: 0.75
+    IntervaloDeAtaque: 1.5
+    Efeito: 1
+    ValorDoEfeito: 1.2
+    Familia: 4
+    Cor: '#4A8AE8'
+    CorSecundaria: '#E8F4FF'
+    Escala: 1.6
+  - Id: arcanjo
+    Nome: Arcanjo Dourado
+    Descricao: "Mais ouro a cada vit\xF3ria"
+    Raridade: 4
+    FracaoDoAutoAtaque: 0.75
+    IntervaloDeAtaque: 1.5
+    Efeito: 2
+    ValorDoEfeito: 0.6
+    Familia: 0
+    Cor: '#F4E8C8'
+    CorSecundaria: '#F4C82A'
+    Escala: 1.2
