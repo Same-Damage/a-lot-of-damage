@@ -455,7 +455,7 @@ namespace ALotOfDamage.Ferramentas
         const float AlturaDoPersonagem3D = 2.3f;
 
         // Heróis que o jogador alterna no mapa (pastas de Art/Characters); o primeiro é o padrão
-        static readonly string[] Herois = { "Cavaleiro", "Arqueira" };
+        static readonly string[] Herois = { "Cavaleiro", "Arqueira", "Ladino" };
 
         // Todos os heróis no mesmo lugar, um ativo por vez (TrocaDeHeroi no mapa, CombateClicker na batalha)
         static HeroisDaCena CriarHerois(Transform pai, Vector3 pes, float altura, Quaternion rotacao)
