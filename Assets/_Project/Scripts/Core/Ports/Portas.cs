@@ -23,6 +23,12 @@ namespace ALotOfDamage.Core
         IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
     }
 
+    // Hora atual (UTC), para o teste controlar o tempo; no online, a hora do servidor
+    public interface IRelogio
+    {
+        System.DateTime AgoraUtc { get; }
+    }
+
     // Número aleatório em [0, 1), para o teste controlar a sorte
     public interface ISorteio
     {

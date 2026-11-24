@@ -35,6 +35,7 @@ namespace ALotOfDamage.Infrastructure
                 builder.RegisterInstance<IRepositorioDeProgresso>(new RepositorioDeProgressoEmArquivo(CaminhoDoSave));
             builder.Register<ICatalogo, CatalogoDeBalanceamento>(Lifetime.Singleton);
             builder.Register<ISorteio, SorteioDaUnity>(Lifetime.Singleton);
+            builder.Register<IRelogio, RelogioDoSistema>(Lifetime.Singleton);
             builder.Register<FluxoDeEncontro>(Lifetime.Singleton);
 
             builder.Register<ComprarUpgrade>(Lifetime.Singleton);
@@ -52,6 +53,9 @@ namespace ALotOfDamage.Infrastructure
             builder.Register<CalcularInimigo>(Lifetime.Singleton);
             builder.Register<ConsultarCampanha>(Lifetime.Singleton);
             builder.Register<ConsultarVisualDoHeroi>(Lifetime.Singleton);
+            builder.Register<RegistrarPresenca>(Lifetime.Singleton);
+            builder.Register<ConsultarRecompensaAfk>(Lifetime.Singleton);
+            builder.Register<ColetarRecompensaAfk>(Lifetime.Singleton);
             builder.Register<ListarPendencias>(Lifetime.Singleton);
             builder.Register<EscolhaDeHeroi>(Lifetime.Singleton);
         }

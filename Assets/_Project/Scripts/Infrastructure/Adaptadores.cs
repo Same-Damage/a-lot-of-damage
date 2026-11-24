@@ -81,6 +81,11 @@ namespace ALotOfDamage.Infrastructure
         }
     }
 
+    public class RelogioDoSistema : IRelogio
+    {
+        public DateTime AgoraUtc => DateTime.UtcNow;
+    }
+
     public class SorteioDaUnity : ISorteio
     {
         public double Proximo() => UnityEngine.Random.value;

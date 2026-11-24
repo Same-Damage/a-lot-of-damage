@@ -57,6 +57,12 @@ namespace ALotOfDamage.Testes
 
         static readonly ISorteio SemDrop = new SorteioFixo { Valor = 0.99 };
 
+        class RelogioFalso : IRelogio
+        {
+            public System.DateTime Agora = new System.DateTime(2026, 1, 1, 12, 0, 0, System.DateTimeKind.Utc);
+            public System.DateTime AgoraUtc => Agora;
+        }
+
         RepositorioQueConta repositorio;
         CatalogoFalso catalogo;
 
@@ -443,6 +449,95 @@ namespace ALotOfDamage.Testes
             p.Equipar(anel.Id);
             p.ReceberItem("espada", SlotDeItem.Arma, Raridade.Lendario, 1, 10);
             Assert.IsFalse(new ConsultarVisualDoHeroi(repositorio, catalogo).Executar().TemArma);
+        }
+
+        // AFK: dano automático 5/s (upgrade Automático) contra 100 de vida no estágio 1 = 20 s de luta + 5 s entre lutas.
+        // 2 h = 288 lutas; 25% = 72 vitórias de 50 de ouro
+        (RelogioFalso relogio, ConsultarRecompensaAfk consultar, ColetarRecompensaAfk coletar) Afk(ISorteio sorteio = null)
+        {
+            var relogio = new RelogioFalso();
+            return (relogio, new ConsultarRecompensaAfk(repositorio, catalogo, relogio, new CalcularAtributos(repositorio, catalogo)),
+                new ColetarRecompensaAfk(repositorio, catalogo, relogio, new CalcularAtributos(repositorio, catalogo), sorteio ?? SemDrop));
+        }
+
+        [Test]
+        public void Primeiro_acesso_nao_tem_recompensa_e_marca_a_presenca()
+        {
+            var (relogio, consultar, _) = Afk();
+            Assert.IsFalse(consultar.Executar().TemRecompensa);
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(2);
+            Assert.IsTrue(consultar.Executar().TemRecompensa);
+        }
+
+        [Test]
+        public void Duas_horas_fora_rendem_um_quarto_das_lutas_em_ouro()
+        {
+            catalogo.ParametrosDosItens.ChanceDeDrop = 0;   // só o ouro das lutas, sem itens vendidos
+            var (relogio, consultar, coletar) = Afk();
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(2);
+
+            var r = consultar.Executar();
+            Assert.AreEqual(7200, r.Segundos, 1e-6);
+            Assert.AreEqual(72, r.Vitorias);
+            Assert.AreEqual(72 * 50, r.Ouro, 1e-6);
+
+            coletar.Executar();
+            Assert.AreEqual(72 * 50, repositorio.Progresso.Ouro, 1e-6);
+        }
+
+        [Test]
+        public void Recompensa_para_de_crescer_em_12_horas()
+        {
+            var (relogio, consultar, _) = Afk();
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(40);
+            Assert.AreEqual(12 * 3600, consultar.Executar().Segundos, 1e-6);
+        }
+
+        [Test]
+        public void Coletar_zera_o_tempo_fora()
+        {
+            var (relogio, consultar, coletar) = Afk();
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(2);
+            coletar.Executar();
+            Assert.IsFalse(consultar.Executar().TemRecompensa);
+            Assert.Greater(repositorio.Salvamentos, 0);
+        }
+
+        [Test]
+        public void Pouco_tempo_fora_nao_vira_recompensa()
+        {
+            var (relogio, consultar, _) = Afk();
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddSeconds(30);
+            Assert.IsFalse(consultar.Executar().TemRecompensa);
+        }
+
+        [Test]
+        public void Afk_da_material_dos_monstros_da_regiao()
+        {
+            ((List<DefinicaoDeRegiao>)catalogo.Regioes)[0].Monstros.Add("lobo");
+            var (relogio, consultar, coletar) = Afk();
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(2);
+            coletar.Executar();
+            Assert.AreEqual(72 * 2, repositorio.Progresso.Material("presa"), "72 vitórias contra lobos, 2 presas cada");
+        }
+
+        [Test]
+        public void Afk_da_itens_pela_chance_de_drop_e_vende_o_que_nao_cabe()
+        {
+            var (relogio, consultar, coletar) = Afk(new SorteioFixo { Valor = 0.0 });
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(2);
+            var r = coletar.Executar();
+            // 72 vitórias × 30% = 21 itens; o inventário de teste tem 2 casas: 19 viram ouro (10 cada, comuns)
+            Assert.AreEqual(21, r.Itens);
+            Assert.AreEqual(2, repositorio.Progresso.Inventario.Count);
+            Assert.AreEqual(72 * 50 + 19 * 10, repositorio.Progresso.Ouro, 1e-6);
         }
 
         [Test]

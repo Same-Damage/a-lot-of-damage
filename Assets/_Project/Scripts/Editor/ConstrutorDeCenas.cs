@@ -136,6 +136,7 @@ namespace ALotOfDamage.Ferramentas
             vitrine.brilho = herois.GetComponent<BrilhoDasArmas>();
             vitrine.janela = janelas.AddComponent<JanelaDeInventario>();
             new GameObject("HUD do Mapa").AddComponent<HudDoMapa>();
+            new GameObject("Recompensa AFK").AddComponent<JanelaDaRecompensaAfk>();
             Salvar(cena, "Mapa");
         }
 
@@ -443,6 +444,8 @@ namespace ALotOfDamage.Ferramentas
             // de três quartos, virados para o inimigo e um pouco para a câmera
             var herois = CriarHerois(null, new Vector3(-2.4f, 0, -0.6f), 1.8f, Quaternion.LookRotation(new Vector3(1, 0, -0.6f)));
 
+            // na batalha só marca a presença (a janela de recompensa aparece no mapa)
+            new GameObject("Presença").AddComponent<JanelaDaRecompensaAfk>().mostrarJanela = false;
             var combate = new GameObject("Combate").AddComponent<CombateClicker>();
             combate.visualDoInimigo = corpo.transform;
             combate.modeloDoInimigo = corpo;
