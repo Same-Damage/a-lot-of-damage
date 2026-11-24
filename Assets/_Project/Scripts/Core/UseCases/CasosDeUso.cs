@@ -150,6 +150,7 @@ namespace ALotOfDamage.Core
             if (!p.Gastar(RegrasDosItens.CustoDeFabricar(regras, p.Estagio), tipo.MaterialId, regras.MaterialParaFabricar)) return default;
             var raridade = RegrasDosItens.SortearRaridade(regras, sorteio.Proximo(), false);
             var item = p.ReceberItem(tipo.Id, tipo.Slot, raridade, p.Estagio, regras.LimiteDoInventario);
+            p.ContarFabricacao();
             repositorio.Salvar(p);
             return new ResultadoDaFabricacao { Fabricou = true, Item = item };
         }
@@ -286,6 +287,7 @@ namespace ALotOfDamage.Core
             double ouro = CalcularInimigo.Para(p, catalogo, monstro, chefe).Ouro;
             p.ReceberOuro(ouro);
             bool marco = p.RegistrarVitoria(monstro, catalogo.Bestiario);
+            if (chefe) p.ContarChefe();
             int estagioDaLuta = p.Estagio;
             var campanha = p.AvancarCampanha(catalogo.Campanha, chefe);
             var item = DropDeItens.Talvez(p, catalogo, sorteio, chefe, estagioDaLuta, out bool vendido);
@@ -492,6 +494,77 @@ namespace ALotOfDamage.Core
         }
     }
 
+    public class SituacaoDaConquista
+    {
+        public string Id;
+        public string Nome;
+        public string Texto;         // a descrição com o próximo degrau (ou o último, se completa)
+        public double Valor;
+        public double ProximaMeta;   // NaN se completa
+        public int Coletadas;
+        public int Prontas;          // degraus atingidos e ainda não coletados
+        public int TotalDeDegraus;
+        public bool Completa;
+        public int CristaisProntos;
+    }
+
+    public class ListarConquistas : CasoDeUso
+    {
+        public ListarConquistas(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public List<SituacaoDaConquista> Executar()
+        {
+            var p = repositorio.Carregar();
+            var lista = new List<SituacaoDaConquista>(catalogo.Conquistas.Count);
+            foreach (var c in catalogo.Conquistas) lista.Add(Situacao(c, p));
+            return lista;
+        }
+
+        public SituacaoDaConquista Situacao(DefinicaoDeConquista c, Progresso p)
+        {
+            double valor = RegrasDasConquistas.Valor(c.Meta, p, catalogo.Bestiario);
+            int atingidos = RegrasDasConquistas.DegrausAtingidos(c, valor);
+            int coletadas = Math.Min(p.ConquistasColetadas(c.Id), c.Degraus.Length);
+            int cristais = 0;
+            for (int i = coletadas; i < atingidos; i++) cristais += RegrasDasConquistas.Cristais(catalogo.ParametrosDasConquistas, i);
+            double proxima = RegrasDasConquistas.ProximaMeta(c, coletadas);
+            double mostrada = double.IsNaN(proxima) ? c.Degraus[c.Degraus.Length - 1] : proxima;
+            return new SituacaoDaConquista
+            {
+                Id = c.Id,
+                Nome = c.Nome,
+                Texto = string.Format(c.Descricao ?? "{0}", FormatadorDeNumeros.Formatar(mostrada)),
+                Valor = valor,
+                ProximaMeta = proxima,
+                Coletadas = coletadas,
+                Prontas = Math.Max(0, atingidos - coletadas),
+                TotalDeDegraus = c.Degraus.Length,
+                Completa = coletadas >= c.Degraus.Length,
+                CristaisProntos = cristais,
+            };
+        }
+    }
+
+    // Coleta os degraus atingidos de uma conquista: cristais agora e +1% de dano por degrau; devolve os cristais
+    public class ColetarConquista : CasoDeUso
+    {
+        public ColetarConquista(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public int Executar(string id)
+        {
+            DefinicaoDeConquista c = null;
+            foreach (var x in catalogo.Conquistas) if (x.Id == id) c = x;
+            if (c == null) return 0;
+            var p = repositorio.Carregar();
+            var s = new ListarConquistas(repositorio, catalogo).Situacao(c, p);
+            if (s.Prontas <= 0) return 0;
+            p.ReceberCristais(s.CristaisProntos);
+            p.MarcarConquistaColetada(c.Id, s.Coletadas + s.Prontas);
+            repositorio.Salvar(p);
+            return s.CristaisProntos;
+        }
+    }
+
     // Vida e recompensa do inimigo conforme o estágio atual da campanha
     public class CalcularInimigo : CasoDeUso
     {
@@ -569,7 +642,7 @@ namespace ALotOfDamage.Core
             RegrasDePoder.Poder(calcularAtributos.Executar(null), RegrasDePoder.MultiplicadorCriticoPadrao);
     }
 
-    // Dano e crítico do jogador contra um tipo de monstro: upgrades × itens equipados × bestiário × Almas
+    // Dano e crítico do jogador contra um tipo de monstro: upgrades × itens equipados × bestiário × Almas × conquistas
     public class CalcularAtributos : CasoDeUso
     {
         public CalcularAtributos(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
@@ -579,7 +652,8 @@ namespace ALotOfDamage.Core
             var p = repositorio.Carregar();
             double Valor(string id) => catalogo.Upgrade(id) is DefinicaoDeUpgrade d ? p.Valor(d) : 0;
             double Mult(AlvoDoItem alvo) => p.MultiplicadorDeDano(alvo, tipoDoMonstro, catalogo.Itens, catalogo.ParametrosDosItens, catalogo.Bestiario);
-            double almas = RegrasDaAscensao.Multiplicador(catalogo.Campanha, p.Almas);
+            double almas = RegrasDaAscensao.Multiplicador(catalogo.Campanha, p.Almas)
+                * RegrasDasConquistas.Multiplicador(catalogo.ParametrosDasConquistas, p.TotalDeConquistasColetadas);
             double automatico = Valor(IdsDosUpgrades.Automatico) * Mult(AlvoDoItem.Automatico) * almas;
             var follower = catalogo.Follower(p.FollowerAtivoId);
             return new AtributosDeCombate
@@ -597,7 +671,7 @@ namespace ALotOfDamage.Core
 
 namespace ALotOfDamage.Core
 {
-    public enum TipoDePendencia { Upgrade, Forja, Bestiario, Chefe, Ascensao }
+    public enum TipoDePendencia { Upgrade, Forja, Bestiario, Chefe, Ascensao, Conquista }
 
     public struct Pendencia
     {
@@ -616,6 +690,13 @@ namespace ALotOfDamage.Core
         {
             saida.Clear();
             var p = repositorio.Carregar();
+
+            foreach (var c in catalogo.Conquistas)
+            {
+                int atingidos = RegrasDasConquistas.DegrausAtingidos(c, RegrasDasConquistas.Valor(c.Meta, p, catalogo.Bestiario));
+                if (atingidos > p.ConquistasColetadas(c.Id))
+                    saida.Add(new Pendencia { Tipo = TipoDePendencia.Conquista, Texto = $"Conquista pronta: {c.Nome}" });
+            }
 
             if (RegrasDaAscensao.PodeAscender(catalogo.Campanha, p.Estagio))
                 saida.Add(new Pendencia

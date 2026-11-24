@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17ba1bb253a9413448fc82cb1ac7dbb9, type: 3}
+  m_Name: BalanceamentoDasConquistas
+  m_EditorClassIdentifier: ALotOfDamage.Infraestrutura::ALotOfDamage.Infrastructure.BalanceamentoDasConquistas
+  parametros:
+    BonusPorConquista: 0.01
+    CristaisBase: 10
+  conquistas:
+  - Id: vitorias
+    Nome: "Guerreiro incans\xE1vel"
+    Descricao: "Ven\xE7a {0} batalhas"
+    Meta: 0
+    Degraus:
+    - 10
+    - 100
+    - 1000
+    - 10000
+    - 100000
+  - Id: chefes
+    Nome: "Ca\xE7ador de chefes"
+    Descricao: Derrote {0} chefes
+    Meta: 1
+    Degraus:
+    - 1
+    - 5
+    - 25
+    - 100
+    - 500
+  - Id: estagio
+    Nome: Desbravador
+    Descricao: "Chegue ao est\xE1gio {0}"
+    Meta: 2
+    Degraus:
+    - 10
+    - 25
+    - 50
+    - 100
+    - 200
+  - Id: ascensoes
+    Nome: Renascido
+    Descricao: Ascenda {0} vezes
+    Meta: 3
+    Degraus:
+    - 1
+    - 5
+    - 10
+    - 25
+    - 50
+  - Id: epicos
+    Nome: Tesouro raro
+    Descricao: "Obtenha {0} itens \xC9picos ou Lend\xE1rios"
+    Meta: 4
+    Degraus:
+    - 1
+    - 10
+    - 50
+    - 200
+  - Id: refino
+    Nome: Mestre ferreiro
+    Descricao: "Refine um item at\xE9 +{0}"
+    Meta: 5
+    Degraus:
+    - 5
+    - 10
+    - 20
+    - 40
+  - Id: fabricados
+    Nome: "Artes\xE3o"
+    Descricao: Fabrique {0} itens na forja
+    Meta: 6
+    Degraus:
+    - 1
+    - 10
+    - 50
+    - 200
+  - Id: ouro
+    Nome: Fortuna
+    Descricao: Ganhe {0} de ouro no total
+    Meta: 7
+    Degraus:
+    - 1000
+    - 1000000
+    - 1000000000
+    - 1000000000000
+    - 1000000000000000
+  - Id: bestiario
+    Nome: Estudioso
+    Descricao: "Alcance {0} marcos no besti\xE1rio"
+    Meta: 8
+    Degraus:
+    - 1
+    - 5
+    - 10
+    - 20

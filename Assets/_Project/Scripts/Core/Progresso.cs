@@ -23,6 +23,35 @@ namespace ALotOfDamage.Core
         public long Almas { get; private set; }
         public int Ascensoes { get; private set; }
 
+        // Moeda do gacha, ganha só jogando
+        public long Cristais { get; private set; }
+
+        // Contadores das conquistas (nunca zeram, nem na Ascensão)
+        public int ChefesDerrotados { get; private set; }
+        public int EstagioMaximo { get; private set; } = 1;
+        public int ItensEpicosObtidos { get; private set; }
+        public int MaiorRefino { get; private set; }
+        public int ItensFabricados { get; private set; }
+        public double OuroTotalGanho { get; private set; }
+
+        readonly Dictionary<string, int> conquistasColetadas = new Dictionary<string, int>();
+        public int ConquistasColetadas(string id) => Ler(conquistasColetadas, id);
+        public int TotalDeConquistasColetadas
+        {
+            get { int n = 0; foreach (var v in conquistasColetadas.Values) n += v; return n; }
+        }
+
+        public void ReceberCristais(long quantidade) { if (quantidade > 0) Cristais += quantidade; }
+        public bool GastarCristais(long quantidade)
+        {
+            if (quantidade < 0 || quantidade > Cristais) return false;
+            Cristais -= quantidade;
+            return true;
+        }
+        public void ContarChefe() => ChefesDerrotados++;
+        public void ContarFabricacao() => ItensFabricados++;
+        public void MarcarConquistaColetada(string id, int degraus) => conquistasColetadas[id] = Math.Max(ConquistasColetadas(id), degraus);
+
         // Última vez que o jogo estava aberto (ticks UTC); 0 = nunca. É daí que conta o tempo fora (AFK)
         public long UltimaPresencaUtc { get; private set; }
 
@@ -65,7 +94,9 @@ namespace ALotOfDamage.Core
 
         public void ReceberOuro(double quantidade)
         {
-            if (quantidade > 0) Ouro += quantidade;
+            if (quantidade <= 0) return;
+            Ouro += quantidade;
+            OuroTotalGanho += quantidade;
         }
 
         public void AdicionarMaterial(string id, int quantidade)
@@ -97,6 +128,7 @@ namespace ALotOfDamage.Core
         {
             if (inventario.Count >= limite) return null;
             var item = new ItemDoJogador { Id = proximoIdDeItem++, TipoId = tipoId, Slot = slot, Raridade = raridade, Estagio = Math.Max(1, estagio) };
+            if (raridade >= Raridade.Epico) ItensEpicosObtidos++;
             inventario.Add(item);
             return item;
         }
@@ -153,6 +185,7 @@ namespace ALotOfDamage.Core
             var r = RegrasDaForja.Forjar(tipo, item.Nivel, Ouro, Material(tipo.MaterialId), sorteio);
             if (!r.Forjou) return r;
             item.Nivel = r.NovoNivel;
+            MaiorRefino = Math.Max(MaiorRefino, item.Nivel);
             Ouro = r.OuroRestante;
             materiais[tipo.MaterialId] = r.MaterialRestante;
             return r;
@@ -173,6 +206,7 @@ namespace ALotOfDamage.Core
         {
             var r = RegrasDaCampanha.AposVitoria(p, Estagio, VitoriasNoEstagio, chefe);
             Estagio = r.Estagio;
+            EstagioMaximo = Math.Max(EstagioMaximo, Estagio);
             VitoriasNoEstagio = r.VitoriasNoEstagio;
             return r;
         }
@@ -186,7 +220,10 @@ namespace ALotOfDamage.Core
             Inventario = new List<ItemDoJogador>(inventario), Equipados = new List<ItemDoJogador>(equipados.Values),
             ProximoIdDeItem = proximoIdDeItem,
             UltimaPresencaUtc = UltimaPresencaUtc,
-            Almas = Almas, Ascensoes = Ascensoes,
+            Almas = Almas, Ascensoes = Ascensoes, Cristais = Cristais,
+            ChefesDerrotados = ChefesDerrotados, EstagioMaximo = EstagioMaximo, ItensEpicosObtidos = ItensEpicosObtidos,
+            MaiorRefino = MaiorRefino, ItensFabricados = ItensFabricados, OuroTotalGanho = OuroTotalGanho,
+            ConquistasColetadas = Pares(conquistasColetadas),
         };
 
         public static Progresso Importar(DadosDoProgresso d)
@@ -207,6 +244,15 @@ namespace ALotOfDamage.Core
             p.UltimaPresencaUtc = Math.Max(0, d.UltimaPresencaUtc);
             p.Almas = Math.Max(0, d.Almas);
             p.Ascensoes = Math.Max(0, d.Ascensoes);
+            p.Cristais = Math.Max(0, d.Cristais);
+            p.ChefesDerrotados = Math.Max(0, d.ChefesDerrotados);
+            p.EstagioMaximo = Math.Max(p.Estagio, d.EstagioMaximo);
+            p.ItensEpicosObtidos = Math.Max(0, d.ItensEpicosObtidos);
+            p.MaiorRefino = Math.Max(0, d.MaiorRefino);
+            p.ItensFabricados = Math.Max(0, d.ItensFabricados);
+            // save de antes das conquistas: o ouro guardado é o mínimo que já foi ganho
+            p.OuroTotalGanho = Math.Max(p.Ouro, d.OuroTotalGanho);
+            Preencher(p.conquistasColetadas, d.ConquistasColetadas);
             return p;
         }
 
@@ -299,6 +345,14 @@ namespace ALotOfDamage.Core
         public long UltimaPresencaUtc;
         public long Almas;
         public int Ascensoes;
+        public long Cristais;
+        public int ChefesDerrotados;
+        public int EstagioMaximo = 1;
+        public int ItensEpicosObtidos;
+        public int MaiorRefino;
+        public int ItensFabricados;
+        public double OuroTotalGanho;
+        public List<ParDeValor> ConquistasColetadas = new List<ParDeValor>();
         public List<ParDeValor> Materiais = new List<ParDeValor>();
         public List<ParDeValor> Derrotas = new List<ParDeValor>();
     }

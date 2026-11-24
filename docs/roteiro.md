@@ -160,7 +160,7 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 | Alquimia | Poções | Ervas + drops | Buffs temporários grandes | Futuro |
 | Relíquias | Itens únicos de chefes | Fragmentos de chefe | Multiplicadores grandes | Futuro |
 | Afinidade do follower | Presentes e conversa | Presentes | Passivas e falas | Futuro |
-| Conquistas | Metas de todo o jogo | Jogar | % pequeno acumulativo | Futuro |
+| Conquistas | 9 metas com degraus (vitórias, chefes, estágio, Ascensões, itens Épicos, refino, fabricação, ouro total, marcos do bestiário); cada degrau é coletado na janela | Jogar | +1% em todo o dano por degrau e cristais (10, 40, 90, 160, 250 pelo degrau) | Implementado |
 | Ascensão | Libera no estágio 50; recomeça estágio, upgrades e ouro por Almas = (estágio − 45)² ÷ 5 (estágio 50: 5, 60: 45, 80: 245). Mantém itens, materiais, bestiário e o resto | Progresso atual | Cada Alma +10% em todo o dano, para sempre | Implementado |
 
 ### O dilema "o que fazer agora?"

@@ -265,6 +265,37 @@ namespace ALotOfDamage.Testes
         }
 
         [Test]
+        public void Contadores_das_conquistas_acompanham_o_jogo()
+        {
+            progresso.ReceberOuro(100);
+            progresso.ReceberOuro(50);
+            Assert.AreEqual(150, progresso.OuroTotalGanho, 1e-9);
+
+            progresso.ReceberItem("espada", SlotDeItem.Arma, Raridade.Epico, 1, 10);
+            progresso.ReceberItem("espada", SlotDeItem.Arma, Raridade.Raro, 1, 10);
+            Assert.AreEqual(1, progresso.ItensEpicosObtidos, "só Épico ou melhor conta");
+
+            progresso.AvancarCampanha(new ParametrosDaCampanha { VitoriasParaAvancar = 1 }, false);
+            progresso.Ascender(0);
+            Assert.AreEqual(2, progresso.EstagioMaximo, "o maior estágio fica mesmo depois de ascender");
+        }
+
+        [Test]
+        public void Conquistas_e_cristais_vao_e_voltam_do_save()
+        {
+            progresso.ReceberCristais(30);
+            progresso.ContarChefe();
+            progresso.ContarFabricacao();
+            progresso.MarcarConquistaColetada("vitorias", 2);
+            var copia = Progresso.Importar(progresso.Exportar());
+            Assert.AreEqual(30, copia.Cristais);
+            Assert.AreEqual(1, copia.ChefesDerrotados);
+            Assert.AreEqual(1, copia.ItensFabricados);
+            Assert.AreEqual(2, copia.ConquistasColetadas("vitorias"));
+            Assert.AreEqual(2, copia.TotalDeConquistasColetadas);
+        }
+
+        [Test]
         public void Heroi_escolhido_vai_e_volta_do_save()
         {
             var p = new Progresso();
