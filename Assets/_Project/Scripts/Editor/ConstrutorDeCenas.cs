@@ -88,10 +88,15 @@ namespace ALotOfDamage.Ferramentas
             jogador.AddComponent<AtaqueNoMapa>();
 
             // Herói 3D com shader pintado, com os pés na base do CharacterController
-            var boneco = ConstrutorDePersonagens3D.Criar(HeroiDoJogador, jogador.transform, new Vector3(0, -1f, 0), AlturaDoPersonagem3D);
+            var herois = CriarHerois(jogador.transform, new Vector3(0, -1f, 0), AlturaDoPersonagem3D, Quaternion.identity);
+            var boneco = herois.herois[0];
             CriarSombra(jogador.transform, new Vector3(0, -0.98f, 0), 0.9f, 0.5f, 0.6f);
             movimento.boneco = boneco;
             jogador.GetComponent<AtaqueNoMapa>().boneco = boneco;
+            var troca = jogador.AddComponent<TrocaDeHeroi>();
+            troca.herois = herois;
+            troca.movimento = movimento;
+            troca.ataque = jogador.GetComponent<AtaqueNoMapa>();
 
             // Follower (Pip, o falcão) acompanhando o jogador
             var follower = CriarFollower(new Vector3(-1.6f, 2.8f, 0));
@@ -431,14 +436,13 @@ namespace ALotOfDamage.Ferramentas
 
             CriarFollower(new Vector3(-1.6f, 2.4f, -1.2f));
 
-            var heroi = ConstrutorDePersonagens3D.Criar(HeroiDoJogador, null, new Vector3(-2.4f, 0, -0.6f), 1.8f);
-            // de três quartos, virada para o inimigo e um pouco para a câmera
-            heroi.transform.rotation = Quaternion.LookRotation(new Vector3(1, 0, -0.6f));
+            // de três quartos, virados para o inimigo e um pouco para a câmera
+            var herois = CriarHerois(null, new Vector3(-2.4f, 0, -0.6f), 1.8f, Quaternion.LookRotation(new Vector3(1, 0, -0.6f)));
 
             var combate = new GameObject("Combate").AddComponent<CombateClicker>();
             combate.visualDoInimigo = corpo.transform;
             combate.modeloDoInimigo = corpo;
-            combate.heroi = heroi;
+            combate.herois = herois;
 
             Salvar(cena, "Batalha");
         }
@@ -447,8 +451,24 @@ namespace ALotOfDamage.Ferramentas
         // Altura no mapa dos personagens 3D, parecida com a do boneco de recorte para comparar
         const float AlturaDoPersonagem3D = 2.3f;
 
-        // Personagem do jogador no mapa e na batalha: uma pasta de Art/Characters ("Cavaleiro" ou "Arqueira")
-        const string HeroiDoJogador = "Cavaleiro";
+        // Heróis que o jogador alterna no mapa (pastas de Art/Characters); o primeiro é o padrão
+        static readonly string[] Herois = { "Cavaleiro", "Arqueira" };
+
+        // Todos os heróis no mesmo lugar, um ativo por vez (TrocaDeHeroi no mapa, CombateClicker na batalha)
+        static HeroisDaCena CriarHerois(Transform pai, Vector3 pes, float altura, Quaternion rotacao)
+        {
+            var grupo = new GameObject("Herois").AddComponent<HeroisDaCena>();
+            grupo.transform.SetParent(pai, false);
+            grupo.herois = new PersonagemVisual[Herois.Length];
+            for (int i = 0; i < Herois.Length; i++)
+            {
+                var h = ConstrutorDePersonagens3D.Criar(Herois[i], grupo.transform, pes, altura);
+                h.transform.rotation = rotacao;
+                h.gameObject.SetActive(i == 0);
+                grupo.herois[i] = h;
+            }
+            return grupo;
+        }
 
         // Cena só para avaliar a direção de arte: os personagens 3D lado a lado, com a câmera do mapa.
         // Não entra no build.
@@ -462,7 +482,7 @@ namespace ALotOfDamage.Ferramentas
             chao.name = "Chao";
             chao.GetComponent<MeshRenderer>().sharedMaterial = MaterialDoMapa("Cenario", "Universal Render Pipeline/Lit");
 
-            string[] personagens = { "Cavaleiro", "Arqueira" };
+            var personagens = Herois;
             for (int i = 0; i < personagens.Length; i++)
             {
                 var lugar = new GameObject("Lugar de " + personagens[i]).transform;

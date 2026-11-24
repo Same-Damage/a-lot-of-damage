@@ -45,6 +45,7 @@ namespace ALotOfDamage.Infrastructure
             builder.Register<CalcularInimigo>(Lifetime.Singleton);
             builder.Register<ConsultarCampanha>(Lifetime.Singleton);
             builder.Register<ListarPendencias>(Lifetime.Singleton);
+            builder.Register<EscolhaDeHeroi>(Lifetime.Singleton);
         }
     }
 }

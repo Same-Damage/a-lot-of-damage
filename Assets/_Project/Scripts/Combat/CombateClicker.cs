@@ -33,7 +33,7 @@ namespace ALotOfDamage.Combat
 
         public Transform visualDoInimigo;
         public MonstroLowPoly modeloDoInimigo;
-        public PersonagemVisual heroi;
+        public HeroisDaCena herois;
 
         static readonly Color CorDoClick = new Color(1f, 0.85f, 0.3f);
         static readonly Color CorDoPontoFraco = new Color(0.4f, 1f, 1f);
@@ -61,14 +61,18 @@ namespace ALotOfDamage.Combat
         float cliquesTravadosAte, automaticoComecaEm, voltarEm = -1;
         double ouroMostrado = -1;
 
+        EscolhaDeHeroi escolhaDeHeroi;
+        PersonagemVisual heroi;
+
         bool EmEncontro => encontro.Ativo;
         string Tipo => EmEncontro ? encontro.TipoDoInimigo : null;
         bool Chefe => EmEncontro && encontro.Chefe;
 
         [Inject]
         public void Construir(FluxoDeEncontro encontro, IRepositorioDeProgresso repositorio, CalcularAtributos calcularAtributos,
-            CalcularInimigo calcularInimigo, RegistrarVitoria registrarVitoria)
+            CalcularInimigo calcularInimigo, RegistrarVitoria registrarVitoria, EscolhaDeHeroi escolhaDeHeroi)
         {
+            this.escolhaDeHeroi = escolhaDeHeroi;
             this.encontro = encontro;
             this.repositorio = repositorio;
             this.calcularAtributos = calcularAtributos;
@@ -78,6 +82,7 @@ namespace ALotOfDamage.Combat
 
         void Start()
         {
+            if (herois) heroi = herois.Mostrar(escolhaDeHeroi.Atual(herois.Nomes));
             limitador = new LimitadorDeCliques(cliquesPorSegundoMaximo);
             atributos = calcularAtributos.Executar(Tipo);
             hud = new HudDaBatalha(Fugir);
