@@ -27,3 +27,11 @@
 *.unitypackage
 crashlytics-build.properties
 .DS_Store
+
+# servidor (Cloud Code): o projeto .NET fica em Server~, que a Unity ignora
+!/Assets/_Project/Server~/**/*.csproj
+!/Assets/_Project/Server~/*.sln
+/Assets/_Project/Server~/**/bin/
+/Assets/_Project/Server~/**/obj/
+/Assets/CloudCode/
+/Assets/CloudCode.meta

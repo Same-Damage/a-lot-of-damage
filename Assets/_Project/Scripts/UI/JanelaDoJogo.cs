@@ -51,6 +51,8 @@ namespace ALotOfDamage.UI
             }
         }
 
+        protected virtual void AoAbrir() { }
+
         protected virtual void AtualizarConteudo()
         {
             for (int i = 0; i < Linhas; i++) AtualizarLinha(i);
@@ -92,6 +94,7 @@ namespace ALotOfDamage.UI
         {
             aberta = Aberta ? null : this;
             proximaAtualizacao = 0;
+            if (Aberta) AoAbrir();
         }
 
         void OnDisable()
@@ -110,7 +113,7 @@ namespace ALotOfDamage.UI
                 if (!liberada && Aberta) Alternar();
             }
 
-            var k = Keyboard.current;
+            var k = KitDeInterface.Teclado;
             if (liberada && k != null && (k[Tecla].wasPressedThisFrame || (Aberta && k.escapeKey.wasPressedThisFrame))) Alternar();
 
             if (painel.gameObject.activeSelf != Aberta)
@@ -135,10 +138,10 @@ namespace ALotOfDamage.UI
             return t;
         }
 
-        protected static Button Botao(RectTransform linha, string rotulo, float xDaDireita, float largura, System.Action aoClicar)
+        protected static Button Botao(RectTransform linha, string rotulo, float xDaDireita, float largura, System.Action aoClicar, float y = 14)
         {
             var b = KitDeInterface.Botao(rotulo, linha, rotulo, aoClicar);
-            KitDeInterface.Ancorar((RectTransform)b.transform, new Vector2(1, 1), new Vector2(-xDaDireita, -14), new Vector2(largura, 56));
+            KitDeInterface.Ancorar((RectTransform)b.transform, new Vector2(1, 1), new Vector2(-xDaDireita, -y), new Vector2(largura, 56));
             return b;
         }
 

@@ -154,6 +154,8 @@ namespace ALotOfDamage.Ferramentas
             janelas.AddComponent<JanelaDaTaverna>();
             janelas.AddComponent<JanelaDasExpedicoes>();
             janelas.AddComponent<JanelaDaAlquimia>();
+            janelas.AddComponent<JanelaDoRanking>();
+            janelas.AddComponent<JanelaDaConta>();
             var vitrine = new GameObject("Vitrine do herói").AddComponent<VitrineDoHeroi>();
             vitrine.herois = herois;
             vitrine.brilho = herois.GetComponent<BrilhoDasArmas>();
@@ -161,6 +163,7 @@ namespace ALotOfDamage.Ferramentas
             new GameObject("HUD do Mapa").AddComponent<HudDoMapa>();
             new GameObject("Recompensa AFK").AddComponent<JanelaDaRecompensaAfk>();
             new GameObject("História").AddComponent<CaixaDeDialogo>();
+            new GameObject("Nuvem").AddComponent<SincroniaDaNuvem>();
             Salvar(cena, "Mapa");
         }
 
@@ -463,6 +466,7 @@ namespace ALotOfDamage.Ferramentas
 
             // na batalha só marca a presença (a janela de recompensa aparece no mapa)
             new GameObject("Presença").AddComponent<JanelaDaRecompensaAfk>().mostrarJanela = false;
+            new GameObject("Nuvem").AddComponent<SincroniaDaNuvem>().mostrarTelas = false;
             var combate = new GameObject("Combate").AddComponent<CombateClicker>();
             combate.visualDoInimigo = corpo.transform;
             combate.modeloDoInimigo = corpo;

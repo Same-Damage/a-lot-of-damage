@@ -7,6 +7,7 @@
         "ALotOfDamage.Core",
         "ALotOfDamage.Infraestrutura",
         "ALotOfDamage.UI",
+        "ALotOfDamage.Ferramentas",
         "UnityEngine.UI"
     ],
     "includePlatforms": [

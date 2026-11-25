@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace ALotOfDamage.Core
 {
-    // Onde o progresso fica guardado: memória hoje, servidor (Nakama) depois
+    // Onde o progresso fica guardado; a cópia na nuvem é do SincronizarProgresso
     public interface IRepositorioDeProgresso
     {
         Progresso Carregar();

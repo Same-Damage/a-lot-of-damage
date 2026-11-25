@@ -4,7 +4,7 @@ using static ALotOfDamage.UI.DesenhoDeIcone;
 
 namespace ALotOfDamage.UI
 {
-    public enum IconeDoHud { Inventario, Upgrades, Forja, Followers, Conquistas, Bestiario, Ascensao, Reliquias, Taverna, Expedicoes, Alquimia, Menu, Heroi, Ouro, Espada, Ultimate, Fugir }
+    public enum IconeDoHud { Inventario, Upgrades, Forja, Followers, Conquistas, Bestiario, Ascensao, Reliquias, Taverna, Expedicoes, Alquimia, Ranking, Conta, Menu, Heroi, Ouro, Espada, Ultimate, Fugir }
 
     // Ícones do HUD desenhados por código; arte de verdade em Resources/Icones/hud_<nome>.png é usada no lugar
     public static class IconesDoHud
@@ -94,6 +94,10 @@ namespace ALotOfDamage.UI
                     float w = Mathf.Abs(u), h = Mathf.Abs(v);
                     return (Mathf.Pow(w, 0.6f) + Mathf.Pow(h, 0.6f) - Mathf.Pow(0.92f, 0.6f)) * 0.55f;
                 }
+                case IconeDoHud.Ranking: // pódio
+                    return Min(Caixa(u, v + 0.05f, 0.2f, 0.7f), Caixa(u + 0.5f, v + 0.35f, 0.2f, 0.4f), Caixa(u - 0.5f, v + 0.48f, 0.2f, 0.27f));
+                case IconeDoHud.Conta: // nuvem
+                    return Min(Circulo(u + 0.38f, v + 0.12f, 0.36f), Circulo(u, v - 0.14f, 0.44f), Mathf.Min(Circulo(u - 0.42f, v + 0.1f, 0.34f), Caixa(u, v + 0.3f, 0.4f, 0.18f)));
                 case IconeDoHud.Menu: // grade de quatro
                     return Caixa(Mathf.Abs(u) - 0.38f, Mathf.Abs(v) - 0.38f, 0.2f, 0.2f) - 0.06f;
                 case IconeDoHud.Heroi: // cabeça e ombros

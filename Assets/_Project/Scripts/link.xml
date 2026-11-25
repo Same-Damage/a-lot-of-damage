@@ -1,0 +1,4 @@
+<linker>
+  <!-- DadosDoProgresso e os saves da nuvem são lidos por reflexão -->
+  <assembly fullname="ALotOfDamage.Core" preserve="all" />
+</linker>
