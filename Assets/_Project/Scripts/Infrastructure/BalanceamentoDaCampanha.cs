@@ -10,6 +10,33 @@ namespace ALotOfDamage.Infrastructure
     {
         public ParametrosDaCampanha parametros = new ParametrosDaCampanha();
 
+        static List<ParDeValor> Receita(params (string id, int n)[] itens)
+        {
+            var l = new List<ParDeValor>();
+            foreach (var (id, n) in itens) l.Add(new ParDeValor { Id = id, Valor = n });
+            return l;
+        }
+
+        // Alquimia: ingredientes da coleta e dos monstros
+        public List<DefinicaoDePocao> pocoes = new List<DefinicaoDePocao>
+        {
+            new DefinicaoDePocao { Id = "forca", Nome = "Poção de Força", Descricao = "×2 em todo o dano por 10 min",
+                Efeito = EfeitoDaPocao.Dano, Valor = 1, DuracaoEmMinutos = 10, CustoEmVitorias = 4,
+                Ingredientes = Receita(("erva_lunar", 3), ("presa", 2)) },
+            new DefinicaoDePocao { Id = "fortuna", Nome = "Elixir da Fortuna", Descricao = "+100% de ouro por 10 min",
+                Efeito = EfeitoDaPocao.Ouro, Valor = 1, DuracaoEmMinutos = 10, CustoEmVitorias = 4,
+                Ingredientes = Receita(("cogumelo_rubro", 3), ("gosma", 2)) },
+            new DefinicaoDePocao { Id = "sorte", Nome = "Tônico da Sorte", Descricao = "+100% de chance de item por 10 min",
+                Efeito = EfeitoDaPocao.Drop, Valor = 1, DuracaoEmMinutos = 10, CustoEmVitorias = 6,
+                Ingredientes = Receita(("minerio_celeste", 2), ("cogumelo_rubro", 3)) },
+            new DefinicaoDePocao { Id = "precisao", Nome = "Óleo da Precisão", Descricao = "+10% de chance crítica por 10 min",
+                Efeito = EfeitoDaPocao.Critico, Valor = 0.1, DuracaoEmMinutos = 10, CustoEmVitorias = 6,
+                Ingredientes = Receita(("minerio_celeste", 2), ("erva_lunar", 3)) },
+            new DefinicaoDePocao { Id = "sono", Nome = "Poção do Sono Profundo", Descricao = "×2 na próxima recompensa AFK",
+                Efeito = EfeitoDaPocao.Afk, Valor = 1, DuracaoEmMinutos = 0, CustoEmVitorias = 10,
+                Ingredientes = Receita(("erva_lunar", 3), ("cogumelo_rubro", 3), ("minerio_celeste", 2)) },
+        };
+
         // Pontos de coleta espalhados pelo mapa (ingredientes da alquimia)
         public List<DefinicaoDeRecurso> recursos = new List<DefinicaoDeRecurso>
         {

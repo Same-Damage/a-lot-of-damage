@@ -27,6 +27,7 @@ namespace ALotOfDamage.Core
         IReadOnlyList<DefinicaoDePredio> Predios { get; }
         IReadOnlyList<DefinicaoDeMissao> Missoes { get; }
         IReadOnlyList<DefinicaoDeRecurso> Recursos { get; }
+        IReadOnlyList<DefinicaoDePocao> Pocoes { get; }
         int VagasDeExpedicao { get; }
         double LimiteDaTavernaEmHoras { get; }
         ParametrosDasReliquias ParametrosDasReliquias { get; }

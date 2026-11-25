@@ -283,14 +283,20 @@ namespace ALotOfDamage.Core
     {
         readonly ISorteio sorteio;
 
-        public RegistrarVitoria(IRepositorioDeProgresso r, ICatalogo c, ISorteio sorteio) : base(r, c) => this.sorteio = sorteio;
+        readonly IRelogio relogio;
+
+        public RegistrarVitoria(IRepositorioDeProgresso r, ICatalogo c, ISorteio sorteio, IRelogio relogio = null) : base(r, c)
+        {
+            this.sorteio = sorteio;
+            this.relogio = relogio;
+        }
 
         // tipoDoMonstro pode ser null (ex.: cena de Batalha aberta direto, sem encontro)
         public ResultadoDaVitoria Executar(string tipoDoMonstro, bool chefe)
         {
             var p = repositorio.Carregar();
             var monstro = tipoDoMonstro == null ? null : catalogo.Monstro(tipoDoMonstro);
-            var atributos = new CalcularAtributos(repositorio, catalogo).Executar(tipoDoMonstro);
+            var atributos = new CalcularAtributos(repositorio, catalogo, relogio).Executar(tipoDoMonstro);
             double ouro = CalcularInimigo.Para(p, catalogo, monstro, chefe).Ouro * (1 + atributos.BonusDeOuro);
             p.ReceberOuro(ouro);
             bool marco = p.RegistrarVitoria(monstro, catalogo.Bestiario);
@@ -457,6 +463,7 @@ namespace ALotOfDamage.Core
             {
                 p.ReceberOuro(r.Ouro);
                 p.ReceberCristais(r.Cristais);
+                foreach (var d in catalogo.Pocoes) if (d.Efeito == EfeitoDaPocao.Afk) p.EncerrarPocao(d.Id);
                 foreach (var m in r.Materiais) p.AdicionarMaterial(m.Id, m.Valor);
                 if (catalogo.Itens.Count > 0)
                     for (int i = 0; i < Math.Min(r.Itens, MaximoDeItensSorteados); i++)
@@ -954,6 +961,69 @@ namespace ALotOfDamage.Core
         }
     }
 
+    public struct SituacaoDaPocao
+    {
+        public DefinicaoDePocao Definicao;
+        public bool Ativa;
+        public double MinutosRestantes;   // infinito para a que vale até ser usada
+        public double CustoEmOuro;
+        public bool TemIngredientes;
+    }
+
+    public class ListarPocoes : CasoDeUso
+    {
+        readonly IRelogio relogio;
+
+        public ListarPocoes(IRepositorioDeProgresso r, ICatalogo c, IRelogio relogio) : base(r, c) => this.relogio = relogio;
+
+        public List<SituacaoDaPocao> Executar()
+        {
+            var p = repositorio.Carregar();
+            double ouroDaVitoria = CalcularInimigo.Para(p, catalogo, null, false).Ouro;
+            var lista = new List<SituacaoDaPocao>(catalogo.Pocoes.Count);
+            foreach (var d in catalogo.Pocoes)
+            {
+                long fim = p.FimDaPocao(d.Id);
+                bool ativa = RegrasDaAlquimia.Ativa(fim, relogio.AgoraUtc);
+                bool tem = true;
+                foreach (var i in d.Ingredientes) if (p.Material(i.Id) < i.Valor) tem = false;
+                lista.Add(new SituacaoDaPocao
+                {
+                    Definicao = d,
+                    Ativa = ativa,
+                    MinutosRestantes = !ativa ? 0 : fim == long.MaxValue ? double.PositiveInfinity : (fim - relogio.AgoraUtc.Ticks) / (double)TimeSpan.TicksPerMinute,
+                    CustoEmOuro = d.CustoEmVitorias * ouroDaVitoria,
+                    TemIngredientes = tem,
+                });
+            }
+            return lista;
+        }
+    }
+
+    // Prepara e bebe uma poção: gasta ingredientes e ouro; se já estava ativa, soma o tempo
+    public class PrepararPocao : CasoDeUso
+    {
+        readonly IRelogio relogio;
+
+        public PrepararPocao(IRepositorioDeProgresso r, ICatalogo c, IRelogio relogio) : base(r, c) => this.relogio = relogio;
+
+        public bool Executar(string id)
+        {
+            DefinicaoDePocao d = null;
+            foreach (var x in catalogo.Pocoes) if (x.Id == id) d = x;
+            if (d == null) return false;
+            var p = repositorio.Carregar();
+            double ouro = d.CustoEmVitorias * CalcularInimigo.Para(p, catalogo, null, false).Ouro;
+            if (ouro > p.Ouro) return false;
+            foreach (var i in d.Ingredientes) if (p.Material(i.Id) < i.Valor) return false;
+            p.Gastar(ouro, null, 0);
+            foreach (var i in d.Ingredientes) p.Gastar(0, i.Id, i.Valor);
+            p.BeberPocao(d.Id, RegrasDaAlquimia.NovoFim(d, p.FimDaPocao(d.Id), relogio.AgoraUtc));
+            repositorio.Salvar(p);
+            return true;
+        }
+    }
+
     // Vida e recompensa do inimigo conforme o estágio atual da campanha
     public class CalcularInimigo : CasoDeUso
     {
@@ -1034,7 +1104,19 @@ namespace ALotOfDamage.Core
     // Dano e crítico do jogador contra um tipo de monstro: upgrades × itens equipados × bestiário × Almas × conquistas
     public class CalcularAtributos : CasoDeUso
     {
-        public CalcularAtributos(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+        readonly IRelogio relogio;   // sem relógio, as poções não entram
+
+        public CalcularAtributos(IRepositorioDeProgresso r, ICatalogo c, IRelogio relogio = null) : base(r, c) => this.relogio = relogio;
+
+        // Soma dos efeitos das poções ativas de um tipo
+        double Pocao(Progresso p, EfeitoDaPocao efeito)
+        {
+            if (relogio == null) return 0;
+            double total = 0;
+            foreach (var d in catalogo.Pocoes)
+                if (d.Efeito == efeito && RegrasDaAlquimia.Ativa(p.FimDaPocao(d.Id), relogio.AgoraUtc)) total += d.Valor;
+            return total;
+        }
 
         public AtributosDeCombate Executar(string tipoDoMonstro)
         {
@@ -1051,7 +1133,8 @@ namespace ALotOfDamage.Core
             }
             double almas = RegrasDaAscensao.Multiplicador(catalogo.Campanha, p.Almas)
                 * RegrasDasConquistas.Multiplicador(catalogo.ParametrosDasConquistas, p.TotalDeConquistasColetadas)
-                * (1 + Taverna(EfeitoDoPredio.Dano));
+                * (1 + Taverna(EfeitoDoPredio.Dano))
+                * (1 + Pocao(p, EfeitoDaPocao.Dano));
             double automatico = Valor(IdsDosUpgrades.Automatico) * Mult(AlvoDoItem.Automatico) * almas * Reliquia(AlvoDaReliquia.Automatico);
             var follower = catalogo.Follower(p.FollowerAtivoId);
             int estrelas = Math.Max(1, p.Estrelas(p.FollowerAtivoId));
@@ -1060,15 +1143,15 @@ namespace ALotOfDamage.Core
             {
                 DanoDoClick = Valor(IdsDosUpgrades.Forca) * Mult(AlvoDoItem.Click) * almas * Reliquia(AlvoDaReliquia.Click),
                 DanoAutomatico = automatico,
-                ChanceCritica = Valor(IdsDosUpgrades.Precisao) + Efeito(EfeitoDoFollower.Critico) + SomaDaReliquia(AlvoDaReliquia.Critico),
+                ChanceCritica = Valor(IdsDosUpgrades.Precisao) + Efeito(EfeitoDoFollower.Critico) + SomaDaReliquia(AlvoDaReliquia.Critico) + Pocao(p, EfeitoDaPocao.Critico),
                 Classe = catalogo.Classe(p.ClasseId),
                 Follower = follower,
                 EstrelasDoFollower = follower == null ? 0 : estrelas,
                 DanoDoFollower = automatico * RegrasDoGacha.FracaoDoAutoAtaque(catalogo.Gacha, follower, estrelas) * Reliquia(AlvoDaReliquia.Follower),
                 BonusNoPontoFraco = Efeito(EfeitoDoFollower.PontoFraco) + SomaDaReliquia(AlvoDaReliquia.PontoFraco),
-                BonusDeOuro = Efeito(EfeitoDoFollower.Ouro) + SomaDaReliquia(AlvoDaReliquia.Ouro) + Taverna(EfeitoDoPredio.Ouro),
-                BonusDeAfk = Efeito(EfeitoDoFollower.Afk) + SomaDaReliquia(AlvoDaReliquia.Afk) + Taverna(EfeitoDoPredio.Afk),
-                BonusDeDrop = Efeito(EfeitoDoFollower.Drop) + SomaDaReliquia(AlvoDaReliquia.Drop),
+                BonusDeOuro = Efeito(EfeitoDoFollower.Ouro) + SomaDaReliquia(AlvoDaReliquia.Ouro) + Taverna(EfeitoDoPredio.Ouro) + Pocao(p, EfeitoDaPocao.Ouro),
+                BonusDeAfk = Efeito(EfeitoDoFollower.Afk) + SomaDaReliquia(AlvoDaReliquia.Afk) + Taverna(EfeitoDoPredio.Afk) + Pocao(p, EfeitoDaPocao.Afk),
+                BonusDeDrop = Efeito(EfeitoDoFollower.Drop) + SomaDaReliquia(AlvoDaReliquia.Drop) + Pocao(p, EfeitoDaPocao.Drop),
             };
         }
     }

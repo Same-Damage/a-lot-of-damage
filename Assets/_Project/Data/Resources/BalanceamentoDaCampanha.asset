@@ -20,6 +20,105 @@ MonoBehaviour:
     ChefeACada: 5
     MultiplicadorDeVidaDoChefe: 10
     EstagiosPorRegiao: 10
+    FracaoDoAfk: 0.25
+    LimiteDoAfkEmHoras: 12
+    SegundosEntreLutasNoAfk: 5
+    MinimoDoAfkEmSegundos: 60
+    EstagioMinimoDaAscensao: 50
+    EstagioBaseDasAlmas: 45
+    DivisorDasAlmas: 5
+    BonusPorAlma: 0.1
+  pocoes:
+  - Id: forca
+    Nome: "Po\xE7\xE3o de For\xE7a"
+    Descricao: "\xD72 em todo o dano por 10 min"
+    Efeito: 0
+    Valor: 1
+    DuracaoEmMinutos: 10
+    CustoEmVitorias: 4
+    Ingredientes:
+    - Id: erva_lunar
+      Valor: 3
+    - Id: presa
+      Valor: 2
+  - Id: fortuna
+    Nome: Elixir da Fortuna
+    Descricao: +100% de ouro por 10 min
+    Efeito: 1
+    Valor: 1
+    DuracaoEmMinutos: 10
+    CustoEmVitorias: 4
+    Ingredientes:
+    - Id: cogumelo_rubro
+      Valor: 3
+    - Id: gosma
+      Valor: 2
+  - Id: sorte
+    Nome: "T\xF4nico da Sorte"
+    Descricao: +100% de chance de item por 10 min
+    Efeito: 2
+    Valor: 1
+    DuracaoEmMinutos: 10
+    CustoEmVitorias: 6
+    Ingredientes:
+    - Id: minerio_celeste
+      Valor: 2
+    - Id: cogumelo_rubro
+      Valor: 3
+  - Id: precisao
+    Nome: "\xD3leo da Precis\xE3o"
+    Descricao: "+10% de chance cr\xEDtica por 10 min"
+    Efeito: 3
+    Valor: 0.1
+    DuracaoEmMinutos: 10
+    CustoEmVitorias: 6
+    Ingredientes:
+    - Id: minerio_celeste
+      Valor: 2
+    - Id: erva_lunar
+      Valor: 3
+  - Id: sono
+    Nome: "Po\xE7\xE3o do Sono Profundo"
+    Descricao: "\xD72 na pr\xF3xima recompensa AFK"
+    Efeito: 4
+    Valor: 1
+    DuracaoEmMinutos: 0
+    CustoEmVitorias: 10
+    Ingredientes:
+    - Id: erva_lunar
+      Valor: 3
+    - Id: cogumelo_rubro
+      Valor: 3
+    - Id: minerio_celeste
+      Valor: 2
+  recursos:
+  - Id: moita_erva
+    Nome: Moita de erva-lunar
+    MaterialId: erva_lunar
+    NomeDoMaterial: Erva-lunar
+    Forma: 0
+    Cor: '#8CE07A'
+    Golpes: 4
+    QuantidadeBase: 3
+    SegundosParaRebrotar: 40
+  - Id: cogumelo
+    Nome: Cogumelo rubro
+    MaterialId: cogumelo_rubro
+    NomeDoMaterial: Cogumelo rubro
+    Forma: 1
+    Cor: '#D84A4A'
+    Golpes: 5
+    QuantidadeBase: 2
+    SegundosParaRebrotar: 50
+  - Id: veio_minerio
+    Nome: "Veio de min\xE9rio celeste"
+    MaterialId: minerio_celeste
+    NomeDoMaterial: "Min\xE9rio celeste"
+    Forma: 2
+    Cor: '#5AB8F0'
+    Golpes: 8
+    QuantidadeBase: 2
+    SegundosParaRebrotar: 70
   regioes:
   - Nome: Campos Verdes
     Monstros:
