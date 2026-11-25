@@ -34,6 +34,8 @@ namespace ALotOfDamage.Core
         double LimiteDaTavernaEmHoras { get; }
         ParametrosDasReliquias ParametrosDasReliquias { get; }
         ParametrosDasConquistas ParametrosDasConquistas { get; }
+        ParametrosDaGuilda Guilda { get; }
+        ParametrosDaArena Arena { get; }
     }
 
     // Hora atual (UTC), para o teste controlar o tempo; no online, a hora do servidor

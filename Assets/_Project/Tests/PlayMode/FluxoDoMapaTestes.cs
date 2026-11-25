@@ -66,13 +66,33 @@ namespace ALotOfDamage.Testes
             yield return Carregar(FluxoDeEncontro.CenaDoMapa);
             Assert.AreEqual(SituacaoDaNuvem.Desligada, EscopoDoJogo.Instancia.Container.Resolve<SincronizarProgresso>().Situacao);
             Assert.IsFalse(SincroniaDaNuvem.Bloqueando);
-            foreach (var janela in new JanelaDoJogo[] { Object.FindAnyObjectByType<JanelaDaConta>(), Object.FindAnyObjectByType<JanelaDoRanking>() })
+            foreach (var janela in new JanelaDoJogo[] { Object.FindAnyObjectByType<JanelaDaConta>(), Object.FindAnyObjectByType<JanelaDaGuilda>(), Object.FindAnyObjectByType<JanelaDoRanking>() })
             {
                 janela.Alternar();
                 yield return null;
                 Assert.IsTrue(janela.Aberta);
                 janela.Alternar();
             }
+        }
+
+        [UnityTest]
+        public IEnumerator Luta_da_guilda_nao_da_vitoria_e_volta_ao_mapa_mesmo_sem_rede()
+        {
+            yield return Carregar(FluxoDeEncontro.CenaDoMapa);
+            var container = EscopoDoJogo.Instancia.Container;
+            var fluxo = container.Resolve<FluxoDeEncontro>();
+            int vitorias = container.Resolve<IRepositorioDeProgresso>().Carregar().Vitorias;
+
+            fluxo.LutarPelaGuilda(new DesafioDaGuilda { LutaId = "teste", Fase = 1, VidaDaFase = 1 });
+            yield return null;
+            yield return null;
+            var combate = Object.FindAnyObjectByType<CombateClicker>();
+            Assert.IsNotNull(combate);
+            combate.SendMessage("Fugir");   // encerra a luta: sem rede, o envio falha e o jogo volta
+            yield return new WaitForSecondsRealtime(7f);
+            Assert.AreEqual(FluxoDeEncontro.CenaDoMapa, SceneManager.GetActiveScene().name);
+            Assert.IsNull(fluxo.Guilda);
+            Assert.AreEqual(vitorias, container.Resolve<IRepositorioDeProgresso>().Carregar().Vitorias);
         }
 
         [UnityTest]
@@ -152,7 +172,7 @@ namespace ALotOfDamage.Testes
 
             menu.Alternar();
             yield return null;
-            Assert.AreEqual(Object.FindObjectsByType<JanelaDoJogo>().Length + 1, menu.GetComponentsInChildren<UnityEngine.UI.Button>().Length);
+            Assert.AreEqual(Object.FindObjectsByType<JanelaDoJogo>().Length + 2, menu.GetComponentsInChildren<UnityEngine.UI.Button>().Length);   // mais o Menu e o portão da cidade
         }
 
         [UnityTest]

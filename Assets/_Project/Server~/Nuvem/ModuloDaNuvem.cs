@@ -23,7 +23,7 @@ namespace ALotOfDamage.Nuvem
     // O save fica nos dados protegidos: o cliente lê, mas só o servidor grava
     public class ModuloDaNuvem
     {
-        const string Chave = "progresso";
+        public const string Chave = "progresso";
         const string RankingDeEstagio = "estagio", RankingDePoder = "poder";
 
         [CloudCodeFunction("CarregarProgresso")]
@@ -59,11 +59,35 @@ namespace ALotOfDamage.Nuvem
             return Recepcao.Escrever(r);
         }
 
+        [CloudCodeFunction("Guilda")]
+        public async Task<string> Guilda(IExecutionContext ctx, IGameApiClient api, string pedido)
+        {
+            string nome = "";
+            try { nome = (await api.PlayerNamesApi.GetNameAsync(ctx, ctx.AccessToken, ctx.PlayerId, true)).Data?.Name ?? ""; }
+            catch (ApiException) { }   // sem nome, o jogo mostra "Sem nome"
+            return Recepcao.Escrever(await ServicoDe(ctx, api, nome).Executar(Recepcao.Ler<PedidoDeGuilda>(pedido)));
+        }
+
+        [CloudCodeFunction("Arena")]
+        public async Task<string> Arena(IExecutionContext ctx, IGameApiClient api, string pedido) =>
+            Recepcao.Escrever(await new ServicoDaArena(new ArmazemDaNuvem(ctx, api), new PosicoesDaNuvem(ctx, api), Recepcao.Arena, new SorteioSeguro(), ctx.PlayerId, DateTime.UtcNow)
+                .Executar(Recepcao.Ler<PedidoDaArena>(pedido)));
+
+        [CloudCodeFunction("Denunciar")]
+        public Task<bool> Denunciar(IExecutionContext ctx, IGameApiClient api, string denuncia) =>
+            new ServicoDeDenuncias(new ArmazemDaNuvem(ctx, api), ctx.PlayerId, DateTime.UtcNow).Registrar(Recepcao.Ler<Denuncia>(denuncia));
+
+        static ServicoDaGuilda ServicoDe(IExecutionContext ctx, IGameApiClient api, string nome = "") =>
+            new ServicoDaGuilda(new ArmazemDaNuvem(ctx, api), Recepcao.Guilda, ctx.PlayerId, nome, DateTime.UtcNow);
+
         [CloudCodeFunction("ApagarDados")]
         public async Task<bool> Apagar(IExecutionContext ctx, IGameApiClient api)
         {
             // remover a linha do ranking exige uma chave de administrador; com zero pontos, o jogo não a mostra
             await Pontuar(ctx, api, 0, 0);
+            await new PosicoesDaNuvem(ctx, api).Pontuar(0);
+            // sai da guilda para não ficar um membro fantasma; sem guilda, a resposta é só um erro ignorado
+            await ServicoDe(ctx, api).Executar(new PedidoDeGuilda { Acao = AcaoDaGuilda.Sair });
             await api.CloudSaveData.DeleteProtectedItemsAsync(ctx, ctx.ServiceToken, ctx.ProjectId, ctx.PlayerId);
             return true;
         }

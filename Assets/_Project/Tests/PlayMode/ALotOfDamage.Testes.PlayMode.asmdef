@@ -8,6 +8,9 @@
         "ALotOfDamage.Infraestrutura",
         "ALotOfDamage.Combat",
         "ALotOfDamage.World",
+        "ALotOfDamage.Rede",
+        "Unity.Netcode.Runtime",
+        "Unity.Networking.Transport",
         "ALotOfDamage.UI",
         "ALotOfDamage.Visual",
         "VContainer"

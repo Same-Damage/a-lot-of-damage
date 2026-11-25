@@ -189,11 +189,11 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 
 | Recurso | Descrição |
 |---|---|
-| Lobby / cidade | Hub flutuante (inspirado na Cidade do Céu do Legend Online) com taverna, ferreiro, NPCs; jogadores se veem com o follower ao lado. |
+| Lobby / cidade | Ilha com praça, taverna e ferraria; jogadores se veem com o follower ao lado e conversam por texto (implementado); faltam NPCs. |
 | Taverna | Missões em grupo, recrutamento, NPCs com histórias. |
 | Co-op | Até 3-4 jogadores na mesma batalha; chefes com pontos fracos para cada um. |
-| Guildas | Boss semanal, loja, ranking, salão. |
-| PvP | Arena assíncrona contra a build salva de outro jogador, por temporada. |
+| Guildas | Chefe semanal compartilhado (implementado: até 20 membros, 3 lutas de 60 s por dia, dano relativo, recompensa por fase); depois loja, ranking e salão. |
+| PvP | Arena assíncrona contra a build salva de outro jogador, por temporada mensal com ligas (implementado). |
 | Rankings | Estágio, torre, boss de guilda, PvP. |
 
 ## 10. End game
@@ -259,7 +259,7 @@ Decisão tomada: **Unity 6 (6000.6.10f1) com URP**, Personal (gratuita). Na comp
 | 0. Base técnica | Projeto Unity + URP, câmera com zona morta, movimento, formatação de números, testes. | Concluída |
 | 1. Protótipo de diversão | Encontro no mapa, combate com 4 camadas, upgrades com marcos, forja, bestiário, Poder Total, campanha com chefes e regiões, save, feedback do golpe, interface, Guerreiro e Pip, cenário HD-2D. | Código concluído; falta validar com jogadores |
 | 2. Vertical slice | Arte final dos personagens e monstros, 4 classes, gacha de followers, AFK, Ascensão, capítulo 1 com história. | Próxima |
-| 3. Online | Contas, save na nuvem e ranking (código pronto, falta publicar); lobby/taverna, chat, cálculo autoritativo. | Em andamento |
+| 3. Online | Contas, save na nuvem, ranking, guilda com chefe, arena, cidade e conversa (código pronto); falta o cálculo autoritativo da batalha. | Em andamento |
 | 4. Alpha | Co-op, guildas, PvP assíncrono, rankings, teste fechado. | Futuro |
 | 5. Beta / lançamento | Balanceamento, otimização mobile, publicação. | Futuro |
 

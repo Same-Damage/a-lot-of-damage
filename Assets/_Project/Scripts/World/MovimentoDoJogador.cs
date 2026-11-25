@@ -23,6 +23,8 @@ namespace ALotOfDamage.World
         public float aceleracao = 40f;
         public Transform camera_;
         public PersonagemVisual boneco;
+        [Tooltip("No mapa, volta ao ponto de onde saiu; na cidade não")]
+        public bool voltaAoPonto = true;
 
         CharacterController controle;
         float velocidadeVertical;
@@ -37,7 +39,7 @@ namespace ALotOfDamage.World
         void Start()
         {
             // Volta ao ponto onde a batalha começou
-            if (encontro.TemPosicaoDeRetorno)
+            if (voltaAoPonto && encontro.TemPosicaoDeRetorno)
             {
                 controle.enabled = false;
                 transform.position = encontro.PosicaoDeRetorno;

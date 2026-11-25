@@ -32,7 +32,7 @@ namespace ALotOfDamage.Core
         Task Apagar();
     }
 
-    public enum TipoDeRanking { Estagio, Poder }
+    public enum TipoDeRanking { Estagio, Poder, Arena }
 
     public class LinhaDoRanking
     {
@@ -51,6 +51,35 @@ namespace ALotOfDamage.Core
     public interface IRanking
     {
         Task<PaginaDoRanking> Buscar(TipoDeRanking tipo, int quantos);
+    }
+
+    public interface IServicoDeGuilda
+    {
+        Task<VistaDaGuilda> Pedir(PedidoDeGuilda pedido);
+    }
+
+    public interface IServicoDaArena
+    {
+        Task<VistaDaArena> Pedir(PedidoDaArena pedido);
+    }
+
+    // O que os outros veem de um jogador na cidade
+    public class PresencaNaCidade
+    {
+        public string JogadorId = "", Nome = "", Guilda = "", HeroiId = "", FollowerId = "";
+    }
+
+    // Troca de cena para a cidade e de volta ao mapa
+    public interface IPortaoDaCidade
+    {
+        void IrParaCidade();
+        void VoltarAoMapa();
+    }
+
+    // Leva o jogador do mapa para a luta contra o chefe da guilda
+    public interface IEntradaNaArena
+    {
+        void LutarPelaGuilda(DesafioDaGuilda desafio);
     }
 
     // O que este aparelho sabe da nuvem, guardado junto do save local

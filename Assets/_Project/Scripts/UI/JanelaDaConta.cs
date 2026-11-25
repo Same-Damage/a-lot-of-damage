@@ -13,7 +13,7 @@ namespace ALotOfDamage.UI
     {
         protected override string Titulo => "Conta";
         protected override Key Tecla => Key.O;
-        protected override int Ordem => 12;
+        protected override int Ordem => 16;
         protected override IconeDoHud Icone => IconeDoHud.Conta;
         protected override int Linhas => 0;
         protected override float AlturaDaLinha => 0;

@@ -133,8 +133,12 @@ Decisões já tomadas. Mudar qualquer uma delas é decisão de design, não de i
 
 ### Online
 - Backend: **Unity Gaming Services** (faixa gratuita), no lugar do Nakama planejado antes. Etapa 1 pronta no código: conta (convidado, com usuário e senha opcionais), save na nuvem e ranking; como configurar e publicar em `docs/online.md`. O servidor é o módulo C# do Cloud Code em `Assets/_Project/Server~` (a Unity ignora a pasta), que compila os mesmos arquivos do `Core`. O jogo usa sempre o save local; `SincronizarProgresso` + `RegrasDaNuvem` comparam com a nuvem e, se os dois lados mudaram, o jogador escolhe. Sem projeto vinculado ou nos testes, entra o `OnlineDesligado`.
+- **Guilda**: até 20 membros, entrada por código, líder expulsa e troca o código. Um chefe por semana (vira na segunda, UTC) com fases; cada membro tem 3 lutas por dia de 60 s na arena (`LutaDaGuilda`). Só contam cliques, combo, pontos fracos e ultimates (dano relativo, sem Poder), com teto no servidor (`RegrasDaGuilda`, números em `BalanceamentoDaGuilda`). Cada fase derrubada dá cristais e fragmentos a quem lutou na semana; o servidor guarda o total entregue e o `Progresso` soma só a diferença. No servidor (`ServicoDaGuilda`), cada membro grava a própria parte do dano.
+- **Arena (PvP assíncrono)**: 3 adversários perto na classificação, 5 lutas por dia; o servidor decide a luta em melhor de 5 com o Poder dos saves (`RegrasDaArena`, `ServicoDaArena`). Só quem ataca ganha pontos e perder não tira nada. Temporada de um mês; a recompensa é pela liga em que terminou. Números em `BalanceamentoDaGuilda.arena`.
+- **Cidade**: cena própria (`ModeloDaCidade`, montada pelo `ConstrutorDeCenas`), liberada desde o estágio 1, com salas de até 20 pessoas (Multiplayer Sessions + Netcode, Distributed Authority) na assembly `ALotOfDamage.Rede` (`Scripts/Network`). `JogadorNaCidade` só carrega dados; a `CidadeOnline` desenha os outros. O que vem da rede passa por `RegrasDaCidade`. Não apague o `Online/JogadorNaCidade.prefab`: o id dele na rede mudaria.
+- **Conversa**: texto por Vivox na cidade e na guilda (`ConversaDoJogador`, `RegrasDoChat`), com limite, filtro, bloqueio neste aparelho e denúncia (guardada no Cloud Save, item `denuncias-<mês>`). Texto e nome de outra pessoa nunca usam rich text. Antes de abrir ao público: regras de uso, moderação e política de privacidade.
 - Ao mudar balanceamento, exporte o catálogo do servidor (menu **A Lot of Damage**) e publique o módulo. Tecla do jogo se lê por `KitDeInterface.Teclado`, que fica nulo enquanto se digita.
-- Próximas etapas: lobby/taverna com jogadores e NPCs, co-op, guildas, PvP assíncrono e rankings.
+- Próximas etapas: NPCs e missões na cidade e co-op ao vivo.
 - O servidor é a fonte da verdade: dano, gacha, AFK, ranking e recompensas são calculados ou validados nele. O cliente envia ações (ex.: "cliquei no alvo X"), não resultados.
 - Por isso a lógica de regras fica em C# puro desde já: o mesmo código pode rodar no cliente e no servidor.
 
@@ -181,12 +185,13 @@ Assets/_Project/
     Combat/          combate clicker (MonoBehaviours)
     World/           mapa: movimento, câmera, monstros, ataque no mapa
     UI/              controles de toque e interface
+    Network/         cidade online (assembly ALotOfDamage.Rede)
     Visual/          bonecos de recorte animados (assembly ALotOfDamage.Visual)
     Editor/          ferramentas do editor (ConstrutorDeCenas), assembly ALotOfDamage.Ferramentas
   Tests/
     EditMode/        domínio e casos de uso, com fakes das portas
     PlayMode/        fluxos que precisam de cena (composição, mapa ↔ batalha)
-  Scenes/            Mapa (cena inicial) e Batalha
+  Scenes/            Mapa (cena inicial), Batalha e Cidade
   Data/              ScriptableObjects de balanceamento
   Art/               Sprites, Environment, VFX
   Audio/
@@ -209,7 +214,7 @@ O cliente segue a arquitetura hexagonal (portas e adaptadores). O domínio fica 
 
 Regras:
 - O sentido das dependências é sempre para dentro. `Core` não referencia nenhuma assembly e tem `noEngineReferences: true`: o compilador recusa `UnityEngine` ali.
-- `Infraestrutura` → `Core`. `Visual` (bonecos animados) → só `Core`. `Combat` e `World` → `Core`, `Infraestrutura`, `UI` e `Visual`. `UI` → só `Core`. `Core` nunca conhece quem está fora.
+- `Rede` → `Core`, `UI`, `Visual` e `World`. `Infraestrutura` → `Core`. `Visual` (bonecos animados) → só `Core`. `Combat` e `World` → `Core`, `Infraestrutura`, `UI` e `Visual`. `UI` → só `Core`. `Core` nunca conhece quem está fora.
 - Toda dependência externa (salvar, assets, aleatoriedade, tempo, rede) entra no domínio por uma porta, para o teste trocar por um fake.
 - Uma ação nova do jogador vira um caso de uso em `Core/UseCases`, testado em EditMode com fakes das portas. O `MonoBehaviour` só chama o caso de uso; nada de regra de negócio nele.
 - Estado do jogo mora na entidade `Progresso`, acessada pelo `IRepositorioDeProgresso`. Nada de classe estática com estado global nem de singletons (`.Instance`) para serviços.
@@ -218,7 +223,7 @@ Regras:
   - Cada cena tem um `EscopoDaCena` (o `ConstrutorDeCenas` coloca), que injeta os `MonoBehaviour`s do jogo da cena.
   - `MonoBehaviour` recebe dependências por um método `[Inject] public void Construir(...)` e só as usa a partir do `Start`, nunca no `Awake`.
   - Serviço novo é registrado no `EscopoDoJogo`.
-- Valores de balanceamento ficam em assets de `Data/Resources` com o nome da classe (`BalanceamentoDeUpgrades`, `BalanceamentoDaForja`, `BalanceamentoDoBestiario`, `BalanceamentoDePersonagens`, `BalanceamentoDaCampanha`, `BalanceamentoDasConquistas`, `BalanceamentoDasReliquias`, `BalanceamentoDaTaverna`), herdando de `Balanceamento<T>`. O jogo os lê só pelo `ICatalogo`.
+- Valores de balanceamento ficam em assets de `Data/Resources` com o nome da classe (`BalanceamentoDeUpgrades`, `BalanceamentoDaForja`, `BalanceamentoDoBestiario`, `BalanceamentoDePersonagens`, `BalanceamentoDaCampanha`, `BalanceamentoDasConquistas`, `BalanceamentoDasReliquias`, `BalanceamentoDaTaverna`, `BalanceamentoDaGuilda`), herdando de `Balanceamento<T>`. O jogo os lê só pelo `ICatalogo`.
 - O online entra por portas próprias (`IContaOnline`, `INuvemDeProgresso`, `IRanking`), com adaptadores em `Infrastructure/Online`; as regras que o servidor confere estão no `Core`.
 - Nível de upgrade começa em 1; item da forja começa em +0.
 - Save: o `EscopoDoJogo` usa `RepositorioDeProgressoEmArquivo` (`progresso.json` em `Application.persistentDataPath`; no editor, `progresso-editor.json`). Rodando com `-runTests`, usa o repositório em memória para os testes não mexerem no save. Campo novo no `Progresso` entra também em `DadosDoProgresso`, com valor seguro no `Importar` para saves antigos.

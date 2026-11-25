@@ -1280,6 +1280,10 @@
             "Estagio": 24
         },
         {
+            "Sistema": 11,
+            "Estagio": 1
+        },
+        {
             "Sistema": 10,
             "Estagio": 50
         }
@@ -1538,5 +1542,60 @@
     "parametrosDasConquistas": {
         "BonusPorConquista": 0.01,
         "CristaisBase": 10
+    },
+    "guilda": {
+        "MaximoDeMembros": 20,
+        "LutasPorDia": 3,
+        "SegundosDaLuta": 60.0,
+        "FolgaParaEnviar": 120.0,
+        "PontosPorClique": 1.0,
+        "PontosPorPontoFraco": 4.0,
+        "PontosPorUltimate": 15.0,
+        "PontosPorCombo": 0.2,
+        "CliquesPorSegundo": 15,
+        "VidaDaPrimeiraFase": 3000.0,
+        "CrescimentoDaFase": 1.5,
+        "Fases": 10,
+        "CristaisPorFase": 30,
+        "FragmentosPorFase": 2,
+        "NomeDoChefe": "Colosso das Marés"
+    },
+    "arena": {
+        "LutasPorDia": 5,
+        "Adversarios": 3,
+        "PontosIniciais": 1000,
+        "PontosPorVitoria": 20,
+        "BonusPorSuperior": 10,
+        "CristaisPorVitoria": 5,
+        "Rodadas": 5,
+        "PesoDoPoder": 0.5,
+        "ChanceMinima": 0.05,
+        "Ligas": [
+            {
+                "Nome": "Bronze",
+                "Pontos": 0,
+                "Cristais": 50
+            },
+            {
+                "Nome": "Prata",
+                "Pontos": 1200,
+                "Cristais": 100
+            },
+            {
+                "Nome": "Ouro",
+                "Pontos": 1500,
+                "Cristais": 200
+            },
+            {
+                "Nome": "Platina",
+                "Pontos": 2000,
+                "Cristais": 350
+            },
+            {
+                "Nome": "Lendária",
+                "Pontos": 2800,
+                "Cristais": 600
+            }
+        ]
     }
 }

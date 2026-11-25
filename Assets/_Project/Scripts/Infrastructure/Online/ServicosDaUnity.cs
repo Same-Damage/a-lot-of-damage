@@ -122,7 +122,7 @@ namespace ALotOfDamage.Infrastructure
     {
         const string Modulo = "Nuvem";
 
-        static Task<T> Chamar<T>(string funcao, Dictionary<string, object> dados = null) where T : class => ChamadaOnline.Fazer(async () =>
+        internal static Task<T> Chamar<T>(string funcao, Dictionary<string, object> dados = null) where T : class => ChamadaOnline.Fazer(async () =>
         {
             string json = await CloudCodeService.Instance.CallModuleEndpointAsync<string>(Modulo, funcao, dados);
             return JsonUtility.FromJson<T>(json) ?? throw new FalhaOnline("Resposta inesperada do servidor.");
@@ -134,11 +134,28 @@ namespace ALotOfDamage.Infrastructure
             Chamar<RespostaDoEnvio>("SalvarProgresso", new Dictionary<string, object> { ["pedido"] = JsonUtility.ToJson(pedido) });
 
         public Task Apagar() => ChamadaOnline.Fazer(() => CloudCodeService.Instance.CallModuleEndpointAsync<bool>(Modulo, "ApagarDados"));
+
+        internal static Task ChamarSemResposta(string funcao, string parametro, string json) =>
+            ChamadaOnline.Fazer(() => CloudCodeService.Instance.CallModuleEndpointAsync<bool>(Modulo, funcao, new Dictionary<string, object> { [parametro] = json }));
+    }
+
+    public class GuildaDaUnity : IServicoDeGuilda
+    {
+        public Task<VistaDaGuilda> Pedir(PedidoDeGuilda pedido) => UnityServices.State == ServicesInitializationState.Initialized
+            ? NuvemDaUnity.Chamar<VistaDaGuilda>("Guilda", new Dictionary<string, object> { ["pedido"] = JsonUtility.ToJson(pedido) })
+            : Task.FromException<VistaDaGuilda>(new FalhaOnline("Sem conexão com o servidor."));
+    }
+
+    public class ArenaDaUnity : IServicoDaArena
+    {
+        public Task<VistaDaArena> Pedir(PedidoDaArena pedido) => UnityServices.State == ServicesInitializationState.Initialized
+            ? NuvemDaUnity.Chamar<VistaDaArena>("Arena", new Dictionary<string, object> { ["pedido"] = JsonUtility.ToJson(pedido) })
+            : Task.FromException<VistaDaArena>(new FalhaOnline("Sem conexão com o servidor."));
     }
 
     public class RankingDaUnity : IRanking
     {
-        static string Id(TipoDeRanking tipo) => tipo == TipoDeRanking.Poder ? "poder" : "estagio";
+        static string Id(TipoDeRanking tipo) => tipo == TipoDeRanking.Arena ? "arena" : tipo == TipoDeRanking.Poder ? "poder" : "estagio";
 
         public Task<PaginaDoRanking> Buscar(TipoDeRanking tipo, int quantos) => ChamadaOnline.Fazer(async () =>
         {

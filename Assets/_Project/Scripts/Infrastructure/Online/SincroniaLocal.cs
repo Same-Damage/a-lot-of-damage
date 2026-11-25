@@ -50,7 +50,7 @@ namespace ALotOfDamage.Infrastructure
     }
 
     // Sem projeto da Unity configurado (e nos testes): o jogo fica só offline
-    public class OnlineDesligado : IContaOnline, INuvemDeProgresso, IRanking
+    public class OnlineDesligado : IContaOnline, INuvemDeProgresso, IRanking, IServicoDeGuilda, IServicoDaArena, ITransporteDeChat, IServicoDeDenuncias
     {
         static Task<T> Nao<T>() => Task.FromException<T>(new FalhaOnline("O online não está configurado nesta versão."));
 
@@ -67,6 +67,13 @@ namespace ALotOfDamage.Infrastructure
         public Task<SaveNaNuvem> Carregar() => Nao<SaveNaNuvem>();
         public Task<RespostaDoEnvio> Enviar(PedidoDeEnvio pedido) => Nao<RespostaDoEnvio>();
         Task INuvemDeProgresso.Apagar() => Nao<bool>();
+        public Task<VistaDaGuilda> Pedir(PedidoDeGuilda pedido) => Nao<VistaDaGuilda>();
+        public Task<VistaDaArena> Pedir(PedidoDaArena pedido) => Nao<VistaDaArena>();
+        public event Action<string, string, string, string> Recebida { add { } remove { } }
+        public Task EntrarNoCanal(string canal, string nome) => Nao<bool>();
+        public Task SairDoCanal(string canal) => Nao<bool>();
+        public Task Enviar(string canal, string texto) => Nao<bool>();
+        public Task Denunciar(Denuncia d) => Nao<bool>();
         public Task<PaginaDoRanking> Buscar(TipoDeRanking tipo, int quantos) => Nao<PaginaDoRanking>();
     }
 }

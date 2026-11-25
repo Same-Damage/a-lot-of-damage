@@ -10,6 +10,7 @@ namespace ALotOfDamage.UI
     public class MenuDoMapa : MonoBehaviour
     {
         public const int Principais = 3;
+        const int PorColuna = 9;
         const float TamanhoDoBotao = 72, Passo = 104, Margem = 24;
 
         class Entrada { public BotaoDeIcone Botao; public int Ordem; public TipoDePendencia? Tipo; }
@@ -41,7 +42,7 @@ namespace ALotOfDamage.UI
         {
             bool principal = ordem < Principais;
             var b = new BotaoDeIcone($"Botao {titulo}", principal ? transform : extras, icone, titulo, TamanhoDoBotao, () => { if (!principal) Alternar(); alternar(); });
-            KitDeInterface.Ancorar(b.Rect, new Vector2(1, 1), principal ? Posicao(0, ordem) : Posicao(1, ordem - Principais), Vector2.one * TamanhoDoBotao);
+            KitDeInterface.Ancorar(b.Rect, new Vector2(1, 1), principal ? Posicao(0, ordem) : Posicao(1 + (ordem - Principais) / PorColuna, (ordem - Principais) % PorColuna), Vector2.one * TamanhoDoBotao);
             entradas.Add(new Entrada { Botao = b, Ordem = ordem, Tipo = tipo });
             return b;
         }

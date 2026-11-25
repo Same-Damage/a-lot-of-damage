@@ -75,6 +75,8 @@ namespace ALotOfDamage.Infrastructure
         public ParametrosDasReliquias ParametrosDasReliquias { get; }
         public ParametrosDasConquistas ParametrosDasConquistas { get; }
         public IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
+        public ParametrosDaGuilda Guilda { get; }
+        public ParametrosDaArena Arena { get; }
 
         public CatalogoDeBalanceamento()
         {
@@ -103,6 +105,9 @@ namespace ALotOfDamage.Infrastructure
             var reliquias = BalanceamentoDasReliquias.Carregar();
             Reliquias = reliquias.reliquias;
             ParametrosDasReliquias = reliquias.parametros;
+            var online = BalanceamentoDaGuilda.Carregar();
+            Guilda = online.parametros;
+            Arena = online.arena;
             var taverna = BalanceamentoDaTaverna.Carregar();
             Predios = taverna.predios;
             LimiteDaTavernaEmHoras = taverna.limiteEmHoras;

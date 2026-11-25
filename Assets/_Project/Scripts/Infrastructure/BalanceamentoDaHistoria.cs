@@ -24,6 +24,7 @@ namespace ALotOfDamage.Infrastructure
             L(SistemaDoJogo.Taverna, 18),
             L(SistemaDoJogo.Expedicoes, 21),
             L(SistemaDoJogo.Alquimia, 24),
+            L(SistemaDoJogo.Cidade, 1),
             L(SistemaDoJogo.Ascensao, 50),
         };
 
