@@ -45,6 +45,7 @@ namespace ALotOfDamage.Testes
             Assert.IsNotNull(Object.FindAnyObjectByType<CidadeOnline>());
             Assert.IsFalse(NetworkManager.Singleton.IsListening);
             Assert.IsEmpty(JogadorNaCidade.Presentes);
+            Assert.IsNull(Object.FindAnyObjectByType<ALotOfDamage.UI.BotaoDeAtaque>(FindObjectsInactive.Include), "na cidade não se ataca");
             yield return new WaitForSeconds(0.5f);
             Assert.Greater(GameObject.Find("Jogador").transform.position.y, 0.5f, "o jogador pisa na praça");
             EscopoDoJogo.Instancia.Container.Resolve<IPortaoDaCidade>().VoltarAoMapa();

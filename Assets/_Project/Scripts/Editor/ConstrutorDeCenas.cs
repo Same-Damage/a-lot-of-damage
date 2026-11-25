@@ -401,7 +401,7 @@ namespace ALotOfDamage.Ferramentas
             AssetDatabase.CreateAsset(superficie.navMeshData, caminho);
         }
 
-        static void CriarControlesDeToque()
+        static void CriarControlesDeToque(bool comAtaque = true)
         {
             var es = new GameObject("EventSystem");
             es.AddComponent<EventSystem>();
@@ -429,6 +429,7 @@ namespace ALotOfDamage.Ferramentas
             joy.fundo = fundo;
             joy.pino = pino;
 
+            if (!comAtaque) return;
             // Botão de ataque no canto inferior direito
             var ataque = NovaImagem("Botao de Ataque", canvasGo.transform, circulo, new Color(0.8f, 0.25f, 0.2f, 0.55f), 150);
             ataque.anchorMin = ataque.anchorMax = new Vector2(1, 0);
@@ -554,7 +555,7 @@ namespace ALotOfDamage.Ferramentas
             cidade.modeloDeFollower = follower.modelo;
             cidade.modeloDeSombra = jogador.GetComponentInChildren<SombraDeContato>();
 
-            CriarControlesDeToque();
+            CriarControlesDeToque(false);
             new GameObject("Janelas").AddComponent<JanelaDeChat>();
             new GameObject("Presença").AddComponent<JanelaDaRecompensaAfk>().mostrarJanela = false;
             new GameObject("Nuvem").AddComponent<SincroniaDaNuvem>().mostrarTelas = false;
