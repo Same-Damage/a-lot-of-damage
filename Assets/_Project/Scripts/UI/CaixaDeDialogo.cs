@@ -59,7 +59,7 @@ namespace ALotOfDamage.UI
                 return;
             }
 
-            var k = Keyboard.current;
+            var k = KitDeInterface.Teclado;
             bool avancar = (k != null && (k.enterKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame))
                 || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame);
             if (avancar) Avancar();

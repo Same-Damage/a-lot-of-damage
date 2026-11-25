@@ -3,7 +3,12 @@
     "rootNamespace": "",
     "references": [
         "ALotOfDamage.Core",
-        "VContainer"
+        "VContainer",
+        "Unity.Services.Core",
+        "Unity.Services.Core.Environments",
+        "Unity.Services.Authentication",
+        "Unity.Services.CloudCode",
+        "Unity.Services.Leaderboards"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -67,7 +67,7 @@ namespace ALotOfDamage.World
         static Vector2 LerEntrada()
         {
             Vector2 v = Vector2.zero;
-            var k = Keyboard.current;
+            var k = KitDeInterface.Teclado;
             if (k != null)
             {
                 if (k.wKey.isPressed || k.upArrowKey.isPressed) v.y += 1;

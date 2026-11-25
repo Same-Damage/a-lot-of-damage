@@ -46,11 +46,53 @@ namespace ALotOfDamage.Ferramentas
             Debug.Log($"Planilha exportada em {caminho}");
         }
 
+        public static string CaminhoDoCatalogo => Path.Combine(Application.dataPath, "_Project", "Server~", "Nuvem", "catalogo.json");
+        public static string CaminhoDaProva => Path.Combine(Application.dataPath, "_Project", "Server~", "Nuvem.Testes", "prova.json");
+
+        public static string TextoDoCatalogo() => JsonUtility.ToJson(CatalogoEmDados.De(new CatalogoDeBalanceamento()), true);
+
+        // Um progresso de exemplo e o Poder que o jogo calcula: o servidor precisa chegar ao mesmo número
+        [System.Serializable]
+        public class Prova { public string Progresso; public double Poder; }
+
+        public static string TextoDaProva()
+        {
+            var catalogo = new CatalogoDeBalanceamento();
+            var p = new Progresso();
+            p.ReceberOuro(1e9);
+            foreach (var d in catalogo.Upgrades) p.Comprar(d, 25);
+            for (int i = 0; i < 40; i++) p.RegistrarVitoria(catalogo.Monstros[i % catalogo.Monstros.Count], catalogo.Bestiario);
+            var tipo = catalogo.Itens[0];
+            p.Equipar(p.ReceberItem(tipo.Id, tipo.Slot, Raridade.Epico, 12, 99).Id);
+            p.ReceberFragmentos(1000);
+            foreach (var r in catalogo.Reliquias) p.MelhorarReliquia(r.Id, 3);
+            p.Ascender(4);
+            p.ReceberOuro(1e9);
+            foreach (var d in catalogo.Upgrades) p.Comprar(d, 10);
+            foreach (var d in catalogo.Predios) p.MelhorarPredio(d.Id, 10);
+            return JsonUtility.ToJson(new Prova { Progresso = JsonUtility.ToJson(p.Exportar()), Poder = CalcularPoder.De(p.Exportar(), catalogo) }, true);
+        }
+
+        // O servidor (Server~) usa o mesmo balanceamento: gere de novo e publique o módulo ao mudar valores
+        [MenuItem("A Lot of Damage/Exportar catálogo do servidor")]
+        public static void ExportarCatalogo()
+        {
+            Gravar(CaminhoDoCatalogo, TextoDoCatalogo());
+            Gravar(CaminhoDaProva, TextoDaProva());
+        }
+
+        static void Gravar(string caminho, string texto)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(caminho));
+            File.WriteAllText(caminho, texto, new UTF8Encoding(false));
+        }
+
         // Usado em linha de comando: recria as cenas e exporta a planilha
         public static void CriarTudo()
         {
             ConstrutorDeCenas.CriarTodas();
             Exportar();
+            ExportarCatalogo();
         }
     }
 }

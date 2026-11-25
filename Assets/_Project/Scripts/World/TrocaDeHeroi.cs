@@ -32,7 +32,7 @@ namespace ALotOfDamage.World
 
         void Update()
         {
-            var k = Keyboard.current;
+            var k = KitDeInterface.Teclado;
             bool pediu = (k != null && k.hKey.wasPressedThisFrame)
                 || (Gamepad.current != null && Gamepad.current.selectButton.wasPressedThisFrame);
             if (pediu) Trocar();

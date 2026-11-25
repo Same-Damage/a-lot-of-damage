@@ -1,0 +1,1542 @@
+{
+    "upgrades": [
+        {
+            "Id": "forca_do_golpe",
+            "Nome": "Força do Golpe",
+            "Descricao": "Dano de cada click",
+            "CustoBase": 10.0,
+            "CrescimentoDoCusto": 1.07,
+            "ValorBase": 3.0,
+            "Tipo": 0,
+            "ValorPorNivel": 0.0,
+            "Teto": 0.0
+        },
+        {
+            "Id": "ataque_automatico",
+            "Nome": "Ataque Automático",
+            "Descricao": "Dano do auto-ataque por segundo",
+            "CustoBase": 15.0,
+            "CrescimentoDoCusto": 1.08,
+            "ValorBase": 5.0,
+            "Tipo": 0,
+            "ValorPorNivel": 0.0,
+            "Teto": 0.0
+        },
+        {
+            "Id": "precisao",
+            "Nome": "Precisão",
+            "Descricao": "Chance de crítico",
+            "CustoBase": 50.0,
+            "CrescimentoDoCusto": 1.15,
+            "ValorBase": 0.05,
+            "Tipo": 1,
+            "ValorPorNivel": 0.01,
+            "Teto": 0.5
+        }
+    ],
+    "itens": [
+        {
+            "Id": "espada",
+            "Nome": "Espada",
+            "Descricao": "Dano do click",
+            "Slot": 0,
+            "Alvo": 0,
+            "BonusPorNivel": 0.5,
+            "CustoBaseEmOuro": 50.0,
+            "CrescimentoDoCusto": 1.6,
+            "MaterialId": "presa",
+            "MaterialPorNivel": 2,
+            "ChanceDeSucessoCritico": 0.1
+        },
+        {
+            "Id": "elmo",
+            "Nome": "Elmo",
+            "Descricao": "Dano do auto-ataque",
+            "Slot": 1,
+            "Alvo": 1,
+            "BonusPorNivel": 0.3,
+            "CustoBaseEmOuro": 60.0,
+            "CrescimentoDoCusto": 1.6,
+            "MaterialId": "pedra_runica",
+            "MaterialPorNivel": 2,
+            "ChanceDeSucessoCritico": 0.1
+        },
+        {
+            "Id": "peitoral",
+            "Nome": "Peitoral",
+            "Descricao": "Dano do auto-ataque",
+            "Slot": 2,
+            "Alvo": 1,
+            "BonusPorNivel": 0.4,
+            "CustoBaseEmOuro": 80.0,
+            "CrescimentoDoCusto": 1.6,
+            "MaterialId": "pedra_runica",
+            "MaterialPorNivel": 3,
+            "ChanceDeSucessoCritico": 0.1
+        },
+        {
+            "Id": "manopla",
+            "Nome": "Manopla",
+            "Descricao": "Dano do click",
+            "Slot": 3,
+            "Alvo": 0,
+            "BonusPorNivel": 0.4,
+            "CustoBaseEmOuro": 70.0,
+            "CrescimentoDoCusto": 1.6,
+            "MaterialId": "pedra_runica",
+            "MaterialPorNivel": 2,
+            "ChanceDeSucessoCritico": 0.1
+        },
+        {
+            "Id": "botas",
+            "Nome": "Botas",
+            "Descricao": "Dano do auto-ataque",
+            "Slot": 4,
+            "Alvo": 1,
+            "BonusPorNivel": 0.3,
+            "CustoBaseEmOuro": 60.0,
+            "CrescimentoDoCusto": 1.6,
+            "MaterialId": "presa",
+            "MaterialPorNivel": 2,
+            "ChanceDeSucessoCritico": 0.1
+        },
+        {
+            "Id": "cinto",
+            "Nome": "Cinto",
+            "Descricao": "Dano do auto-ataque",
+            "Slot": 5,
+            "Alvo": 1,
+            "BonusPorNivel": 0.3,
+            "CustoBaseEmOuro": 60.0,
+            "CrescimentoDoCusto": 1.6,
+            "MaterialId": "gosma",
+            "MaterialPorNivel": 2,
+            "ChanceDeSucessoCritico": 0.1
+        },
+        {
+            "Id": "anel",
+            "Nome": "Anel",
+            "Descricao": "Dano do click",
+            "Slot": 6,
+            "Alvo": 0,
+            "BonusPorNivel": 0.4,
+            "CustoBaseEmOuro": 75.0,
+            "CrescimentoDoCusto": 1.6,
+            "MaterialId": "gosma",
+            "MaterialPorNivel": 3,
+            "ChanceDeSucessoCritico": 0.1
+        },
+        {
+            "Id": "colar",
+            "Nome": "Colar",
+            "Descricao": "Dano do auto-ataque",
+            "Slot": 7,
+            "Alvo": 1,
+            "BonusPorNivel": 0.4,
+            "CustoBaseEmOuro": 75.0,
+            "CrescimentoDoCusto": 1.6,
+            "MaterialId": "gosma",
+            "MaterialPorNivel": 3,
+            "ChanceDeSucessoCritico": 0.1
+        }
+    ],
+    "monstros": [
+        {
+            "Id": "slime",
+            "Nome": "Slime",
+            "MaterialId": "gosma",
+            "NomeDoMaterial": "Gosma",
+            "MaterialPorVitoria": 2,
+            "MultiplicadorDeVida": 1.0,
+            "Cor": "#4CE64C",
+            "Escala": 0.800000011920929,
+            "Forma": 0
+        },
+        {
+            "Id": "lobo",
+            "Nome": "Lobo",
+            "MaterialId": "presa",
+            "NomeDoMaterial": "Presa",
+            "MaterialPorVitoria": 2,
+            "MultiplicadorDeVida": 4.0,
+            "Cor": "#9999A6",
+            "Escala": 1.0,
+            "Forma": 1
+        },
+        {
+            "Id": "golem",
+            "Nome": "Golem",
+            "MaterialId": "pedra_runica",
+            "NomeDoMaterial": "Pedra Rúnica",
+            "MaterialPorVitoria": 3,
+            "MultiplicadorDeVida": 20.0,
+            "Cor": "#8C5933",
+            "Escala": 1.600000023841858,
+            "Forma": 2
+        }
+    ],
+    "bestiario": {
+        "PrimeiroMarco": 10,
+        "FatorEntreMarcos": 10,
+        "BonusContraTipoPorMarco": 0.25,
+        "BonusGeralPorMarco": 0.02
+    },
+    "classes": [
+        {
+            "Id": "guerreiro",
+            "Nome": "Guerreiro",
+            "NomeDaPassiva": "Fúria",
+            "BonusDeFuriaPorAcumulo": 0.05,
+            "CombosPorAcumulo": 10,
+            "MaximoDeAcumulos": 10,
+            "NomeDaUltimate": "Golpe Devastador",
+            "MultiplicadorDaUltimate": 50.0
+        }
+    ],
+    "followers": [
+        {
+            "Id": "pip",
+            "Nome": "Pip, o falcão",
+            "Descricao": "Deixa o ponto fraco aberto por mais tempo",
+            "Raridade": 0,
+            "FracaoDoAutoAtaque": 0.2,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 1,
+            "ValorDoEfeito": 0.3,
+            "Familia": 2,
+            "Cor": "#8A6A4A",
+            "CorSecundaria": "#E8D8B0",
+            "Escala": 1.0
+        },
+        {
+            "Id": "escudeiro",
+            "Nome": "Escudeiro Tobias",
+            "Descricao": "Ataca com muito mais força",
+            "Raridade": 0,
+            "FracaoDoAutoAtaque": 0.2,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 0,
+            "ValorDoEfeito": 0.1,
+            "Familia": 0,
+            "Cor": "#6E7C8A",
+            "CorSecundaria": "#C9A86A",
+            "Escala": 1.0
+        },
+        {
+            "Id": "aprendiz",
+            "Nome": "Aprendiz Lia",
+            "Descricao": "Mais chance de golpe crítico",
+            "Raridade": 0,
+            "FracaoDoAutoAtaque": 0.2,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 4,
+            "ValorDoEfeito": 0.02,
+            "Familia": 0,
+            "Cor": "#5A4AA0",
+            "CorSecundaria": "#E6D2A0",
+            "Escala": 1.0
+        },
+        {
+            "Id": "mercador",
+            "Nome": "Mercador Bento",
+            "Descricao": "Mais ouro a cada vitória",
+            "Raridade": 0,
+            "FracaoDoAutoAtaque": 0.2,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 2,
+            "ValorDoEfeito": 0.1,
+            "Familia": 0,
+            "Cor": "#8C5A2E",
+            "CorSecundaria": "#D8B060",
+            "Escala": 1.0
+        },
+        {
+            "Id": "goblin_ladrao",
+            "Nome": "Goblin Ladrão",
+            "Descricao": "Mais chance de item cair",
+            "Raridade": 0,
+            "FracaoDoAutoAtaque": 0.2,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 5,
+            "ValorDoEfeito": 0.1,
+            "Familia": 0,
+            "Cor": "#5E8C3A",
+            "CorSecundaria": "#6A4A2E",
+            "Escala": 0.75
+        },
+        {
+            "Id": "lobo_cinzento",
+            "Nome": "Lobo Cinzento",
+            "Descricao": "Ataca com muito mais força",
+            "Raridade": 0,
+            "FracaoDoAutoAtaque": 0.2,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 0,
+            "ValorDoEfeito": 0.1,
+            "Familia": 1,
+            "Cor": "#8C8C96",
+            "CorSecundaria": "#D8D8E0",
+            "Escala": 1.0
+        },
+        {
+            "Id": "javali",
+            "Nome": "Javali Bravo",
+            "Descricao": "Luta mais enquanto você está fora",
+            "Raridade": 0,
+            "FracaoDoAutoAtaque": 0.2,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 3,
+            "ValorDoEfeito": 0.1,
+            "Familia": 1,
+            "Cor": "#6A4A32",
+            "CorSecundaria": "#D8C8A8",
+            "Escala": 1.0
+        },
+        {
+            "Id": "raposa",
+            "Nome": "Raposa Ágil",
+            "Descricao": "Mais chance de golpe crítico",
+            "Raridade": 0,
+            "FracaoDoAutoAtaque": 0.2,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 4,
+            "ValorDoEfeito": 0.02,
+            "Familia": 1,
+            "Cor": "#D2703A",
+            "CorSecundaria": "#F4EAD8",
+            "Escala": 0.800000011920929
+        },
+        {
+            "Id": "corvo",
+            "Nome": "Corvo Mensageiro",
+            "Descricao": "Mais chance de item cair",
+            "Raridade": 0,
+            "FracaoDoAutoAtaque": 0.2,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 5,
+            "ValorDoEfeito": 0.1,
+            "Familia": 2,
+            "Cor": "#2A2A36",
+            "CorSecundaria": "#6A6A80",
+            "Escala": 0.800000011920929
+        },
+        {
+            "Id": "coruja",
+            "Nome": "Coruja Sábia",
+            "Descricao": "Deixa o ponto fraco aberto por mais tempo",
+            "Raridade": 0,
+            "FracaoDoAutoAtaque": 0.2,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 1,
+            "ValorDoEfeito": 0.3,
+            "Familia": 2,
+            "Cor": "#9A7A52",
+            "CorSecundaria": "#E8D8B8",
+            "Escala": 1.0
+        },
+        {
+            "Id": "fada_jardim",
+            "Nome": "Fada do Jardim",
+            "Descricao": "Luta mais enquanto você está fora",
+            "Raridade": 0,
+            "FracaoDoAutoAtaque": 0.2,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 3,
+            "ValorDoEfeito": 0.1,
+            "Familia": 5,
+            "Cor": "#7AD88A",
+            "CorSecundaria": "#F4F0A0",
+            "Escala": 0.6000000238418579
+        },
+        {
+            "Id": "fogo_fatuo",
+            "Nome": "Fogo-fátuo",
+            "Descricao": "Mais ouro a cada vitória",
+            "Raridade": 0,
+            "FracaoDoAutoAtaque": 0.2,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 2,
+            "ValorDoEfeito": 0.1,
+            "Familia": 5,
+            "Cor": "#5AC8FF",
+            "CorSecundaria": "#E0F8FF",
+            "Escala": 0.6000000238418579
+        },
+        {
+            "Id": "boneco_lata",
+            "Nome": "Boneco de Lata",
+            "Descricao": "Ataca com muito mais força",
+            "Raridade": 0,
+            "FracaoDoAutoAtaque": 0.2,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 0,
+            "ValorDoEfeito": 0.1,
+            "Familia": 6,
+            "Cor": "#9AA0A8",
+            "CorSecundaria": "#C8A050",
+            "Escala": 0.8500000238418579
+        },
+        {
+            "Id": "cogumelo",
+            "Nome": "Cogumelo Saltitante",
+            "Descricao": "Luta mais enquanto você está fora",
+            "Raridade": 0,
+            "FracaoDoAutoAtaque": 0.2,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 3,
+            "ValorDoEfeito": 0.1,
+            "Familia": 4,
+            "Cor": "#C84A4A",
+            "CorSecundaria": "#F4EAD8",
+            "Escala": 0.699999988079071
+        },
+        {
+            "Id": "arqueira_elfa",
+            "Nome": "Arqueira Élfica",
+            "Descricao": "Mais chance de golpe crítico",
+            "Raridade": 1,
+            "FracaoDoAutoAtaque": 0.25,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 4,
+            "ValorDoEfeito": 0.03,
+            "Familia": 0,
+            "Cor": "#3A8A5A",
+            "CorSecundaria": "#E8D090",
+            "Escala": 1.0
+        },
+        {
+            "Id": "anao_ferreiro",
+            "Nome": "Anão Ferreiro",
+            "Descricao": "Mais chance de item cair",
+            "Raridade": 1,
+            "FracaoDoAutoAtaque": 0.25,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 5,
+            "ValorDoEfeito": 0.15,
+            "Familia": 0,
+            "Cor": "#8A4A2A",
+            "CorSecundaria": "#D8A040",
+            "Escala": 0.800000011920929
+        },
+        {
+            "Id": "monge",
+            "Nome": "Monge Errante",
+            "Descricao": "Deixa o ponto fraco aberto por mais tempo",
+            "Raridade": 1,
+            "FracaoDoAutoAtaque": 0.25,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 1,
+            "ValorDoEfeito": 0.4,
+            "Familia": 0,
+            "Cor": "#D88A2A",
+            "CorSecundaria": "#F4E2B8",
+            "Escala": 1.0
+        },
+        {
+            "Id": "urso_pardo",
+            "Nome": "Urso Pardo",
+            "Descricao": "Ataca com muito mais força",
+            "Raridade": 1,
+            "FracaoDoAutoAtaque": 0.25,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 0,
+            "ValorDoEfeito": 0.15,
+            "Familia": 1,
+            "Cor": "#5A3A22",
+            "CorSecundaria": "#A87A52",
+            "Escala": 1.25
+        },
+        {
+            "Id": "pantera",
+            "Nome": "Pantera das Sombras",
+            "Descricao": "Mais chance de golpe crítico",
+            "Raridade": 1,
+            "FracaoDoAutoAtaque": 0.25,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 4,
+            "ValorDoEfeito": 0.03,
+            "Familia": 1,
+            "Cor": "#22222E",
+            "CorSecundaria": "#6A4AA0",
+            "Escala": 1.0
+        },
+        {
+            "Id": "aguia_real",
+            "Nome": "Águia Real",
+            "Descricao": "Mais ouro a cada vitória",
+            "Raridade": 1,
+            "FracaoDoAutoAtaque": 0.25,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 2,
+            "ValorDoEfeito": 0.15,
+            "Familia": 2,
+            "Cor": "#6A4A2A",
+            "CorSecundaria": "#F4F0E8",
+            "Escala": 1.100000023841858
+        },
+        {
+            "Id": "golem_musgo",
+            "Nome": "Golem de Musgo",
+            "Descricao": "Luta mais enquanto você está fora",
+            "Raridade": 1,
+            "FracaoDoAutoAtaque": 0.25,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 3,
+            "ValorDoEfeito": 0.15,
+            "Familia": 6,
+            "Cor": "#6A7A5A",
+            "CorSecundaria": "#7AB84A",
+            "Escala": 1.100000023841858
+        },
+        {
+            "Id": "automato",
+            "Nome": "Autômato de Cobre",
+            "Descricao": "Mais chance de item cair",
+            "Raridade": 1,
+            "FracaoDoAutoAtaque": 0.25,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 5,
+            "ValorDoEfeito": 0.15,
+            "Familia": 6,
+            "Cor": "#B87A4A",
+            "CorSecundaria": "#5AC8C8",
+            "Escala": 1.0
+        },
+        {
+            "Id": "salamandra",
+            "Nome": "Salamandra",
+            "Descricao": "Ataca com muito mais força",
+            "Raridade": 1,
+            "FracaoDoAutoAtaque": 0.25,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 0,
+            "ValorDoEfeito": 0.15,
+            "Familia": 3,
+            "Cor": "#E8602A",
+            "CorSecundaria": "#F4C82A",
+            "Escala": 0.699999988079071
+        },
+        {
+            "Id": "espirito_lago",
+            "Nome": "Espírito do Lago",
+            "Descricao": "Mais ouro a cada vitória",
+            "Raridade": 1,
+            "FracaoDoAutoAtaque": 0.25,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 2,
+            "ValorDoEfeito": 0.15,
+            "Familia": 5,
+            "Cor": "#4AA8E8",
+            "CorSecundaria": "#C8F0FF",
+            "Escala": 0.800000011920929
+        },
+        {
+            "Id": "cavaleira",
+            "Nome": "Cavaleira de Prata",
+            "Descricao": "Ataca com muito mais força",
+            "Raridade": 2,
+            "FracaoDoAutoAtaque": 0.35,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 0,
+            "ValorDoEfeito": 0.25,
+            "Familia": 0,
+            "Cor": "#C8CCD8",
+            "CorSecundaria": "#D8B050",
+            "Escala": 1.0
+        },
+        {
+            "Id": "feiticeira",
+            "Nome": "Feiticeira Rubra",
+            "Descricao": "Mais chance de golpe crítico",
+            "Raridade": 2,
+            "FracaoDoAutoAtaque": 0.35,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 4,
+            "ValorDoEfeito": 0.05,
+            "Familia": 0,
+            "Cor": "#A82A3A",
+            "CorSecundaria": "#F4C860",
+            "Escala": 1.0
+        },
+        {
+            "Id": "robo_guardiao",
+            "Nome": "Robô Guardião",
+            "Descricao": "Luta mais enquanto você está fora",
+            "Raridade": 2,
+            "FracaoDoAutoAtaque": 0.35,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 3,
+            "ValorDoEfeito": 0.25,
+            "Familia": 6,
+            "Cor": "#5A6A8A",
+            "CorSecundaria": "#5AE8FF",
+            "Escala": 1.149999976158142
+        },
+        {
+            "Id": "lobo_gelido",
+            "Nome": "Lobo Gélido",
+            "Descricao": "Deixa o ponto fraco aberto por mais tempo",
+            "Raridade": 2,
+            "FracaoDoAutoAtaque": 0.35,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 1,
+            "ValorDoEfeito": 0.55,
+            "Familia": 1,
+            "Cor": "#B8D8F0",
+            "CorSecundaria": "#5AA8E8",
+            "Escala": 1.100000023841858
+        },
+        {
+            "Id": "grifo",
+            "Nome": "Grifo",
+            "Descricao": "Mais chance de item cair",
+            "Raridade": 2,
+            "FracaoDoAutoAtaque": 0.35,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 5,
+            "ValorDoEfeito": 0.25,
+            "Familia": 4,
+            "Cor": "#C8963A",
+            "CorSecundaria": "#F4F0E8",
+            "Escala": 1.2000000476837158
+        },
+        {
+            "Id": "dragonete",
+            "Nome": "Dragonete Verde",
+            "Descricao": "Mais ouro a cada vitória",
+            "Raridade": 2,
+            "FracaoDoAutoAtaque": 0.35,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 2,
+            "ValorDoEfeito": 0.25,
+            "Familia": 3,
+            "Cor": "#3A9A4A",
+            "CorSecundaria": "#E8D860",
+            "Escala": 0.8500000238418579
+        },
+        {
+            "Id": "unicornio",
+            "Nome": "Unicórnio",
+            "Descricao": "Luta mais enquanto você está fora",
+            "Raridade": 2,
+            "FracaoDoAutoAtaque": 0.35,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 3,
+            "ValorDoEfeito": 0.25,
+            "Familia": 4,
+            "Cor": "#F4F0F8",
+            "CorSecundaria": "#C88AE8",
+            "Escala": 1.149999976158142
+        },
+        {
+            "Id": "sombra",
+            "Nome": "Sombra Errante",
+            "Descricao": "Mais chance de golpe crítico",
+            "Raridade": 2,
+            "FracaoDoAutoAtaque": 0.35,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 4,
+            "ValorDoEfeito": 0.05,
+            "Familia": 5,
+            "Cor": "#3A2A5A",
+            "CorSecundaria": "#A85AE8",
+            "Escala": 1.0
+        },
+        {
+            "Id": "draconato",
+            "Nome": "Draconato Guerreiro",
+            "Descricao": "Ataca com muito mais força",
+            "Raridade": 3,
+            "FracaoDoAutoAtaque": 0.5,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 0,
+            "ValorDoEfeito": 0.4,
+            "Familia": 3,
+            "Cor": "#8A2A2A",
+            "CorSecundaria": "#E8B040",
+            "Escala": 1.2000000476837158
+        },
+        {
+            "Id": "fenix",
+            "Nome": "Fênix",
+            "Descricao": "Luta mais enquanto você está fora",
+            "Raridade": 3,
+            "FracaoDoAutoAtaque": 0.5,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 3,
+            "ValorDoEfeito": 0.4,
+            "Familia": 2,
+            "Cor": "#F4602A",
+            "CorSecundaria": "#F4E02A",
+            "Escala": 1.2999999523162842
+        },
+        {
+            "Id": "quimera",
+            "Nome": "Quimera",
+            "Descricao": "Mais chance de golpe crítico",
+            "Raridade": 3,
+            "FracaoDoAutoAtaque": 0.5,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 4,
+            "ValorDoEfeito": 0.08,
+            "Familia": 4,
+            "Cor": "#B8782A",
+            "CorSecundaria": "#6A3A8A",
+            "Escala": 1.2999999523162842
+        },
+        {
+            "Id": "tita_runico",
+            "Nome": "Titã Rúnico",
+            "Descricao": "Mais chance de item cair",
+            "Raridade": 3,
+            "FracaoDoAutoAtaque": 0.5,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 5,
+            "ValorDoEfeito": 0.4,
+            "Familia": 6,
+            "Cor": "#5A5A6A",
+            "CorSecundaria": "#5AE8A8",
+            "Escala": 1.399999976158142
+        },
+        {
+            "Id": "rainha_fada",
+            "Nome": "Rainha das Fadas",
+            "Descricao": "Mais ouro a cada vitória",
+            "Raridade": 3,
+            "FracaoDoAutoAtaque": 0.5,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 2,
+            "ValorDoEfeito": 0.4,
+            "Familia": 5,
+            "Cor": "#E88AD8",
+            "CorSecundaria": "#F4F0A0",
+            "Escala": 0.8999999761581421
+        },
+        {
+            "Id": "dragao_ancestral",
+            "Nome": "Dragão Ancestral",
+            "Descricao": "Ataca com muito mais força",
+            "Raridade": 4,
+            "FracaoDoAutoAtaque": 0.75,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 0,
+            "ValorDoEfeito": 0.6,
+            "Familia": 3,
+            "Cor": "#2A2A3A",
+            "CorSecundaria": "#E84A2A",
+            "Escala": 1.600000023841858
+        },
+        {
+            "Id": "leviata",
+            "Nome": "Leviatã das Nuvens",
+            "Descricao": "Deixa o ponto fraco aberto por mais tempo",
+            "Raridade": 4,
+            "FracaoDoAutoAtaque": 0.75,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 1,
+            "ValorDoEfeito": 1.2,
+            "Familia": 4,
+            "Cor": "#4A8AE8",
+            "CorSecundaria": "#E8F4FF",
+            "Escala": 1.600000023841858
+        },
+        {
+            "Id": "arcanjo",
+            "Nome": "Arcanjo Dourado",
+            "Descricao": "Mais ouro a cada vitória",
+            "Raridade": 4,
+            "FracaoDoAutoAtaque": 0.75,
+            "IntervaloDeAtaque": 1.5,
+            "Efeito": 2,
+            "ValorDoEfeito": 0.6,
+            "Familia": 0,
+            "Cor": "#F4E8C8",
+            "CorSecundaria": "#F4C82A",
+            "Escala": 1.2000000476837158
+        }
+    ],
+    "gacha": {
+        "CustoPorInvocacao": 100,
+        "CustoDeDez": 900,
+        "Taxas": [
+            50.0,
+            30.0,
+            14.0,
+            5.0,
+            1.0
+        ],
+        "PityEpico": 30,
+        "PityLendario": 90,
+        "BonusPorEstrela": 0.2,
+        "MaximoDeEstrelas": 5,
+        "CristaisPorEstrelaExtra": 50,
+        "CristaisPorChefe": 25,
+        "CristaisDaAscensao": 200,
+        "CristaisPorAlma": 5,
+        "VitoriasAfkPorCristal": 20
+    },
+    "campanha": {
+        "VidaBase": 100.0,
+        "CrescimentoPorEstagio": 1.25,
+        "OuroPorVida": 0.5,
+        "VitoriasParaAvancar": 10,
+        "ChefeACada": 5,
+        "MultiplicadorDeVidaDoChefe": 10.0,
+        "EstagiosPorRegiao": 10,
+        "FracaoDoAfk": 0.25,
+        "LimiteDoAfkEmHoras": 12.0,
+        "SegundosEntreLutasNoAfk": 5.0,
+        "MinimoDoAfkEmSegundos": 60.0,
+        "EstagioMinimoDaAscensao": 50,
+        "EstagioBaseDasAlmas": 45,
+        "DivisorDasAlmas": 5.0,
+        "BonusPorAlma": 0.1
+    },
+    "parametrosDosItens": {
+        "ChanceDeDrop": 0.25,
+        "PesosDaRaridade": [
+            60.0,
+            25.0,
+            10.0,
+            4.0,
+            1.0
+        ],
+        "RaridadeMinimaDoChefe": 1,
+        "BonusDaRaridade": [
+            0.1,
+            0.25,
+            0.5,
+            1.0,
+            2.0
+        ],
+        "CrescimentoPorEstagio": 1.05,
+        "CrescimentoDoPreco": 1.15,
+        "LimiteDoInventario": 48,
+        "CustoDeFabricarEmOuro": 200.0,
+        "MaterialParaFabricar": 5,
+        "PrecoDeVenda": [
+            10.0,
+            30.0,
+            90.0,
+            300.0,
+            1000.0
+        ],
+        "MaterialAoDesmontar": [
+            1,
+            2,
+            4,
+            8,
+            16
+        ]
+    },
+    "conquistas": [
+        {
+            "Id": "vitorias",
+            "Nome": "Guerreiro incansável",
+            "Descricao": "Vença {0} batalhas",
+            "Meta": 0,
+            "Degraus": [
+                10.0,
+                100.0,
+                1000.0,
+                10000.0,
+                100000.0
+            ]
+        },
+        {
+            "Id": "chefes",
+            "Nome": "Caçador de chefes",
+            "Descricao": "Derrote {0} chefes",
+            "Meta": 1,
+            "Degraus": [
+                1.0,
+                5.0,
+                25.0,
+                100.0,
+                500.0
+            ]
+        },
+        {
+            "Id": "estagio",
+            "Nome": "Desbravador",
+            "Descricao": "Chegue ao estágio {0}",
+            "Meta": 2,
+            "Degraus": [
+                10.0,
+                25.0,
+                50.0,
+                100.0,
+                200.0
+            ]
+        },
+        {
+            "Id": "ascensoes",
+            "Nome": "Renascido",
+            "Descricao": "Ascenda {0} vezes",
+            "Meta": 3,
+            "Degraus": [
+                1.0,
+                5.0,
+                10.0,
+                25.0,
+                50.0
+            ]
+        },
+        {
+            "Id": "epicos",
+            "Nome": "Tesouro raro",
+            "Descricao": "Obtenha {0} itens Épicos ou Lendários",
+            "Meta": 4,
+            "Degraus": [
+                1.0,
+                10.0,
+                50.0,
+                200.0
+            ]
+        },
+        {
+            "Id": "refino",
+            "Nome": "Mestre ferreiro",
+            "Descricao": "Refine um item até +{0}",
+            "Meta": 5,
+            "Degraus": [
+                5.0,
+                10.0,
+                20.0,
+                40.0
+            ]
+        },
+        {
+            "Id": "fabricados",
+            "Nome": "Artesão",
+            "Descricao": "Fabrique {0} itens na forja",
+            "Meta": 6,
+            "Degraus": [
+                1.0,
+                10.0,
+                50.0,
+                200.0
+            ]
+        },
+        {
+            "Id": "ouro",
+            "Nome": "Fortuna",
+            "Descricao": "Ganhe {0} de ouro no total",
+            "Meta": 7,
+            "Degraus": [
+                1000.0,
+                1000000.0,
+                1000000000.0,
+                1000000000000.0,
+                1000000000000000.0
+            ]
+        },
+        {
+            "Id": "bestiario",
+            "Nome": "Estudioso",
+            "Descricao": "Alcance {0} marcos no bestiário",
+            "Meta": 8,
+            "Degraus": [
+                1.0,
+                5.0,
+                10.0,
+                20.0
+            ]
+        }
+    ],
+    "reliquias": [
+        {
+            "Id": "manopla_tita",
+            "Nome": "Manopla do Titã",
+            "Descricao": "+100% de dano do click por nível",
+            "Alvo": 0,
+            "BonusPorNivel": 1.0,
+            "CustoParaMontar": 15
+        },
+        {
+            "Id": "coroa_rei_caido",
+            "Nome": "Coroa do Rei Caído",
+            "Descricao": "+50% de dano do click por nível",
+            "Alvo": 0,
+            "BonusPorNivel": 0.5,
+            "CustoParaMontar": 30
+        },
+        {
+            "Id": "engrenagem_eterna",
+            "Nome": "Engrenagem Eterna",
+            "Descricao": "+100% de dano do auto-ataque por nível",
+            "Alvo": 1,
+            "BonusPorNivel": 1.0,
+            "CustoParaMontar": 15
+        },
+        {
+            "Id": "relogio_parado",
+            "Nome": "Relógio Parado",
+            "Descricao": "+50% de dano do auto-ataque por nível",
+            "Alvo": 1,
+            "BonusPorNivel": 0.5,
+            "CustoParaMontar": 30
+        },
+        {
+            "Id": "apito_bestial",
+            "Nome": "Apito Bestial",
+            "Descricao": "+100% de dano do follower por nível",
+            "Alvo": 2,
+            "BonusPorNivel": 1.0,
+            "CustoParaMontar": 20
+        },
+        {
+            "Id": "colar_vinculo",
+            "Nome": "Colar do Vínculo",
+            "Descricao": "+50% de dano do follower por nível",
+            "Alvo": 2,
+            "BonusPorNivel": 0.5,
+            "CustoParaMontar": 35
+        },
+        {
+            "Id": "calice_dourado",
+            "Nome": "Cálice Dourado",
+            "Descricao": "+25% de ouro por nível",
+            "Alvo": 3,
+            "BonusPorNivel": 0.25,
+            "CustoParaMontar": 20
+        },
+        {
+            "Id": "ampulheta_sonho",
+            "Nome": "Ampulheta do Sonho",
+            "Descricao": "+15% de AFK por nível",
+            "Alvo": 4,
+            "BonusPorNivel": 0.15,
+            "CustoParaMontar": 25
+        },
+        {
+            "Id": "olho_falcao",
+            "Nome": "Olho de Falcão",
+            "Descricao": "+2% de chance crítica por nível",
+            "Alvo": 5,
+            "BonusPorNivel": 0.02,
+            "CustoParaMontar": 25
+        },
+        {
+            "Id": "trevo_ancestral",
+            "Nome": "Trevo Ancestral",
+            "Descricao": "+15% de chance de item por nível",
+            "Alvo": 6,
+            "BonusPorNivel": 0.15,
+            "CustoParaMontar": 25
+        },
+        {
+            "Id": "lente_runica",
+            "Nome": "Lente Rúnica",
+            "Descricao": "+20% de duração do ponto fraco por nível",
+            "Alvo": 7,
+            "BonusPorNivel": 0.2,
+            "CustoParaMontar": 20
+        },
+        {
+            "Id": "estrela_cadente",
+            "Nome": "Estrela Cadente",
+            "Descricao": "+25% de dano do click por nível",
+            "Alvo": 0,
+            "BonusPorNivel": 0.25,
+            "CustoParaMontar": 10
+        }
+    ],
+    "predios": [
+        {
+            "Id": "balcao",
+            "Nome": "Balcão",
+            "Descricao": "Clientes pagando: 2% do ouro de uma vitória por segundo, por nível",
+            "Efeito": 0,
+            "BonusPorNivel": 0.02,
+            "CustoBase": 200.0,
+            "CrescimentoDoCusto": 1.6
+        },
+        {
+            "Id": "cozinha",
+            "Nome": "Cozinha",
+            "Descricao": "Refeições fortes: +3% de todo o dano por nível",
+            "Efeito": 1,
+            "BonusPorNivel": 0.03,
+            "CustoBase": 500.0,
+            "CrescimentoDoCusto": 1.8
+        },
+        {
+            "Id": "quartos",
+            "Nome": "Quartos",
+            "Descricao": "Descanso: +3% da recompensa AFK por nível",
+            "Efeito": 2,
+            "BonusPorNivel": 0.03,
+            "CustoBase": 400.0,
+            "CrescimentoDoCusto": 1.7
+        },
+        {
+            "Id": "adega",
+            "Nome": "Adega",
+            "Descricao": "Bons negócios: +3% de ouro das vitórias por nível",
+            "Efeito": 3,
+            "BonusPorNivel": 0.03,
+            "CustoBase": 400.0,
+            "CrescimentoDoCusto": 1.7
+        }
+    ],
+    "missoes": [
+        {
+            "Id": "patrulha",
+            "Nome": "Patrulha",
+            "Horas": 1.0,
+            "Cristais": 5,
+            "Lutas": 10,
+            "ChanceDeItem": 0.2
+        },
+        {
+            "Id": "cacada",
+            "Nome": "Caçada",
+            "Horas": 4.0,
+            "Cristais": 25,
+            "Lutas": 40,
+            "ChanceDeItem": 0.6
+        },
+        {
+            "Id": "jornada",
+            "Nome": "Jornada",
+            "Horas": 8.0,
+            "Cristais": 60,
+            "Lutas": 90,
+            "ChanceDeItem": 1.5
+        }
+    ],
+    "recursos": [
+        {
+            "Id": "moita_erva",
+            "Nome": "Moita de erva-lunar",
+            "MaterialId": "erva_lunar",
+            "NomeDoMaterial": "Erva-lunar",
+            "Forma": 0,
+            "Cor": "#8CE07A",
+            "Golpes": 4,
+            "QuantidadeBase": 3,
+            "SegundosParaRebrotar": 40.0
+        },
+        {
+            "Id": "cogumelo",
+            "Nome": "Cogumelo rubro",
+            "MaterialId": "cogumelo_rubro",
+            "NomeDoMaterial": "Cogumelo rubro",
+            "Forma": 1,
+            "Cor": "#D84A4A",
+            "Golpes": 5,
+            "QuantidadeBase": 2,
+            "SegundosParaRebrotar": 50.0
+        },
+        {
+            "Id": "veio_minerio",
+            "Nome": "Veio de minério celeste",
+            "MaterialId": "minerio_celeste",
+            "NomeDoMaterial": "Minério celeste",
+            "Forma": 2,
+            "Cor": "#5AB8F0",
+            "Golpes": 8,
+            "QuantidadeBase": 2,
+            "SegundosParaRebrotar": 70.0
+        }
+    ],
+    "pocoes": [
+        {
+            "Id": "forca",
+            "Nome": "Poção de Força",
+            "Descricao": "×2 em todo o dano por 10 min",
+            "Efeito": 0,
+            "Valor": 1.0,
+            "DuracaoEmMinutos": 10.0,
+            "CustoEmVitorias": 4.0,
+            "Ingredientes": [
+                {
+                    "Id": "erva_lunar",
+                    "Valor": 3
+                },
+                {
+                    "Id": "presa",
+                    "Valor": 2
+                }
+            ]
+        },
+        {
+            "Id": "fortuna",
+            "Nome": "Elixir da Fortuna",
+            "Descricao": "+100% de ouro por 10 min",
+            "Efeito": 1,
+            "Valor": 1.0,
+            "DuracaoEmMinutos": 10.0,
+            "CustoEmVitorias": 4.0,
+            "Ingredientes": [
+                {
+                    "Id": "cogumelo_rubro",
+                    "Valor": 3
+                },
+                {
+                    "Id": "gosma",
+                    "Valor": 2
+                }
+            ]
+        },
+        {
+            "Id": "sorte",
+            "Nome": "Tônico da Sorte",
+            "Descricao": "+100% de chance de item por 10 min",
+            "Efeito": 2,
+            "Valor": 1.0,
+            "DuracaoEmMinutos": 10.0,
+            "CustoEmVitorias": 6.0,
+            "Ingredientes": [
+                {
+                    "Id": "minerio_celeste",
+                    "Valor": 2
+                },
+                {
+                    "Id": "cogumelo_rubro",
+                    "Valor": 3
+                }
+            ]
+        },
+        {
+            "Id": "precisao",
+            "Nome": "Óleo da Precisão",
+            "Descricao": "+10% de chance crítica por 10 min",
+            "Efeito": 3,
+            "Valor": 0.1,
+            "DuracaoEmMinutos": 10.0,
+            "CustoEmVitorias": 6.0,
+            "Ingredientes": [
+                {
+                    "Id": "minerio_celeste",
+                    "Valor": 2
+                },
+                {
+                    "Id": "erva_lunar",
+                    "Valor": 3
+                }
+            ]
+        },
+        {
+            "Id": "sono",
+            "Nome": "Poção do Sono Profundo",
+            "Descricao": "×2 na próxima recompensa AFK",
+            "Efeito": 4,
+            "Valor": 1.0,
+            "DuracaoEmMinutos": 0.0,
+            "CustoEmVitorias": 10.0,
+            "Ingredientes": [
+                {
+                    "Id": "erva_lunar",
+                    "Valor": 3
+                },
+                {
+                    "Id": "cogumelo_rubro",
+                    "Valor": 3
+                },
+                {
+                    "Id": "minerio_celeste",
+                    "Valor": 2
+                }
+            ]
+        }
+    ],
+    "liberacoes": [
+        {
+            "Sistema": 1,
+            "Estagio": 3
+        },
+        {
+            "Sistema": 2,
+            "Estagio": 5
+        },
+        {
+            "Sistema": 3,
+            "Estagio": 7
+        },
+        {
+            "Sistema": 4,
+            "Estagio": 10
+        },
+        {
+            "Sistema": 5,
+            "Estagio": 12
+        },
+        {
+            "Sistema": 6,
+            "Estagio": 15
+        },
+        {
+            "Sistema": 7,
+            "Estagio": 18
+        },
+        {
+            "Sistema": 8,
+            "Estagio": 21
+        },
+        {
+            "Sistema": 9,
+            "Estagio": 24
+        },
+        {
+            "Sistema": 10,
+            "Estagio": 50
+        }
+    ],
+    "capitulos": [
+        {
+            "Numero": 1,
+            "Nome": "O Porto de Partida",
+            "EstagioFinal": 30,
+            "NomeDoChefeFinal": "Almirante Espectral",
+            "MultiplicadorDoChefeFinal": 3.0,
+            "Cenas": [
+                {
+                    "Id": "cap1_inicio",
+                    "Estagio": 1,
+                    "Falas": [
+                        {
+                            "Quem": "Capitã Marina",
+                            "Texto": "Acordou, finalmente! Você foi o único que sobreviveu ao naufrágio."
+                        },
+                        {
+                            "Quem": "Capitã Marina",
+                            "Texto": "Desde que a Coroa Celeste se partiu, os mares ficaram cheios de monstros. Esta ilha também."
+                        },
+                        {
+                            "Quem": "Capitã Marina",
+                            "Texto": "Meu navio precisa de reparos. Limpe os campos para mim e eu te levo para onde quiser."
+                        }
+                    ]
+                },
+                {
+                    "Id": "cap1_forja",
+                    "Estagio": 3,
+                    "Falas": [
+                        {
+                            "Quem": "Ferreira Brunhilda",
+                            "Texto": "Essa lâmina não aguenta nem uma gosma. Traga ouro e presas e eu deixo ela digna de um herói."
+                        },
+                        {
+                            "Quem": "Narrador",
+                            "Texto": "A Forja está aberta: refine seus itens e fabrique novos."
+                        }
+                    ]
+                },
+                {
+                    "Id": "cap1_inventario",
+                    "Estagio": 5,
+                    "Falas": [
+                        {
+                            "Quem": "Capitã Marina",
+                            "Texto": "Um chefe guardava esta trilha! Olhe só o que ele deixou cair."
+                        },
+                        {
+                            "Quem": "Capitã Marina",
+                            "Texto": "Os monstros carregam equipamentos de quem eles venceram. Guarde, equipe e venda o que sobrar."
+                        },
+                        {
+                            "Quem": "Narrador",
+                            "Texto": "O Inventário está aberto."
+                        }
+                    ]
+                },
+                {
+                    "Id": "cap1_bestiario",
+                    "Estagio": 7,
+                    "Falas": [
+                        {
+                            "Quem": "Sábio Odran",
+                            "Texto": "Cada criatura tem seus pontos fracos. Quanto mais você enfrenta, mais aprende sobre ela."
+                        },
+                        {
+                            "Quem": "Narrador",
+                            "Texto": "O Bestiário está aberto: derrotar um tipo de monstro muitas vezes dá bônus permanentes."
+                        }
+                    ]
+                },
+                {
+                    "Id": "cap1_followers",
+                    "Estagio": 10,
+                    "Falas": [
+                        {
+                            "Quem": "Oráculo dos Pactos",
+                            "Texto": "Viajante... criaturas e heróis de todas as ilhas atendem ao chamado dos cristais."
+                        },
+                        {
+                            "Quem": "Oráculo dos Pactos",
+                            "Texto": "Faça um pacto e alguém lutará ao seu lado."
+                        },
+                        {
+                            "Quem": "Narrador",
+                            "Texto": "Os Followers estão abertos: invoque companheiros com cristais."
+                        }
+                    ]
+                },
+                {
+                    "Id": "cap1_bosque",
+                    "Estagio": 11,
+                    "Falas": [
+                        {
+                            "Quem": "Capitã Marina",
+                            "Texto": "Além dos campos fica o Bosque Sombrio. Dizem que um fragmento da coroa caiu lá dentro."
+                        },
+                        {
+                            "Quem": "Capitã Marina",
+                            "Texto": "Tome cuidado. As árvores lá têm olhos."
+                        }
+                    ]
+                },
+                {
+                    "Id": "cap1_conquistas",
+                    "Estagio": 12,
+                    "Falas": [
+                        {
+                            "Quem": "Narrador",
+                            "Texto": "Seus feitos começam a ser contados nas tavernas do porto."
+                        },
+                        {
+                            "Quem": "Narrador",
+                            "Texto": "As Conquistas estão abertas: cada meta cumprida dá cristais e fortalece todo o seu dano."
+                        }
+                    ]
+                },
+                {
+                    "Id": "cap1_reliquias",
+                    "Estagio": 15,
+                    "Falas": [
+                        {
+                            "Quem": "Sábio Odran",
+                            "Texto": "Estes cacos brilhantes... são fragmentos da Coroa Celeste! Os chefes os carregam sem saber."
+                        },
+                        {
+                            "Quem": "Sábio Odran",
+                            "Texto": "Junte os cacos e eu monto relíquias com o poder que restou neles."
+                        },
+                        {
+                            "Quem": "Narrador",
+                            "Texto": "As Relíquias estão abertas: chefes dão fragmentos para montar e melhorar relíquias."
+                        }
+                    ]
+                },
+                {
+                    "Id": "cap1_taverna",
+                    "Estagio": 18,
+                    "Falas": [
+                        {
+                            "Quem": "Taverneira Rosa",
+                            "Texto": "O porto está renascendo graças a você. Que tal cuidar desta taverna velha?"
+                        },
+                        {
+                            "Quem": "Taverneira Rosa",
+                            "Texto": "Clientes pagam até quando você está longe, e uma boa cozinha deixa qualquer um mais forte."
+                        },
+                        {
+                            "Quem": "Narrador",
+                            "Texto": "A Taverna está aberta."
+                        }
+                    ]
+                },
+                {
+                    "Id": "cap1_ruinas",
+                    "Estagio": 21,
+                    "Falas": [
+                        {
+                            "Quem": "Capitã Marina",
+                            "Texto": "O navio está pronto! Vamos às Ruínas Antigas, do outro lado da baía."
+                        },
+                        {
+                            "Quem": "Capitã Marina",
+                            "Texto": "E seus companheiros que estão parados podem navegar comigo em expedições pelas ilhas próximas."
+                        },
+                        {
+                            "Quem": "Narrador",
+                            "Texto": "As Expedições estão abertas."
+                        }
+                    ]
+                },
+                {
+                    "Id": "cap1_alquimia",
+                    "Estagio": 24,
+                    "Falas": [
+                        {
+                            "Quem": "Alquimista Vex",
+                            "Texto": "Ervas-lunares, cogumelos rubros, minério celeste... a ilha está cheia de ingredientes."
+                        },
+                        {
+                            "Quem": "Alquimista Vex",
+                            "Texto": "Traga para mim e eu preparo poções que nem o Rei Caído conhece."
+                        },
+                        {
+                            "Quem": "Narrador",
+                            "Texto": "A Alquimia está aberta: colha ingredientes no mapa golpeando os pontos de coleta."
+                        }
+                    ]
+                },
+                {
+                    "Id": "cap1_chefe",
+                    "Estagio": 30,
+                    "Falas": [
+                        {
+                            "Quem": "Capitã Marina",
+                            "Texto": "Aquele navio-fantasma nas ruínas... é o Almirante Espectral. Ele guarda o maior fragmento da ilha."
+                        },
+                        {
+                            "Quem": "Capitã Marina",
+                            "Texto": "Derrote-o e o caminho para o mar aberto estará livre."
+                        }
+                    ]
+                },
+                {
+                    "Id": "cap1_fim",
+                    "Estagio": 31,
+                    "Falas": [
+                        {
+                            "Quem": "Capitã Marina",
+                            "Texto": "Você conseguiu! O fragmento é seu."
+                        },
+                        {
+                            "Quem": "Rei Caído",
+                            "Texto": "...Um fragmento a menos para mim. Aproveite enquanto pode, herói."
+                        },
+                        {
+                            "Quem": "Capitã Marina",
+                            "Texto": "Meu barco não chega às ilhas do céu. Para seguir os fragmentos, vamos precisar de uma nave aérea."
+                        },
+                        {
+                            "Quem": "Narrador",
+                            "Texto": "Fim do Capítulo 1. Os estágios seguem: fique mais forte para o que vem pela frente."
+                        }
+                    ]
+                },
+                {
+                    "Id": "ascensao",
+                    "Estagio": 50,
+                    "Falas": [
+                        {
+                            "Quem": "Oráculo dos Pactos",
+                            "Texto": "Sua alma já carrega o peso de muitas batalhas. Você pode renascer mais forte."
+                        },
+                        {
+                            "Quem": "Narrador",
+                            "Texto": "A Ascensão está aberta: recomece em troca de Almas, que multiplicam todo o dano para sempre."
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "vagasDeExpedicao": 3,
+    "limiteDaTavernaEmHoras": 12.0,
+    "parametrosDasReliquias": {
+        "FragmentosPorChefe": 3,
+        "EstagiosPorFragmentoExtra": 10,
+        "NivelMaximo": 10,
+        "CustoBaseDeMelhoria": 10
+    },
+    "parametrosDasConquistas": {
+        "BonusPorConquista": 0.01,
+        "CristaisBase": 10
+    }
+}

@@ -221,7 +221,7 @@ Decisão tomada: **Unity 6 (6000.6.10f1) com URP**, Personal (gratuita). Na comp
 | Casos de uso | `Core/UseCases` | Uma classe por ação do jogador (comprar, forjar, registrar vitória...). |
 | Composição | VContainer | Injeção de dependência; escopo do jogo entre cenas e escopo por cena. |
 | Save | JSON no dispositivo | Adaptador da porta `IRepositorioDeProgresso`; o servidor será outro adaptador. |
-| Backend (futuro) | Nakama (self-hosted) + PostgreSQL | Contas, save na nuvem, chat, guildas, rankings, gacha, AFK. |
+| Backend | Unity Gaming Services (Authentication, Cloud Code em C#, Cloud Save, Leaderboards) | Conta, save na nuvem e ranking (etapa 1, ver `docs/online.md`); depois chat, guildas, gacha e AFK. |
 | Números gigantes | `double` (BreakInfinity.cs no futuro) | Formatação K, M, B, T, aa... |
 
 ### Princípios
@@ -248,7 +248,7 @@ Decisão tomada: **Unity 6 (6000.6.10f1) com URP**, Personal (gratuita). Na comp
 | Papel | Responsabilidades |
 |---|---|
 | Programação de gameplay | Combate, câmera, movimento, interface, integração com o servidor. |
-| Programação de backend | Nakama, banco, autoridade de batalha, gacha, AFK, guildas, PvP. |
+| Programação de backend | Cloud Code, banco, autoridade de batalha, gacha, AFK, guildas, PvP. |
 | Arte (via GPT + curadoria) | Personagens, followers e monstros pintados; folhas de partes. |
 | Game design | Balanceamento, fórmulas, economia, campanha. |
 
@@ -259,7 +259,7 @@ Decisão tomada: **Unity 6 (6000.6.10f1) com URP**, Personal (gratuita). Na comp
 | 0. Base técnica | Projeto Unity + URP, câmera com zona morta, movimento, formatação de números, testes. | Concluída |
 | 1. Protótipo de diversão | Encontro no mapa, combate com 4 camadas, upgrades com marcos, forja, bestiário, Poder Total, campanha com chefes e regiões, save, feedback do golpe, interface, Guerreiro e Pip, cenário HD-2D. | Código concluído; falta validar com jogadores |
 | 2. Vertical slice | Arte final dos personagens e monstros, 4 classes, gacha de followers, AFK, Ascensão, capítulo 1 com história. | Próxima |
-| 3. Online | Nakama, contas, save na nuvem, lobby/taverna, chat, cálculo autoritativo. | Futuro |
+| 3. Online | Contas, save na nuvem e ranking (código pronto, falta publicar); lobby/taverna, chat, cálculo autoritativo. | Em andamento |
 | 4. Alpha | Co-op, guildas, PvP assíncrono, rankings, teste fechado. | Futuro |
 | 5. Beta / lançamento | Balanceamento, otimização mobile, publicação. | Futuro |
 
@@ -294,7 +294,7 @@ O que já existe na `main` (PRs #1 a #15):
 
 ### Fase 3 em diante
 
-Nakama, contas, save na nuvem (novo adaptador da mesma porta), lobby/taverna com jogadores, guildas, PvP assíncrono e rankings.
+Contas, save na nuvem e rankings (etapa 1, com Unity Gaming Services), lobby/taverna com jogadores, guildas e PvP assíncrono.
 
 ## 19. Riscos e decisões em aberto
 

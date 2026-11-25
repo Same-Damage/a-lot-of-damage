@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>ALotOfDamage.Nuvem</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- as mesmas regras do jogo, sem cópia -->
+    <Compile Include="../../Scripts/Core/**/*.cs" LinkBase="Core" />
+    <EmbeddedResource Include="catalogo.json" LogicalName="catalogo.json" Condition="Exists('catalogo.json')" />
+    <PackageReference Include="Com.Unity.Services.CloudCode.Core" Version="0.0.9" />
+    <PackageReference Include="Com.Unity.Services.CloudCode.Apis" Version="0.0.27" />
+  </ItemGroup>
+</Project>

@@ -1142,6 +1142,18 @@ namespace ALotOfDamage.Core
 
         public double Executar() =>
             RegrasDePoder.Poder(calcularAtributos.Executar(null), RegrasDePoder.MultiplicadorCriticoPadrao);
+
+        // Poder de um progresso que não é o do jogo em andamento (save da nuvem, servidor). Sem poções, que são passageiras
+        public static double De(DadosDoProgresso dados, ICatalogo catalogo) =>
+            new CalcularPoder(new CalcularAtributos(new ProgressoFixo(Progresso.Importar(dados)), catalogo)).Executar();
+
+        class ProgressoFixo : IRepositorioDeProgresso
+        {
+            readonly Progresso progresso;
+            public ProgressoFixo(Progresso p) => progresso = p;
+            public Progresso Carregar() => progresso;
+            public void Salvar(Progresso p) { }
+        }
     }
 
     // Dano e crítico do jogador contra um tipo de monstro: upgrades × itens equipados × bestiário × Almas × conquistas

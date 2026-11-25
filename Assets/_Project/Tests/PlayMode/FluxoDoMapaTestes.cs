@@ -61,6 +61,21 @@ namespace ALotOfDamage.Testes
         }
 
         [UnityTest]
+        public IEnumerator Sem_online_configurado_as_janelas_abrem_e_o_jogo_segue()
+        {
+            yield return Carregar(FluxoDeEncontro.CenaDoMapa);
+            Assert.AreEqual(SituacaoDaNuvem.Desligada, EscopoDoJogo.Instancia.Container.Resolve<SincronizarProgresso>().Situacao);
+            Assert.IsFalse(SincroniaDaNuvem.Bloqueando);
+            foreach (var janela in new JanelaDoJogo[] { Object.FindAnyObjectByType<JanelaDaConta>(), Object.FindAnyObjectByType<JanelaDoRanking>() })
+            {
+                janela.Alternar();
+                yield return null;
+                Assert.IsTrue(janela.Aberta);
+                janela.Alternar();
+            }
+        }
+
+        [UnityTest]
         public IEnumerator Follower_acompanha_o_jogador_no_mapa()
         {
             yield return Carregar(FluxoDeEncontro.CenaDoMapa);

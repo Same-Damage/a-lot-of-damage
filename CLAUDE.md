@@ -131,8 +131,10 @@ Decisões já tomadas. Mudar qualquer uma delas é decisão de design, não de i
 - **História e liberação**: mundo de ilhas de terra num mar (barcos e naves aéreas), Coroa Celeste partida, Rei Caído. Capítulo 1 "O Porto de Partida" (estágios 1–30, chefe final Almirante Espectral ×3). Cada sistema libera num estágio (`LiberacaoDeSistema`, caso de uso `ConsultarLiberacao`), apresentado por uma cena (`ProximaCena`, `MarcarCenaVista`, `CaixaDeDialogo`); dados em `BalanceamentoDaHistoria`. Janela nova declara o `Sistema` dela na `JanelaDoJogo`.
 - Recompensa AFK com limite de 12 h acumuladas: o herói luta sozinho no estágio atual (só auto-ataque e follower) e rende 25% dessas lutas em ouro, material da região e itens (`RegrasDoAfk`, números em `ParametrosDaCampanha`). O tempo fora conta da última presença (`Progresso.UltimaPresencaUtc`, marcada pela `JanelaDaRecompensaAfk` a cada 30 s e ao pausar ou fechar); a hora entra pela porta `IRelogio`. Sem energia/stamina: o limite é só tempo e recurso.
 
-### Online (futuro)
-- Backend planejado: Nakama (self-hosted) + PostgreSQL. Lobby/taverna com jogadores e NPCs, co-op, guildas, PvP assíncrono e rankings.
+### Online
+- Backend: **Unity Gaming Services** (faixa gratuita), no lugar do Nakama planejado antes. Etapa 1 pronta no código: conta (convidado, com usuário e senha opcionais), save na nuvem e ranking; como configurar e publicar em `docs/online.md`. O servidor é o módulo C# do Cloud Code em `Assets/_Project/Server~` (a Unity ignora a pasta), que compila os mesmos arquivos do `Core`. O jogo usa sempre o save local; `SincronizarProgresso` + `RegrasDaNuvem` comparam com a nuvem e, se os dois lados mudaram, o jogador escolhe. Sem projeto vinculado ou nos testes, entra o `OnlineDesligado`.
+- Ao mudar balanceamento, exporte o catálogo do servidor (menu **A Lot of Damage**) e publique o módulo. Tecla do jogo se lê por `KitDeInterface.Teclado`, que fica nulo enquanto se digita.
+- Próximas etapas: lobby/taverna com jogadores e NPCs, co-op, guildas, PvP assíncrono e rankings.
 - O servidor é a fonte da verdade: dano, gacha, AFK, ranking e recompensas são calculados ou validados nele. O cliente envia ações (ex.: "cliquei no alvo X"), não resultados.
 - Por isso a lógica de regras fica em C# puro desde já: o mesmo código pode rodar no cliente e no servidor.
 
@@ -217,7 +219,7 @@ Regras:
   - `MonoBehaviour` recebe dependências por um método `[Inject] public void Construir(...)` e só as usa a partir do `Start`, nunca no `Awake`.
   - Serviço novo é registrado no `EscopoDoJogo`.
 - Valores de balanceamento ficam em assets de `Data/Resources` com o nome da classe (`BalanceamentoDeUpgrades`, `BalanceamentoDaForja`, `BalanceamentoDoBestiario`, `BalanceamentoDePersonagens`, `BalanceamentoDaCampanha`, `BalanceamentoDasConquistas`, `BalanceamentoDasReliquias`, `BalanceamentoDaTaverna`), herdando de `Balanceamento<T>`. O jogo os lê só pelo `ICatalogo`.
-- Quando chegar o servidor (Nakama), entram adaptadores novos para as mesmas portas (ex.: `RepositorioDeProgressoNoServidor`) e os casos de uso viram as ações que o cliente envia. O domínio não muda.
+- O online entra por portas próprias (`IContaOnline`, `INuvemDeProgresso`, `IRanking`), com adaptadores em `Infrastructure/Online`; as regras que o servidor confere estão no `Core`.
 - Nível de upgrade começa em 1; item da forja começa em +0.
 - Save: o `EscopoDoJogo` usa `RepositorioDeProgressoEmArquivo` (`progresso.json` em `Application.persistentDataPath`; no editor, `progresso-editor.json`). Rodando com `-runTests`, usa o repositório em memória para os testes não mexerem no save. Campo novo no `Progresso` entra também em `DadosDoProgresso`, com valor seguro no `Importar` para saves antigos.
 - Campo novo numa definição de balanceamento (`DefinicaoDeMonstro`...) não pega o valor do `Padrao()` em assets que já existem: ajuste o asset ou apague-o para o `ConstrutorDeCenas` recriar.

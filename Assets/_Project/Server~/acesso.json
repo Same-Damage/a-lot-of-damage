@@ -1,0 +1,12 @@
+{
+  "statements": [
+    {
+      "Sid": "jogador-nao-pontua-direto",
+      "Action": ["Write"],
+      "Effect": "Deny",
+      "Principal": "Player",
+      "Resource": "urn:ugs:leaderboards:*",
+      "Version": "1.0.0"
+    }
+  ]
+}

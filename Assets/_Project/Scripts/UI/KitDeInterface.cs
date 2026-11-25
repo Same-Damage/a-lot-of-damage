@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
@@ -138,6 +139,44 @@ namespace ALotOfDamage.UI
             Esticar((RectTransform)t.transform);
             t.text = rotulo;
             return botao;
+        }
+
+        // Teclado do jogo: nulo enquanto o jogador digita num campo ou uma tela da nuvem está por cima
+        public static Keyboard Teclado
+        {
+            get
+            {
+                if (SincroniaDaNuvem.Bloqueando) return null;
+                var atual = EventSystem.current ? EventSystem.current.currentSelectedGameObject : null;
+                return atual && atual.TryGetComponent<InputField>(out var campo) && campo.isFocused ? null : Keyboard.current;
+            }
+        }
+
+        public static InputField Campo(string nome, Transform pai, string dica, bool secreto, int limite)
+        {
+            var img = Painel(nome, pai, Color.white, false);
+            img.sprite = TemaVisual.FundoDaBarra;
+            img.type = Image.Type.Sliced;
+            var campo = img.gameObject.AddComponent<InputField>();
+            Text Dentro(string n, Color cor)
+            {
+                var t = Texto(n, img.transform, 24, cor);
+                t.supportRichText = false;
+                t.horizontalOverflow = HorizontalWrapMode.Wrap;
+                t.verticalOverflow = VerticalWrapMode.Truncate;
+                var rt = (RectTransform)t.transform;
+                Esticar(rt);
+                rt.offsetMin = new Vector2(16, 4);
+                rt.offsetMax = new Vector2(-16, -4);
+                return t;
+            }
+            campo.textComponent = Dentro("Digitado", TextoClaro);
+            campo.placeholder = Dentro("Dica", new Color(0.7f, 0.67f, 0.6f));
+            ((Text)campo.placeholder).text = dica;
+            campo.characterLimit = limite;
+            campo.contentType = secreto ? InputField.ContentType.Password : InputField.ContentType.Standard;
+            campo.navigation = new Navigation { mode = Navigation.Mode.None };
+            return campo;
         }
 
         public static void Esticar(RectTransform rt)

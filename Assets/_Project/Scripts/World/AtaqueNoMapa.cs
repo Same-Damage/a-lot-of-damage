@@ -36,7 +36,7 @@ namespace ALotOfDamage.World
 
         static bool AtaquePedido()
         {
-            var k = Keyboard.current;
+            var k = KitDeInterface.Teclado;
             if (k != null && (k.fKey.wasPressedThisFrame || k.spaceKey.wasPressedThisFrame)) return true;
             if (Gamepad.current != null && Gamepad.current.buttonWest.wasPressedThisFrame) return true;
             return ControlesDeToque.ConsumirAtaque();

@@ -36,6 +36,7 @@ namespace ALotOfDamage.Infrastructure
             builder.Register<ICatalogo, CatalogoDeBalanceamento>(Lifetime.Singleton);
             builder.Register<ISorteio, SorteioDaUnity>(Lifetime.Singleton);
             builder.Register<IRelogio, RelogioDoSistema>(Lifetime.Singleton);
+            RegistrarOnline(builder);
             builder.Register<FluxoDeEncontro>(Lifetime.Singleton);
 
             builder.Register<ComprarUpgrade>(Lifetime.Singleton);
@@ -79,6 +80,22 @@ namespace ALotOfDamage.Infrastructure
             builder.Register<ColetarRecompensaAfk>(Lifetime.Singleton);
             builder.Register<ListarPendencias>(Lifetime.Singleton);
             builder.Register<EscolhaDeHeroi>(Lifetime.Singleton);
+            builder.Register<SincronizarProgresso>(Lifetime.Singleton);
+        }
+
+        // Sem projeto da Unity vinculado, e nos testes, o jogo não fala com a nuvem
+        static void RegistrarOnline(IContainerBuilder builder)
+        {
+            builder.Register<ISerializadorDeProgresso, SerializadorDeProgresso>(Lifetime.Singleton);
+            builder.RegisterInstance<IGuardaDaSincronia>(new GuardaDaSincroniaEmArquivo(CaminhoDoSave, SystemInfo.deviceModel));
+            if (RodandoTestes || string.IsNullOrEmpty(Application.cloudProjectId))
+            {
+                builder.Register<OnlineDesligado>(Lifetime.Singleton).As<IContaOnline, INuvemDeProgresso, IRanking>();
+                return;
+            }
+            builder.Register<IContaOnline, ContaDaUnity>(Lifetime.Singleton);
+            builder.Register<INuvemDeProgresso, NuvemDaUnity>(Lifetime.Singleton);
+            builder.Register<IRanking, RankingDaUnity>(Lifetime.Singleton);
         }
     }
 }
