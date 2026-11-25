@@ -28,6 +28,11 @@ namespace ALotOfDamage.Ferramentas
             // sem o preparo longo: com cliques seguidos, o golpe recomeçaria antes de a magia sair
             ["Mago@Golpe"] = new Recorte { Inicio = 0.3f, Fim = 0.82f },
             ["Mago@Dano"] = new Recorte { Inicio = 0f, Fim = 0.75f, NoLugar = true },
+            ["Ladino@Golpe"] = new Recorte { Inicio = 0.1f, Fim = 0.56f },
+            ["Ladino@Dano"] = new Recorte { Inicio = 0.1f, Fim = 0.75f, NoLugar = true },
+            // só a estocada, sem a guarda longa antes e depois
+            ["Lanceiro@Golpe"] = new Recorte { Inicio = 0.16f, Fim = 0.52f },
+            ["Lanceiro@Dano"] = new Recorte { Inicio = 0.2f, Fim = 0.78f, NoLugar = true },
         };
 
         // Personagem pronto para a cena, com os pés em "pes" e a altura dada (unidades do mundo)

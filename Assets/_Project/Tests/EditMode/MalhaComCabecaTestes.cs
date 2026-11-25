@@ -11,6 +11,7 @@ namespace ALotOfDamage.Testes.EditMode
 
         [TestCase("Ladino")]
         [TestCase("Mago")]
+        [TestCase("Lanceiro")]
         public void Malha_usa_o_esqueleto_do_modelo_e_separa_corpo_e_cabeca(string nome)
         {
             var malha = AssetDatabase.LoadAssetAtPath<Mesh>($"{Pasta}{nome}/{nome}_Malha.asset");
