@@ -41,6 +41,13 @@ namespace ALotOfDamage.Testes
             {
                 FragmentosPorChefe = 3, EstagiosPorFragmentoExtra = 10, NivelMaximo = 3, CustoBaseDeMelhoria = 2,
             };
+            public IReadOnlyList<DefinicaoDePredio> Predios { get; set; } = new List<DefinicaoDePredio>
+            {
+                new DefinicaoDePredio { Id = "balcao", Nome = "Balcão", Efeito = EfeitoDoPredio.OuroPorSegundo, BonusPorNivel = 0.02, CustoBase = 100, CrescimentoDoCusto = 2 },
+                new DefinicaoDePredio { Id = "cozinha", Nome = "Cozinha", Efeito = EfeitoDoPredio.Dano, BonusPorNivel = 0.1, CustoBase = 100, CrescimentoDoCusto = 2 },
+                new DefinicaoDePredio { Id = "adega", Nome = "Adega", Efeito = EfeitoDoPredio.Ouro, BonusPorNivel = 0.1, CustoBase = 100, CrescimentoDoCusto = 2 },
+            };
+            public double LimiteDaTavernaEmHoras { get; set; } = 12;
             public IReadOnlyList<DefinicaoDeConquista> Conquistas { get; set; } = new List<DefinicaoDeConquista>
             {
                 new DefinicaoDeConquista { Id = "vitorias", Nome = "Guerreiro incansável", Descricao = "Vença {0} batalhas", Meta = MetaDaConquista.Vitorias, Degraus = new double[] { 1, 3 } },
@@ -895,6 +902,77 @@ namespace ALotOfDamage.Testes
             var copia = Progresso.Importar(p.Exportar());
             Assert.AreEqual(1, copia.NivelDaReliquia("coroa"));
             Assert.AreEqual(p.Fragmentos, copia.Fragmentos);
+        }
+
+        [Test]
+        public void Melhorar_predio_gasta_ouro_e_sobe_o_nivel()
+        {
+            var p = repositorio.Progresso;
+            p.ReceberOuro(150);
+            var relogio = new RelogioFalso();
+            Assert.IsTrue(new MelhorarPredio(repositorio, catalogo, relogio).Executar("balcao"));
+            Assert.AreEqual(1, p.NivelDoPredio("balcao"));
+            Assert.AreEqual(50, p.Ouro, 1e-9);
+            Assert.IsFalse(new MelhorarPredio(repositorio, catalogo, relogio).Executar("balcao"), "nível 2 custa 200");
+        }
+
+        [Test]
+        public void Taverna_junta_ouro_com_o_tempo_e_coletar_entrega()
+        {
+            var p = repositorio.Progresso;
+            var relogio = new RelogioFalso();
+            p.ReceberOuro(100);
+            new MelhorarPredio(repositorio, catalogo, relogio).Executar("balcao");   // 2% de 50 de ouro por vitória = 1 ouro/s
+            relogio.Agora = relogio.Agora.AddSeconds(600);
+
+            var t = new ConsultarTaverna(repositorio, catalogo, relogio).Executar();
+            Assert.AreEqual(1, t.OuroPorSegundo, 1e-9);
+            Assert.AreEqual(600, t.Guardado, 1e-9);
+
+            Assert.AreEqual(600, new ColetarTaverna(repositorio, catalogo, relogio).Executar(), 1e-9);
+            Assert.AreEqual(600, p.Ouro, 1e-9);
+            Assert.AreEqual(0, new ConsultarTaverna(repositorio, catalogo, relogio).Executar().Guardado, 1e-9);
+        }
+
+        [Test]
+        public void Melhorar_o_balcao_entrega_o_que_ja_estava_guardado()
+        {
+            var p = repositorio.Progresso;
+            var relogio = new RelogioFalso();
+            p.ReceberOuro(100);
+            new MelhorarPredio(repositorio, catalogo, relogio).Executar("balcao");
+            relogio.Agora = relogio.Agora.AddSeconds(300);
+            p.ReceberOuro(200);
+            new MelhorarPredio(repositorio, catalogo, relogio).Executar("balcao");
+            Assert.AreEqual(300, p.Ouro, 1e-9, "os 300 guardados no ritmo antigo entram antes de mudar o ritmo");
+        }
+
+        [Test]
+        public void Cozinha_e_adega_dao_dano_e_ouro()
+        {
+            var p = repositorio.Progresso;
+            var relogio = new RelogioFalso();
+            double antes = new CalcularAtributos(repositorio, catalogo).Executar(null).DanoAutomatico;
+            p.ReceberOuro(200);
+            new MelhorarPredio(repositorio, catalogo, relogio).Executar("cozinha");
+            new MelhorarPredio(repositorio, catalogo, relogio).Executar("adega");
+            var a = new CalcularAtributos(repositorio, catalogo).Executar(null);
+            Assert.AreEqual(antes * 1.1, a.DanoAutomatico, 1e-9);
+            Assert.AreEqual(0.1, a.BonusDeOuro, 1e-9);
+        }
+
+        [Test]
+        public void Taverna_fica_na_ascensao_e_no_save()
+        {
+            ChegarAoEstagio(3);
+            var p = repositorio.Progresso;
+            p.ReceberOuro(100);
+            new MelhorarPredio(repositorio, catalogo, new RelogioFalso()).Executar("cozinha");
+            new Ascender(repositorio, catalogo).Executar();
+            Assert.AreEqual(1, p.NivelDoPredio("cozinha"));
+            var copia = Progresso.Importar(p.Exportar());
+            Assert.AreEqual(1, copia.NivelDoPredio("cozinha"));
+            Assert.AreEqual(p.UltimaColetaDaTavernaUtc, copia.UltimaColetaDaTavernaUtc);
         }
 
         [Test]

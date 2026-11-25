@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7523b680367f984469aaf837c81be9a8, type: 3}
+  m_Name: BalanceamentoDaTaverna
+  m_EditorClassIdentifier: ALotOfDamage.Infraestrutura::ALotOfDamage.Infrastructure.BalanceamentoDaTaverna
+  limiteEmHoras: 12
+  predios:
+  - Id: balcao
+    Nome: "Balc\xE3o"
+    Descricao: "Clientes pagando: 2% do ouro de uma vit\xF3ria por segundo, por n\xEDvel"
+    Efeito: 0
+    BonusPorNivel: 0.02
+    CustoBase: 200
+    CrescimentoDoCusto: 1.6
+  - Id: cozinha
+    Nome: Cozinha
+    Descricao: "Refei\xE7\xF5es fortes: +3% de todo o dano por n\xEDvel"
+    Efeito: 1
+    BonusPorNivel: 0.03
+    CustoBase: 500
+    CrescimentoDoCusto: 1.8
+  - Id: quartos
+    Nome: Quartos
+    Descricao: "Descanso: +3% da recompensa AFK por n\xEDvel"
+    Efeito: 2
+    BonusPorNivel: 0.03
+    CustoBase: 400
+    CrescimentoDoCusto: 1.7
+  - Id: adega
+    Nome: Adega
+    Descricao: "Bons neg\xF3cios: +3% de ouro das vit\xF3rias por n\xEDvel"
+    Efeito: 3
+    BonusPorNivel: 0.03
+    CustoBase: 400
+    CrescimentoDoCusto: 1.7
