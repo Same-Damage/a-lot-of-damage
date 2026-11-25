@@ -58,6 +58,13 @@ namespace ALotOfDamage.Testes
             {
                 new DefinicaoDeRecurso { Id = "erva", Nome = "Moita de erva-lunar", MaterialId = "erva_lunar", NomeDoMaterial = "Erva-lunar", QuantidadeBase = 2, Golpes = 4 },
             };
+            public IReadOnlyList<DefinicaoDePocao> Pocoes { get; set; } = new List<DefinicaoDePocao>
+            {
+                new DefinicaoDePocao { Id = "forca", Nome = "Poção de Força", Efeito = EfeitoDaPocao.Dano, Valor = 1, DuracaoEmMinutos = 10, CustoEmVitorias = 2,
+                    Ingredientes = new List<ParDeValor> { new ParDeValor { Id = "erva_lunar", Valor = 3 } } },
+                new DefinicaoDePocao { Id = "sono", Nome = "Poção do Sono", Efeito = EfeitoDaPocao.Afk, Valor = 1, DuracaoEmMinutos = 0, CustoEmVitorias = 0,
+                    Ingredientes = new List<ParDeValor>() },
+            };
             public IReadOnlyList<DefinicaoDeConquista> Conquistas { get; set; } = new List<DefinicaoDeConquista>
             {
                 new DefinicaoDeConquista { Id = "vitorias", Nome = "Guerreiro incansável", Descricao = "Vença {0} batalhas", Meta = MetaDaConquista.Vitorias, Degraus = new double[] { 1, 3 } },
@@ -1077,6 +1084,61 @@ namespace ALotOfDamage.Testes
         public void Nome_do_material_da_coleta_aparece_pelo_catalogo()
         {
             Assert.AreEqual("Erva-lunar", catalogo.NomeDoMaterial("erva_lunar"));
+        }
+
+        [Test]
+        public void Preparar_pocao_gasta_ingredientes_e_ouro()
+        {
+            var p = repositorio.Progresso;
+            var relogio = new RelogioFalso();
+            var preparar = new PrepararPocao(repositorio, catalogo, relogio);
+            p.ReceberOuro(100);
+            Assert.IsFalse(preparar.Executar("forca"), "sem erva");
+            p.AdicionarMaterial("erva_lunar", 3);
+            Assert.IsTrue(preparar.Executar("forca"));
+            Assert.AreEqual(0, p.Material("erva_lunar"));
+            Assert.AreEqual(0, p.Ouro, 1e-9, "2 vitórias de 50 de ouro");
+        }
+
+        [Test]
+        public void Pocao_ativa_dobra_o_dano_ate_acabar_o_tempo()
+        {
+            var p = repositorio.Progresso;
+            var relogio = new RelogioFalso();
+            var atributos = new CalcularAtributos(repositorio, catalogo, relogio);
+            double antes = atributos.Executar(null).DanoDoClick;
+            p.ReceberOuro(100);
+            p.AdicionarMaterial("erva_lunar", 3);
+            new PrepararPocao(repositorio, catalogo, relogio).Executar("forca");
+            Assert.AreEqual(antes * 2, atributos.Executar(null).DanoDoClick, 1e-9);
+            Assert.AreEqual(antes * 2, atributos.Executar(null).DanoAutomatico / 5 * 3, 1e-9);
+            relogio.Agora = relogio.Agora.AddMinutes(11);
+            Assert.AreEqual(antes, atributos.Executar(null).DanoDoClick, 1e-9);
+        }
+
+        [Test]
+        public void Pocao_do_sono_dobra_o_afk_e_acaba_na_coleta()
+        {
+            catalogo.ParametrosDosItens.ChanceDeDrop = 0;
+            var (relogio, consultar, _) = Afk();
+            var atributos = new CalcularAtributos(repositorio, catalogo, relogio);
+            var coletar = new ColetarRecompensaAfk(repositorio, catalogo, relogio, atributos, SemDrop);
+            new PrepararPocao(repositorio, catalogo, relogio).Executar("sono");
+            new RegistrarPresenca(repositorio, catalogo, relogio).Executar();
+            relogio.Agora = relogio.Agora.AddHours(2);
+            var r = new ConsultarRecompensaAfk(repositorio, catalogo, relogio, atributos).Executar();
+            Assert.AreEqual(144, r.Vitorias, "72 × 2");
+            coletar.Executar();
+            Assert.IsFalse(new ListarPocoes(repositorio, catalogo, relogio).Executar().Find(x => x.Definicao.Id == "sono").Ativa);
+        }
+
+        [Test]
+        public void Pocoes_ativas_vao_e_voltam_do_save()
+        {
+            var relogio = new RelogioFalso();
+            new PrepararPocao(repositorio, catalogo, relogio).Executar("sono");
+            var copia = Progresso.Importar(repositorio.Progresso.Exportar());
+            Assert.Greater(copia.FimDaPocao("sono"), 0);
         }
 
         [Test]

@@ -78,6 +78,12 @@ namespace ALotOfDamage.Core
             return true;
         }
         public void ContarChefe() => ChefesDerrotados++;
+
+        // Poções bebidas: quando cada efeito acaba (ticks UTC; long.MaxValue = até ser usada)
+        readonly Dictionary<string, long> pocoes = new Dictionary<string, long>();
+        public long FimDaPocao(string id) => pocoes.TryGetValue(id ?? "", out var f) ? f : 0;
+        public void BeberPocao(string id, long fim) => pocoes[id] = fim;
+        public void EncerrarPocao(string id) => pocoes.Remove(id);
         public int RecursosColetados { get; private set; }
         public void ContarColeta() => RecursosColetados++;
 
@@ -308,6 +314,7 @@ namespace ALotOfDamage.Core
             Predios = Pares(predios), UltimaColetaDaTavernaUtc = UltimaColetaDaTavernaUtc,
             Expedicoes = new List<ExpedicaoEmAndamento>(expedicoes),
             RecursosColetados = RecursosColetados,
+            Pocoes = ParesLongos(pocoes),
             Followers = Pares(followers), InvocacoesSemEpico = InvocacoesSemEpico, InvocacoesSemLendario = InvocacoesSemLendario,
         };
 
@@ -343,6 +350,7 @@ namespace ALotOfDamage.Core
             Preencher(p.reliquias, d.Reliquias);
             Preencher(p.predios, d.Predios);
             p.RecursosColetados = Math.Max(0, d.RecursosColetados);
+            if (d.Pocoes != null) foreach (var x in d.Pocoes) if (!string.IsNullOrEmpty(x.Id)) p.pocoes[x.Id] = x.Valor;
             if (d.Expedicoes != null) foreach (var e in d.Expedicoes) if (e != null && !string.IsNullOrEmpty(e.FollowerId)) p.expedicoes.Add(e);
             p.UltimaColetaDaTavernaUtc = Math.Max(0, d.UltimaColetaDaTavernaUtc);
             if (p.Estrelas(FollowerPadrao) <= 0) p.followers[FollowerPadrao] = 1;
@@ -374,6 +382,13 @@ namespace ALotOfDamage.Core
                 item.Nivel = par.Valor;
                 p.Equipar(item.Id);
             }
+        }
+
+        static List<ParDeValorLongo> ParesLongos(Dictionary<string, long> d)
+        {
+            var lista = new List<ParDeValorLongo>(d.Count);
+            foreach (var kv in d) lista.Add(new ParDeValorLongo { Id = kv.Key, Valor = kv.Value });
+            return lista;
         }
 
         static List<ParDeValor> Pares(Dictionary<string, int> d)
@@ -412,6 +427,13 @@ namespace ALotOfDamage.Core
 
 namespace ALotOfDamage.Core
 {
+    [Serializable]
+    public class ParDeValorLongo
+    {
+        public string Id;
+        public long Valor;
+    }
+
     [Serializable]
     public class ParDeValor
     {
@@ -454,6 +476,7 @@ namespace ALotOfDamage.Core
         public long UltimaColetaDaTavernaUtc;
         public List<ExpedicaoEmAndamento> Expedicoes = new List<ExpedicaoEmAndamento>();
         public int RecursosColetados;
+        public List<ParDeValorLongo> Pocoes = new List<ParDeValorLongo>();
         public int InvocacoesSemEpico;
         public int InvocacoesSemLendario;
         public List<ParDeValor> Materiais = new List<ParDeValor>();

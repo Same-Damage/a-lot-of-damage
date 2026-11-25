@@ -4,7 +4,7 @@ using static ALotOfDamage.UI.DesenhoDeIcone;
 
 namespace ALotOfDamage.UI
 {
-    public enum IconeDoHud { Inventario, Upgrades, Forja, Followers, Conquistas, Bestiario, Ascensao, Reliquias, Taverna, Expedicoes, Menu, Heroi, Ouro, Espada, Ultimate, Fugir }
+    public enum IconeDoHud { Inventario, Upgrades, Forja, Followers, Conquistas, Bestiario, Ascensao, Reliquias, Taverna, Expedicoes, Alquimia, Menu, Heroi, Ouro, Espada, Ultimate, Fugir }
 
     // Ícones do HUD desenhados por código; arte de verdade em Resources/Icones/hud_<nome>.png é usada no lugar
     public static class IconesDoHud
@@ -54,6 +54,13 @@ namespace ALotOfDamage.UI
                     float asas = Mathf.Max(Mathf.Abs(Circulo(w - 0.52f, v - 0.3f, 0.22f)) - 0.07f, 0.45f - w);
                     float pe = Mathf.Min(Caixa(u, v + 0.4f, 0.1f, 0.25f), Caixa(u, v + 0.68f, 0.38f, 0.1f));
                     return Min(copo, asas, pe);
+                }
+                case IconeDoHud.Alquimia: // frasco redondo com gargalo
+                {
+                    float bojo = Circulo(u, v + 0.25f, 0.5f);
+                    float gargalo = Caixa(u, v - 0.4f, 0.14f, 0.28f);
+                    float rolha = Caixa(u, v - 0.74f, 0.2f, 0.08f);
+                    return Min(bojo, gargalo, rolha);
                 }
                 case IconeDoHud.Expedicoes: // bandeira no mastro
                 {
