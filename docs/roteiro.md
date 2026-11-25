@@ -161,7 +161,7 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 | Expedições | Followers fora de uso em missões com timer | Tempo + followers | Materiais, cristais | Futuro |
 | Coleta no mapa | Minerar, colher, pescar com mini-clicker | Tempo no mapa | Material | Futuro |
 | Alquimia | Poções | Ervas + drops | Buffs temporários grandes | Futuro |
-| Relíquias | Itens únicos de chefes | Fragmentos de chefe | Multiplicadores grandes | Futuro |
+| Relíquias | 12 relíquias únicas, montadas com fragmentos e melhoradas até o nível 10 (custo 10 × nível); cada chefe dá 3 fragmentos, +1 a cada 10 estágios. Ficam na Ascensão | Fragmentos de chefe | Click, auto-ataque, follower (multiplicam entre si), ouro, AFK, crítico, drop e ponto fraco | Implementado |
 | Afinidade do follower | Presentes e conversa | Presentes | Passivas e falas | Futuro |
 | Conquistas | 9 metas com degraus (vitórias, chefes, estágio, Ascensões, itens Épicos, refino, fabricação, ouro total, marcos do bestiário); cada degrau é coletado na janela | Jogar | +1% em todo o dano por degrau e cristais (10, 40, 90, 160, 250 pelo degrau) | Implementado |
 | Ascensão | Libera no estágio 50; recomeça estágio, upgrades e ouro por Almas = (estágio − 45)² ÷ 5 (estágio 50: 5, 60: 45, 80: 245). Mantém itens, materiais, bestiário e o resto | Progresso atual | Cada Alma +10% em todo o dano, para sempre | Implementado |

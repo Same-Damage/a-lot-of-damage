@@ -294,12 +294,13 @@ namespace ALotOfDamage.Core
             double ouro = CalcularInimigo.Para(p, catalogo, monstro, chefe).Ouro * (1 + atributos.BonusDeOuro);
             p.ReceberOuro(ouro);
             bool marco = p.RegistrarVitoria(monstro, catalogo.Bestiario);
+            int estagioDaLuta = p.Estagio;
             if (chefe)
             {
                 p.ContarChefe();
+                p.ReceberFragmentos(RegrasDasReliquias.FragmentosDoChefe(catalogo.ParametrosDasReliquias, estagioDaLuta));
                 p.ReceberCristais(catalogo.Gacha.CristaisPorChefe);
             }
-            int estagioDaLuta = p.Estagio;
             var campanha = p.AvancarCampanha(catalogo.Campanha, chefe);
             var item = DropDeItens.Talvez(p, catalogo, sorteio, chefe, estagioDaLuta, atributos.BonusDeDrop, out bool vendido);
             repositorio.Salvar(p);
@@ -692,6 +693,53 @@ namespace ALotOfDamage.Core
         }
     }
 
+    public struct SituacaoDaReliquia
+    {
+        public DefinicaoDeReliquia Definicao;
+        public int Nivel;
+        public int Custo;      // −1 no nível máximo
+        public double Bonus;   // bônus no nível atual
+        public double BonusNoProximo;
+    }
+
+    public class ListarReliquias : CasoDeUso
+    {
+        public ListarReliquias(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public List<SituacaoDaReliquia> Executar()
+        {
+            var p = repositorio.Carregar();
+            var lista = new List<SituacaoDaReliquia>(catalogo.Reliquias.Count);
+            foreach (var r in catalogo.Reliquias)
+            {
+                int nivel = p.NivelDaReliquia(r.Id);
+                lista.Add(new SituacaoDaReliquia
+                {
+                    Definicao = r, Nivel = nivel, Custo = RegrasDasReliquias.Custo(catalogo.ParametrosDasReliquias, r, nivel),
+                    Bonus = RegrasDasReliquias.Bonus(r, nivel), BonusNoProximo = RegrasDasReliquias.Bonus(r, nivel + 1),
+                });
+            }
+            return lista;
+        }
+    }
+
+    // Monta (nível 0 → 1) ou melhora uma relíquia gastando fragmentos de chefe
+    public class MelhorarReliquia : CasoDeUso
+    {
+        public MelhorarReliquia(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public bool Executar(string id)
+        {
+            DefinicaoDeReliquia r = null;
+            foreach (var x in catalogo.Reliquias) if (x.Id == id) r = x;
+            if (r == null) return false;
+            var p = repositorio.Carregar();
+            if (!p.MelhorarReliquia(id, RegrasDasReliquias.Custo(catalogo.ParametrosDasReliquias, r, p.NivelDaReliquia(id)))) return false;
+            repositorio.Salvar(p);
+            return true;
+        }
+    }
+
     // Vida e recompensa do inimigo conforme o estágio atual da campanha
     public class CalcularInimigo : CasoDeUso
     {
@@ -779,25 +827,27 @@ namespace ALotOfDamage.Core
             var p = repositorio.Carregar();
             double Valor(string id) => catalogo.Upgrade(id) is DefinicaoDeUpgrade d ? p.Valor(d) : 0;
             double Mult(AlvoDoItem alvo) => p.MultiplicadorDeDano(alvo, tipoDoMonstro, catalogo.Itens, catalogo.ParametrosDosItens, catalogo.Bestiario);
+            double Reliquia(AlvoDaReliquia alvo) => RegrasDasReliquias.Multiplicador(catalogo.Reliquias, p.NivelDaReliquia, alvo);
+            double SomaDaReliquia(AlvoDaReliquia alvo) => RegrasDasReliquias.Soma(catalogo.Reliquias, p.NivelDaReliquia, alvo);
             double almas = RegrasDaAscensao.Multiplicador(catalogo.Campanha, p.Almas)
                 * RegrasDasConquistas.Multiplicador(catalogo.ParametrosDasConquistas, p.TotalDeConquistasColetadas);
-            double automatico = Valor(IdsDosUpgrades.Automatico) * Mult(AlvoDoItem.Automatico) * almas;
+            double automatico = Valor(IdsDosUpgrades.Automatico) * Mult(AlvoDoItem.Automatico) * almas * Reliquia(AlvoDaReliquia.Automatico);
             var follower = catalogo.Follower(p.FollowerAtivoId);
             int estrelas = Math.Max(1, p.Estrelas(p.FollowerAtivoId));
             double Efeito(EfeitoDoFollower e) => RegrasDoGacha.Efeito(catalogo.Gacha, follower, estrelas, e);
             return new AtributosDeCombate
             {
-                DanoDoClick = Valor(IdsDosUpgrades.Forca) * Mult(AlvoDoItem.Click) * almas,
+                DanoDoClick = Valor(IdsDosUpgrades.Forca) * Mult(AlvoDoItem.Click) * almas * Reliquia(AlvoDaReliquia.Click),
                 DanoAutomatico = automatico,
-                ChanceCritica = Valor(IdsDosUpgrades.Precisao) + Efeito(EfeitoDoFollower.Critico),
+                ChanceCritica = Valor(IdsDosUpgrades.Precisao) + Efeito(EfeitoDoFollower.Critico) + SomaDaReliquia(AlvoDaReliquia.Critico),
                 Classe = catalogo.Classe(p.ClasseId),
                 Follower = follower,
                 EstrelasDoFollower = follower == null ? 0 : estrelas,
-                DanoDoFollower = automatico * RegrasDoGacha.FracaoDoAutoAtaque(catalogo.Gacha, follower, estrelas),
-                BonusNoPontoFraco = Efeito(EfeitoDoFollower.PontoFraco),
-                BonusDeOuro = Efeito(EfeitoDoFollower.Ouro),
-                BonusDeAfk = Efeito(EfeitoDoFollower.Afk),
-                BonusDeDrop = Efeito(EfeitoDoFollower.Drop),
+                DanoDoFollower = automatico * RegrasDoGacha.FracaoDoAutoAtaque(catalogo.Gacha, follower, estrelas) * Reliquia(AlvoDaReliquia.Follower),
+                BonusNoPontoFraco = Efeito(EfeitoDoFollower.PontoFraco) + SomaDaReliquia(AlvoDaReliquia.PontoFraco),
+                BonusDeOuro = Efeito(EfeitoDoFollower.Ouro) + SomaDaReliquia(AlvoDaReliquia.Ouro),
+                BonusDeAfk = Efeito(EfeitoDoFollower.Afk) + SomaDaReliquia(AlvoDaReliquia.Afk),
+                BonusDeDrop = Efeito(EfeitoDoFollower.Drop) + SomaDaReliquia(AlvoDaReliquia.Drop),
             };
         }
     }
