@@ -139,5 +139,23 @@ namespace ALotOfDamage.Testes
             Assert.AreEqual(Progresso.FollowerPadrao, follower.modelo.IdMontado);
             Assert.Greater(follower.modelo.GetComponentsInChildren<MeshRenderer>().Length, 0);
         }
+
+        [UnityTest]
+        public IEnumerator Golpear_ponto_de_coleta_ate_esgotar_da_material()
+        {
+            yield return Carregar(FluxoDeEncontro.CenaDoMapa);
+            yield return null;
+            var ponto = Object.FindAnyObjectByType<PontoDeColeta>();
+            Assert.IsNotNull(ponto);
+            Assert.IsTrue(ponto.Disponivel);
+            var catalogo = EscopoDoJogo.Instancia.Container.Resolve<ICatalogo>();
+            var recurso = catalogo.Recurso(ponto.recursoId);
+            var progresso = EscopoDoJogo.Instancia.Container.Resolve<IRepositorioDeProgresso>().Carregar();
+            int antes = progresso.Material(recurso.MaterialId);
+
+            for (int i = 0; i < recurso.Golpes; i++) ponto.Golpear();
+            Assert.Greater(progresso.Material(recurso.MaterialId), antes);
+            Assert.IsFalse(ponto.Disponivel, "esgotado até rebrotar");
+        }
     }
 }

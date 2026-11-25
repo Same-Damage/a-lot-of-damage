@@ -936,6 +936,24 @@ namespace ALotOfDamage.Core
         }
     }
 
+    // Ponto de coleta esgotado no mapa: entrega o material dele; devolve a quantidade (0 se o recurso não existe)
+    public class ColetarRecurso : CasoDeUso
+    {
+        public ColetarRecurso(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public int Executar(string recursoId)
+        {
+            var r = catalogo.Recurso(recursoId);
+            if (r == null) return 0;
+            var p = repositorio.Carregar();
+            int quantidade = RegrasDaColeta.Quantidade(r, p.Estagio);
+            p.AdicionarMaterial(r.MaterialId, quantidade);
+            p.ContarColeta();
+            repositorio.Salvar(p);
+            return quantidade;
+        }
+    }
+
     // Vida e recompensa do inimigo conforme o estágio atual da campanha
     public class CalcularInimigo : CasoDeUso
     {
