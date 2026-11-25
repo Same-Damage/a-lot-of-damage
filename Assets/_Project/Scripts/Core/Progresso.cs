@@ -78,6 +78,21 @@ namespace ALotOfDamage.Core
             return true;
         }
         public void ContarChefe() => ChefesDerrotados++;
+
+        // Relíquias: fragmentos de chefe e o nível de cada relíquia (0 = não montada); ficam na Ascensão
+        public long Fragmentos { get; private set; }
+        readonly Dictionary<string, int> reliquias = new Dictionary<string, int>();
+        public int NivelDaReliquia(string id) => Ler(reliquias, id);
+        public void ReceberFragmentos(long n) { if (n > 0) Fragmentos += n; }
+
+        // Sobe um nível pagando o custo; false se não tem fragmentos
+        public bool MelhorarReliquia(string id, int custo)
+        {
+            if (custo < 0 || custo > Fragmentos) return false;
+            Fragmentos -= custo;
+            reliquias[id] = NivelDaReliquia(id) + 1;
+            return true;
+        }
         public void ContarFabricacao() => ItensFabricados++;
         public void MarcarConquistaColetada(string id, int degraus) => conquistasColetadas[id] = Math.Max(ConquistasColetadas(id), degraus);
 
@@ -253,6 +268,7 @@ namespace ALotOfDamage.Core
             ChefesDerrotados = ChefesDerrotados, EstagioMaximo = EstagioMaximo, ItensEpicosObtidos = ItensEpicosObtidos,
             MaiorRefino = MaiorRefino, ItensFabricados = ItensFabricados, OuroTotalGanho = OuroTotalGanho,
             ConquistasColetadas = Pares(conquistasColetadas),
+            Fragmentos = Fragmentos, Reliquias = Pares(reliquias),
             Followers = Pares(followers), InvocacoesSemEpico = InvocacoesSemEpico, InvocacoesSemLendario = InvocacoesSemLendario,
         };
 
@@ -284,6 +300,8 @@ namespace ALotOfDamage.Core
             p.OuroTotalGanho = Math.Max(p.Ouro, d.OuroTotalGanho);
             Preencher(p.conquistasColetadas, d.ConquistasColetadas);
             Preencher(p.followers, d.Followers);
+            p.Fragmentos = Math.Max(0, d.Fragmentos);
+            Preencher(p.reliquias, d.Reliquias);
             if (p.Estrelas(FollowerPadrao) <= 0) p.followers[FollowerPadrao] = 1;
             p.RegistrarPity(d.InvocacoesSemEpico, d.InvocacoesSemLendario);
             return p;
@@ -387,6 +405,8 @@ namespace ALotOfDamage.Core
         public double OuroTotalGanho;
         public List<ParDeValor> ConquistasColetadas = new List<ParDeValor>();
         public List<ParDeValor> Followers = new List<ParDeValor>();
+        public long Fragmentos;
+        public List<ParDeValor> Reliquias = new List<ParDeValor>();
         public int InvocacoesSemEpico;
         public int InvocacoesSemLendario;
         public List<ParDeValor> Materiais = new List<ParDeValor>();

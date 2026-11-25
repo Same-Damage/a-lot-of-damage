@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94405fd642721464392fac780b028e3d, type: 3}
+  m_Name: BalanceamentoDasReliquias
+  m_EditorClassIdentifier: ALotOfDamage.Infraestrutura::ALotOfDamage.Infrastructure.BalanceamentoDasReliquias
+  parametros:
+    FragmentosPorChefe: 3
+    EstagiosPorFragmentoExtra: 10
+    NivelMaximo: 10
+    CustoBaseDeMelhoria: 10
+  reliquias:
+  - Id: manopla_tita
+    Nome: "Manopla do Tit\xE3"
+    Descricao: "+100% de dano do click por n\xEDvel"
+    Alvo: 0
+    BonusPorNivel: 1
+    CustoParaMontar: 15
+  - Id: coroa_rei_caido
+    Nome: "Coroa do Rei Ca\xEDdo"
+    Descricao: "+50% de dano do click por n\xEDvel"
+    Alvo: 0
+    BonusPorNivel: 0.5
+    CustoParaMontar: 30
+  - Id: engrenagem_eterna
+    Nome: Engrenagem Eterna
+    Descricao: "+100% de dano do auto-ataque por n\xEDvel"
+    Alvo: 1
+    BonusPorNivel: 1
+    CustoParaMontar: 15
+  - Id: relogio_parado
+    Nome: "Rel\xF3gio Parado"
+    Descricao: "+50% de dano do auto-ataque por n\xEDvel"
+    Alvo: 1
+    BonusPorNivel: 0.5
+    CustoParaMontar: 30
+  - Id: apito_bestial
+    Nome: Apito Bestial
+    Descricao: "+100% de dano do follower por n\xEDvel"
+    Alvo: 2
+    BonusPorNivel: 1
+    CustoParaMontar: 20
+  - Id: colar_vinculo
+    Nome: "Colar do V\xEDnculo"
+    Descricao: "+50% de dano do follower por n\xEDvel"
+    Alvo: 2
+    BonusPorNivel: 0.5
+    CustoParaMontar: 35
+  - Id: calice_dourado
+    Nome: "C\xE1lice Dourado"
+    Descricao: "+25% de ouro por n\xEDvel"
+    Alvo: 3
+    BonusPorNivel: 0.25
+    CustoParaMontar: 20
+  - Id: ampulheta_sonho
+    Nome: Ampulheta do Sonho
+    Descricao: "+15% de AFK por n\xEDvel"
+    Alvo: 4
+    BonusPorNivel: 0.15
+    CustoParaMontar: 25
+  - Id: olho_falcao
+    Nome: "Olho de Falc\xE3o"
+    Descricao: "+2% de chance cr\xEDtica por n\xEDvel"
+    Alvo: 5
+    BonusPorNivel: 0.02
+    CustoParaMontar: 25
+  - Id: trevo_ancestral
+    Nome: Trevo Ancestral
+    Descricao: "+15% de chance de item por n\xEDvel"
+    Alvo: 6
+    BonusPorNivel: 0.15
+    CustoParaMontar: 25
+  - Id: lente_runica
+    Nome: "Lente R\xFAnica"
+    Descricao: "+20% de dura\xE7\xE3o do ponto fraco por n\xEDvel"
+    Alvo: 7
+    BonusPorNivel: 0.2
+    CustoParaMontar: 20
+  - Id: estrela_cadente
+    Nome: Estrela Cadente
+    Descricao: "+25% de dano do click por n\xEDvel"
+    Alvo: 0
+    BonusPorNivel: 0.25
+    CustoParaMontar: 10

@@ -23,6 +23,8 @@ namespace ALotOfDamage.Core
         ParametrosDosItens ParametrosDosItens { get; }
         IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
         IReadOnlyList<DefinicaoDeConquista> Conquistas { get; }
+        IReadOnlyList<DefinicaoDeReliquia> Reliquias { get; }
+        ParametrosDasReliquias ParametrosDasReliquias { get; }
         ParametrosDasConquistas ParametrosDasConquistas { get; }
     }
 

@@ -63,6 +63,8 @@ namespace ALotOfDamage.Infrastructure
         public ParametrosDaCampanha Campanha { get; }
         public ParametrosDosItens ParametrosDosItens { get; }
         public IReadOnlyList<DefinicaoDeConquista> Conquistas { get; }
+        public IReadOnlyList<DefinicaoDeReliquia> Reliquias { get; }
+        public ParametrosDasReliquias ParametrosDasReliquias { get; }
         public ParametrosDasConquistas ParametrosDasConquistas { get; }
         public IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
 
@@ -85,6 +87,9 @@ namespace ALotOfDamage.Infrastructure
             var conquistas = BalanceamentoDasConquistas.Carregar();
             Conquistas = conquistas.conquistas;
             ParametrosDasConquistas = conquistas.parametros;
+            var reliquias = BalanceamentoDasReliquias.Carregar();
+            Reliquias = reliquias.reliquias;
+            ParametrosDasReliquias = reliquias.parametros;
         }
     }
 

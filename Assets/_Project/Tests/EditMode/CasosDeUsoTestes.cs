@@ -32,6 +32,15 @@ namespace ALotOfDamage.Testes
                 BonusPorEstrela = 0.2, MaximoDeEstrelas = 5, CristaisPorEstrelaExtra = 50,
                 CristaisPorChefe = 25, CristaisDaAscensao = 200, CristaisPorAlma = 5, VitoriasAfkPorCristal = 20,
             };
+            public IReadOnlyList<DefinicaoDeReliquia> Reliquias { get; set; } = new List<DefinicaoDeReliquia>
+            {
+                new DefinicaoDeReliquia { Id = "coroa", Nome = "Coroa", Alvo = AlvoDaReliquia.Click, BonusPorNivel = 1, CustoParaMontar = 3 },
+                new DefinicaoDeReliquia { Id = "bolsa", Nome = "Bolsa", Alvo = AlvoDaReliquia.Ouro, BonusPorNivel = 0.5, CustoParaMontar = 3 },
+            };
+            public ParametrosDasReliquias ParametrosDasReliquias { get; set; } = new ParametrosDasReliquias
+            {
+                FragmentosPorChefe = 3, EstagiosPorFragmentoExtra = 10, NivelMaximo = 3, CustoBaseDeMelhoria = 2,
+            };
             public IReadOnlyList<DefinicaoDeConquista> Conquistas { get; set; } = new List<DefinicaoDeConquista>
             {
                 new DefinicaoDeConquista { Id = "vitorias", Nome = "Guerreiro incansável", Descricao = "Vença {0} batalhas", Meta = MetaDaConquista.Vitorias, Degraus = new double[] { 1, 3 } },
@@ -826,6 +835,66 @@ namespace ALotOfDamage.Testes
             Assert.AreEqual(1, copia.Estrelas(Progresso.FollowerPadrao));
             Assert.AreEqual(7, copia.InvocacoesSemEpico);
             Assert.AreEqual(40, copia.InvocacoesSemLendario);
+        }
+
+        [Test]
+        public void Chefe_da_fragmentos_de_reliquia()
+        {
+            new RegistrarVitoria(repositorio, catalogo, SemDrop).Executar("lobo", true);
+            Assert.AreEqual(3, repositorio.Progresso.Fragmentos);
+        }
+
+        [Test]
+        public void Montar_e_melhorar_reliquia_gasta_fragmentos()
+        {
+            var p = repositorio.Progresso;
+            p.ReceberFragmentos(5);
+            var melhorar = new MelhorarReliquia(repositorio, catalogo);
+            Assert.IsTrue(melhorar.Executar("coroa"));
+            Assert.AreEqual(1, p.NivelDaReliquia("coroa"));
+            Assert.AreEqual(2, p.Fragmentos);
+            Assert.IsTrue(melhorar.Executar("coroa"));   // nível 1 → 2 custa 2
+            Assert.AreEqual(0, p.Fragmentos);
+            Assert.IsFalse(melhorar.Executar("coroa"), "sem fragmentos");
+            Assert.IsFalse(melhorar.Executar("nao_existe"));
+        }
+
+        [Test]
+        public void Reliquia_no_nivel_maximo_nao_melhora()
+        {
+            var p = repositorio.Progresso;
+            p.ReceberFragmentos(100);
+            var melhorar = new MelhorarReliquia(repositorio, catalogo);
+            for (int i = 0; i < 3; i++) Assert.IsTrue(melhorar.Executar("coroa"));
+            Assert.IsFalse(melhorar.Executar("coroa"));
+            Assert.AreEqual(3, p.NivelDaReliquia("coroa"));
+        }
+
+        [Test]
+        public void Reliquias_entram_no_dano_e_no_ouro()
+        {
+            var p = repositorio.Progresso;
+            double antes = new CalcularAtributos(repositorio, catalogo).Executar(null).DanoDoClick;
+            p.ReceberFragmentos(100);
+            new MelhorarReliquia(repositorio, catalogo).Executar("coroa");   // click ×2
+            new MelhorarReliquia(repositorio, catalogo).Executar("bolsa");   // ouro +50%
+            var a = new CalcularAtributos(repositorio, catalogo).Executar(null);
+            Assert.AreEqual(antes * 2, a.DanoDoClick, 1e-9);
+            Assert.AreEqual(0.5, a.BonusDeOuro, 1e-9);
+        }
+
+        [Test]
+        public void Reliquias_e_fragmentos_ficam_na_ascensao_e_no_save()
+        {
+            ChegarAoEstagio(3);
+            var p = repositorio.Progresso;
+            p.ReceberFragmentos(10);
+            new MelhorarReliquia(repositorio, catalogo).Executar("coroa");
+            new Ascender(repositorio, catalogo).Executar();
+            Assert.AreEqual(1, p.NivelDaReliquia("coroa"));
+            var copia = Progresso.Importar(p.Exportar());
+            Assert.AreEqual(1, copia.NivelDaReliquia("coroa"));
+            Assert.AreEqual(p.Fragmentos, copia.Fragmentos);
         }
 
         [Test]
