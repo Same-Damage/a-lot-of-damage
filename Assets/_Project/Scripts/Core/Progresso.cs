@@ -58,7 +58,7 @@ namespace ALotOfDamage.Core
 
         public bool EscolherFollower(string id)
         {
-            if (Estrelas(id) <= 0) return false;
+            if (Estrelas(id) <= 0 || EmExpedicao(id)) return false;
             FollowerAtivoId = id;
             return true;
         }
@@ -81,6 +81,26 @@ namespace ALotOfDamage.Core
 
         // Relíquias: fragmentos de chefe e o nível de cada relíquia (0 = não montada); ficam na Ascensão
         public long Fragmentos { get; private set; }
+
+        // Expedições em andamento (o follower fica fora: não pode ser o ativo nem ir em outra)
+        readonly List<ExpedicaoEmAndamento> expedicoes = new List<ExpedicaoEmAndamento>();
+        public IReadOnlyList<ExpedicaoEmAndamento> Expedicoes => expedicoes;
+        public bool EmExpedicao(string followerId) => expedicoes.Exists(e => e.FollowerId == followerId);
+
+        public bool IniciarExpedicao(string missaoId, string followerId, DateTime agoraUtc, int vagas)
+        {
+            if (expedicoes.Count >= vagas || Estrelas(followerId) <= 0 || followerId == FollowerAtivoId || EmExpedicao(followerId)) return false;
+            expedicoes.Add(new ExpedicaoEmAndamento { MissaoId = missaoId, FollowerId = followerId, InicioUtc = agoraUtc.Ticks });
+            return true;
+        }
+
+        public ExpedicaoEmAndamento EncerrarExpedicao(int indice)
+        {
+            if (indice < 0 || indice >= expedicoes.Count) return null;
+            var e = expedicoes[indice];
+            expedicoes.RemoveAt(indice);
+            return e;
+        }
 
         // Taverna própria: nível de cada prédio e quando o ouro guardado foi coletado (ticks UTC; 0 = nunca)
         readonly Dictionary<string, int> predios = new Dictionary<string, int>();
@@ -284,6 +304,7 @@ namespace ALotOfDamage.Core
             ConquistasColetadas = Pares(conquistasColetadas),
             Fragmentos = Fragmentos, Reliquias = Pares(reliquias),
             Predios = Pares(predios), UltimaColetaDaTavernaUtc = UltimaColetaDaTavernaUtc,
+            Expedicoes = new List<ExpedicaoEmAndamento>(expedicoes),
             Followers = Pares(followers), InvocacoesSemEpico = InvocacoesSemEpico, InvocacoesSemLendario = InvocacoesSemLendario,
         };
 
@@ -318,6 +339,7 @@ namespace ALotOfDamage.Core
             p.Fragmentos = Math.Max(0, d.Fragmentos);
             Preencher(p.reliquias, d.Reliquias);
             Preencher(p.predios, d.Predios);
+            if (d.Expedicoes != null) foreach (var e in d.Expedicoes) if (e != null && !string.IsNullOrEmpty(e.FollowerId)) p.expedicoes.Add(e);
             p.UltimaColetaDaTavernaUtc = Math.Max(0, d.UltimaColetaDaTavernaUtc);
             if (p.Estrelas(FollowerPadrao) <= 0) p.followers[FollowerPadrao] = 1;
             p.RegistrarPity(d.InvocacoesSemEpico, d.InvocacoesSemLendario);
@@ -426,6 +448,7 @@ namespace ALotOfDamage.Core
         public List<ParDeValor> Reliquias = new List<ParDeValor>();
         public List<ParDeValor> Predios = new List<ParDeValor>();
         public long UltimaColetaDaTavernaUtc;
+        public List<ExpedicaoEmAndamento> Expedicoes = new List<ExpedicaoEmAndamento>();
         public int InvocacoesSemEpico;
         public int InvocacoesSemLendario;
         public List<ParDeValor> Materiais = new List<ParDeValor>();

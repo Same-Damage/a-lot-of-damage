@@ -4,11 +4,19 @@ using UnityEngine;
 
 namespace ALotOfDamage.Infrastructure
 {
-    // Prédios da taverna própria. O asset fica em Data/Resources/BalanceamentoDaTaverna.
+    // Prédios da taverna própria e as missões de expedição que saem dela. O asset fica em Data/Resources/BalanceamentoDaTaverna.
     [CreateAssetMenu(menuName = "A Lot of Damage/Balanceamento da Taverna")]
     public class BalanceamentoDaTaverna : Balanceamento<BalanceamentoDaTaverna>
     {
         public double limiteEmHoras = 12;
+
+        public int vagasDeExpedicao = 3;
+        public List<DefinicaoDeMissao> missoes = new List<DefinicaoDeMissao>
+        {
+            new DefinicaoDeMissao { Id = "patrulha", Nome = "Patrulha", Horas = 1, Cristais = 5, Lutas = 10, ChanceDeItem = 0.2 },
+            new DefinicaoDeMissao { Id = "cacada", Nome = "Caçada", Horas = 4, Cristais = 25, Lutas = 40, ChanceDeItem = 0.6 },
+            new DefinicaoDeMissao { Id = "jornada", Nome = "Jornada", Horas = 8, Cristais = 60, Lutas = 90, ChanceDeItem = 1.5 },
+        };
 
         public List<DefinicaoDePredio> predios = new List<DefinicaoDePredio>
         {

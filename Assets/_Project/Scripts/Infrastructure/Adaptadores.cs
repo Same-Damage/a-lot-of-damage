@@ -66,6 +66,8 @@ namespace ALotOfDamage.Infrastructure
         public IReadOnlyList<DefinicaoDeReliquia> Reliquias { get; }
         public IReadOnlyList<DefinicaoDePredio> Predios { get; }
         public double LimiteDaTavernaEmHoras { get; }
+        public IReadOnlyList<DefinicaoDeMissao> Missoes { get; }
+        public int VagasDeExpedicao { get; }
         public ParametrosDasReliquias ParametrosDasReliquias { get; }
         public ParametrosDasConquistas ParametrosDasConquistas { get; }
         public IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
@@ -95,6 +97,8 @@ namespace ALotOfDamage.Infrastructure
             var taverna = BalanceamentoDaTaverna.Carregar();
             Predios = taverna.predios;
             LimiteDaTavernaEmHoras = taverna.limiteEmHoras;
+            Missoes = taverna.missoes;
+            VagasDeExpedicao = taverna.vagasDeExpedicao;
         }
     }
 

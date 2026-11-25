@@ -158,7 +158,7 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 | Venda e desmonte | Item guardado vira ouro ou material da forja | Item | Abre espaço e financia a forja | Implementado |
 | Bestiário | Marcos em 10, 100, 1.000 derrotas por tipo | Batalhas | +25% contra o tipo, +2% geral por marco | Implementado |
 | Taverna própria | 4 prédios com nível: Balcão (2% do ouro de uma vitória por segundo, por nível, também com o jogo fechado, guardado até 12 h), Cozinha (+3% de dano), Quartos (+3% de AFK) e Adega (+3% de ouro) por nível. Fica na Ascensão | Ouro (custo geométrico) | Ouro/s e bônus permanentes | Implementado |
-| Expedições | Followers fora de uso em missões com timer | Tempo + followers | Materiais, cristais | Futuro |
+| Expedições | 3 vagas; followers que não estão lutando saem em Patrulha (1 h), Caçada (4 h) ou Jornada (8 h). Raridade (+50% por degrau) e estrelas aumentam o que trazem. O follower fora não pode ser o ativo | Tempo + followers | Cristais, material da região e itens | Implementado |
 | Coleta no mapa | Minerar, colher, pescar com mini-clicker | Tempo no mapa | Material | Futuro |
 | Alquimia | Poções | Ervas + drops | Buffs temporários grandes | Futuro |
 | Relíquias | 12 relíquias únicas, montadas com fragmentos e melhoradas até o nível 10 (custo 10 × nível); cada chefe dá 3 fragmentos, +1 a cada 10 estágios. Ficam na Ascensão | Fragmentos de chefe | Click, auto-ataque, follower (multiplicam entre si), ouro, AFK, crítico, drop e ponto fraco | Implementado |

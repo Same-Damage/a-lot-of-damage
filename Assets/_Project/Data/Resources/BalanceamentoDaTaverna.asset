@@ -13,6 +13,26 @@ MonoBehaviour:
   m_Name: BalanceamentoDaTaverna
   m_EditorClassIdentifier: ALotOfDamage.Infraestrutura::ALotOfDamage.Infrastructure.BalanceamentoDaTaverna
   limiteEmHoras: 12
+  vagasDeExpedicao: 3
+  missoes:
+  - Id: patrulha
+    Nome: Patrulha
+    Horas: 1
+    Cristais: 5
+    Lutas: 10
+    ChanceDeItem: 0.2
+  - Id: cacada
+    Nome: "Ca\xE7ada"
+    Horas: 4
+    Cristais: 25
+    Lutas: 40
+    ChanceDeItem: 0.6
+  - Id: jornada
+    Nome: Jornada
+    Horas: 8
+    Cristais: 60
+    Lutas: 90
+    ChanceDeItem: 1.5
   predios:
   - Id: balcao
     Nome: "Balc\xE3o"
