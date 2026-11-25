@@ -54,6 +54,10 @@ namespace ALotOfDamage.Testes
                 new DefinicaoDeMissao { Id = "longa", Nome = "Caçada", Horas = 8, Cristais = 60, Lutas = 90, ChanceDeItem = 1 },
             };
             public int VagasDeExpedicao { get; set; } = 2;
+            public IReadOnlyList<DefinicaoDeRecurso> Recursos { get; set; } = new List<DefinicaoDeRecurso>
+            {
+                new DefinicaoDeRecurso { Id = "erva", Nome = "Moita de erva-lunar", MaterialId = "erva_lunar", NomeDoMaterial = "Erva-lunar", QuantidadeBase = 2, Golpes = 4 },
+            };
             public IReadOnlyList<DefinicaoDeConquista> Conquistas { get; set; } = new List<DefinicaoDeConquista>
             {
                 new DefinicaoDeConquista { Id = "vitorias", Nome = "Guerreiro incansável", Descricao = "Vença {0} batalhas", Meta = MetaDaConquista.Vitorias, Degraus = new double[] { 1, 3 } },
@@ -1057,6 +1061,22 @@ namespace ALotOfDamage.Testes
             var copia = Progresso.Importar(repositorio.Progresso.Exportar());
             Assert.AreEqual(1, copia.Expedicoes.Count);
             Assert.AreEqual("lontra", copia.Expedicoes[0].FollowerId);
+        }
+
+        [Test]
+        public void Coletar_recurso_da_o_material_dele()
+        {
+            Assert.AreEqual(2, new ColetarRecurso(repositorio, catalogo).Executar("erva"));
+            Assert.AreEqual(2, repositorio.Progresso.Material("erva_lunar"));
+            Assert.AreEqual(1, repositorio.Progresso.RecursosColetados);
+            Assert.AreEqual(1, repositorio.Salvamentos);
+            Assert.AreEqual(0, new ColetarRecurso(repositorio, catalogo).Executar("nao_existe"));
+        }
+
+        [Test]
+        public void Nome_do_material_da_coleta_aparece_pelo_catalogo()
+        {
+            Assert.AreEqual("Erva-lunar", catalogo.NomeDoMaterial("erva_lunar"));
         }
 
         [Test]

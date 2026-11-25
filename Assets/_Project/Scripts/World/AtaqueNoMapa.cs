@@ -52,7 +52,22 @@ namespace ALotOfDamage.World
                 Vector3 d = e.transform.position - transform.position; d.y = 0f;
                 if (d.magnitude < menorDistancia) { menorDistancia = d.magnitude; maisPerto = e; }
             }
-            if (maisPerto) maisPerto.Enfrentar(RegrasDoEncontro.AoAtacar(maisPerto.Perseguindo));
+            if (maisPerto)
+            {
+                maisPerto.Enfrentar(RegrasDoEncontro.AoAtacar(maisPerto.Perseguindo));
+                return;
+            }
+
+            // sem monstro perto: golpeia o ponto de coleta mais próximo (mini-clicker)
+            PontoDeColeta ponto = null;
+            menorDistancia = alcance + 0.5f;
+            foreach (var c in FindObjectsByType<PontoDeColeta>(FindObjectsSortMode.None))
+            {
+                if (!c.Disponivel) continue;
+                Vector3 d = c.transform.position - transform.position; d.y = 0f;
+                if (d.magnitude < menorDistancia) { menorDistancia = d.magnitude; ponto = c; }
+            }
+            if (ponto) ponto.Golpear();
         }
 
     }

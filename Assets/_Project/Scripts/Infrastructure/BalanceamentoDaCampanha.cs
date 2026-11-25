@@ -10,6 +10,26 @@ namespace ALotOfDamage.Infrastructure
     {
         public ParametrosDaCampanha parametros = new ParametrosDaCampanha();
 
+        // Pontos de coleta espalhados pelo mapa (ingredientes da alquimia)
+        public List<DefinicaoDeRecurso> recursos = new List<DefinicaoDeRecurso>
+        {
+            new DefinicaoDeRecurso
+            {
+                Id = "moita_erva", Nome = "Moita de erva-lunar", MaterialId = "erva_lunar", NomeDoMaterial = "Erva-lunar",
+                Forma = FormaDoRecurso.Erva, Cor = "#8CE07A", Golpes = 4, QuantidadeBase = 3, SegundosParaRebrotar = 40,
+            },
+            new DefinicaoDeRecurso
+            {
+                Id = "cogumelo", Nome = "Cogumelo rubro", MaterialId = "cogumelo_rubro", NomeDoMaterial = "Cogumelo rubro",
+                Forma = FormaDoRecurso.Cogumelo, Cor = "#D84A4A", Golpes = 5, QuantidadeBase = 2, SegundosParaRebrotar = 50,
+            },
+            new DefinicaoDeRecurso
+            {
+                Id = "veio_minerio", Nome = "Veio de minério celeste", MaterialId = "minerio_celeste", NomeDoMaterial = "Minério celeste",
+                Forma = FormaDoRecurso.Minerio, Cor = "#5AB8F0", Golpes = 8, QuantidadeBase = 2, SegundosParaRebrotar = 70,
+            },
+        };
+
         public List<DefinicaoDeRegiao> regioes = new List<DefinicaoDeRegiao>
         {
             // Dia claro, campo aberto e folhas ao vento

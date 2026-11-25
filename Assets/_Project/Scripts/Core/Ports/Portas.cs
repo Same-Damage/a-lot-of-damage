@@ -26,6 +26,7 @@ namespace ALotOfDamage.Core
         IReadOnlyList<DefinicaoDeReliquia> Reliquias { get; }
         IReadOnlyList<DefinicaoDePredio> Predios { get; }
         IReadOnlyList<DefinicaoDeMissao> Missoes { get; }
+        IReadOnlyList<DefinicaoDeRecurso> Recursos { get; }
         int VagasDeExpedicao { get; }
         double LimiteDaTavernaEmHoras { get; }
         ParametrosDasReliquias ParametrosDasReliquias { get; }
@@ -60,6 +61,10 @@ namespace ALotOfDamage.Core
         public static DefinicaoDeFollower Follower(this ICatalogo c, string id) => Buscar(c.Followers, x => x.Id == id);
 
         public static string NomeDoMaterial(this ICatalogo c, string materialId) =>
-            Buscar(c.Monstros, m => m.MaterialId == materialId)?.NomeDoMaterial ?? materialId;
+            Buscar(c.Monstros, m => m.MaterialId == materialId)?.NomeDoMaterial
+            ?? Buscar(c.Recursos, r => r.MaterialId == materialId)?.NomeDoMaterial
+            ?? materialId;
+
+        public static DefinicaoDeRecurso Recurso(this ICatalogo c, string id) => Buscar(c.Recursos, r => r.Id == id);
     }
 }

@@ -68,6 +68,7 @@ namespace ALotOfDamage.Infrastructure
         public double LimiteDaTavernaEmHoras { get; }
         public IReadOnlyList<DefinicaoDeMissao> Missoes { get; }
         public int VagasDeExpedicao { get; }
+        public IReadOnlyList<DefinicaoDeRecurso> Recursos { get; }
         public ParametrosDasReliquias ParametrosDasReliquias { get; }
         public ParametrosDasConquistas ParametrosDasConquistas { get; }
         public IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
@@ -88,6 +89,7 @@ namespace ALotOfDamage.Infrastructure
             var campanha = BalanceamentoDaCampanha.Carregar();
             Campanha = campanha.parametros;
             Regioes = campanha.regioes;
+            Recursos = campanha.recursos;
             var conquistas = BalanceamentoDasConquistas.Carregar();
             Conquistas = conquistas.conquistas;
             ParametrosDasConquistas = conquistas.parametros;

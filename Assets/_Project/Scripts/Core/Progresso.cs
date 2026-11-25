@@ -78,6 +78,8 @@ namespace ALotOfDamage.Core
             return true;
         }
         public void ContarChefe() => ChefesDerrotados++;
+        public int RecursosColetados { get; private set; }
+        public void ContarColeta() => RecursosColetados++;
 
         // Relíquias: fragmentos de chefe e o nível de cada relíquia (0 = não montada); ficam na Ascensão
         public long Fragmentos { get; private set; }
@@ -305,6 +307,7 @@ namespace ALotOfDamage.Core
             Fragmentos = Fragmentos, Reliquias = Pares(reliquias),
             Predios = Pares(predios), UltimaColetaDaTavernaUtc = UltimaColetaDaTavernaUtc,
             Expedicoes = new List<ExpedicaoEmAndamento>(expedicoes),
+            RecursosColetados = RecursosColetados,
             Followers = Pares(followers), InvocacoesSemEpico = InvocacoesSemEpico, InvocacoesSemLendario = InvocacoesSemLendario,
         };
 
@@ -339,6 +342,7 @@ namespace ALotOfDamage.Core
             p.Fragmentos = Math.Max(0, d.Fragmentos);
             Preencher(p.reliquias, d.Reliquias);
             Preencher(p.predios, d.Predios);
+            p.RecursosColetados = Math.Max(0, d.RecursosColetados);
             if (d.Expedicoes != null) foreach (var e in d.Expedicoes) if (e != null && !string.IsNullOrEmpty(e.FollowerId)) p.expedicoes.Add(e);
             p.UltimaColetaDaTavernaUtc = Math.Max(0, d.UltimaColetaDaTavernaUtc);
             if (p.Estrelas(FollowerPadrao) <= 0) p.followers[FollowerPadrao] = 1;
@@ -449,6 +453,7 @@ namespace ALotOfDamage.Core
         public List<ParDeValor> Predios = new List<ParDeValor>();
         public long UltimaColetaDaTavernaUtc;
         public List<ExpedicaoEmAndamento> Expedicoes = new List<ExpedicaoEmAndamento>();
+        public int RecursosColetados;
         public int InvocacoesSemEpico;
         public int InvocacoesSemLendario;
         public List<ParDeValor> Materiais = new List<ParDeValor>();

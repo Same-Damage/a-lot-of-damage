@@ -115,6 +115,18 @@ namespace ALotOfDamage.Ferramentas
             }
             CriarPontoDeMonstro("chefe", 0, true, new Vector3(0, 1, 32));
 
+            // Pontos de coleta (ingredientes da alquimia), revezando os recursos da campanha
+            var recursos = BalanceamentoDaCampanha.Carregar().recursos;
+            for (int i = 0; i < 12 && recursos.Count > 0; i++)
+            {
+                float ang = i * 2.4f + 0.7f;
+                float distancia = 7f + (i % 4) * 5f;
+                var ponto = new GameObject($"Coleta {i + 1}").AddComponent<PontoDeColeta>();
+                ponto.transform.position = new Vector3(Mathf.Cos(ang) * distancia, 1, Mathf.Sin(ang) * distancia);
+                ponto.recursoId = recursos[i % recursos.Count].Id;
+                ponto.materialBase = MaterialDoMapa("Cenario", "Universal Render Pipeline/Lit");
+            }
+
             var cam = Camera.main;
             var iso = cam.gameObject.AddComponent<CameraIsometrica>();
             // Como no lobby do Legend Online: câmera mais baixa e quase sem perspectiva,
