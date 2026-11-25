@@ -15,7 +15,7 @@ namespace ALotOfDamage.UI
 
         protected override string Titulo => "Ranking";
         protected override Key Tecla => Key.P;
-        protected override int Ordem => 11;
+        protected override int Ordem => 15;
         protected override IconeDoHud Icone => IconeDoHud.Ranking;
         protected override int Linhas => 0;
         protected override float AlturaDaLinha => 0;
@@ -30,8 +30,8 @@ namespace ALotOfDamage.UI
         readonly Image[] fundos = new Image[PorPagina + 1];
         Text aviso, numeroDaPagina;
         Text[] abas;
-        readonly PaginaDoRanking[] paginas = new PaginaDoRanking[2];
-        readonly float[] buscadoEm = { float.NegativeInfinity, float.NegativeInfinity };
+        readonly PaginaDoRanking[] paginas = new PaginaDoRanking[3];
+        readonly float[] buscadoEm = { float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity };
         TipoDeRanking tipo;
         int pagina;
         bool buscando, mudou;
@@ -45,7 +45,7 @@ namespace ALotOfDamage.UI
 
         protected override void MontarConteudo(RectTransform painel)
         {
-            abas = new[] { Aba(painel, "Maior estágio", 52, TipoDeRanking.Estagio), Aba(painel, "Poder", 322, TipoDeRanking.Poder) };
+            abas = new[] { Aba(painel, "Maior estágio", 52, TipoDeRanking.Estagio), Aba(painel, "Poder", 322, TipoDeRanking.Poder), Aba(painel, "Arena", 592, TipoDeRanking.Arena) };
             for (int i = 0; i <= PorPagina; i++) MontarPosicao(painel, i, i < PorPagina ? 156 + i * 52 : 156 + PorPagina * 52 + 24);
             aviso = KitDeInterface.Texto("Aviso", painel, 24, KitDeInterface.TextoClaro, TextAnchor.MiddleCenter);
             KitDeInterface.Ancorar((RectTransform)aviso.transform, new Vector2(0.5f, 1), new Vector2(0, -380), new Vector2(860, 40));
@@ -73,6 +73,7 @@ namespace ALotOfDamage.UI
             KitDeInterface.Ancorar(linha, new Vector2(0.5f, 1), new Vector2(0, -y), new Vector2(900, 46));
             posicoes[i] = Texto(linha, 14, 6, 24, KitDeInterface.Dourado, 90, true);
             nomes[i] = Texto(linha, 120, 6, 24, KitDeInterface.TextoClaro, 520);
+            nomes[i].supportRichText = false;   // o nome é escrito por outra pessoa
             pontos[i] = KitDeInterface.Texto("Pontos", linha, 24, KitDeInterface.TextoClaro, TextAnchor.MiddleRight, true);
             KitDeInterface.Ancorar((RectTransform)pontos[i].transform, new Vector2(1, 1), new Vector2(-14, -6), new Vector2(240, 34));
         }
@@ -110,7 +111,7 @@ namespace ALotOfDamage.UI
             fundos[i].color = eu ? new Color(1f, 0.8f, 0.3f, 0.18f) : new Color(0, 0, 0, i % 2 == 0 ? 0.28f : 0.14f);
             posicoes[i].text = $"{l.Posicao}º";
             nomes[i].text = string.IsNullOrEmpty(l.Nome) ? (eu ? "Você" : "Sem nome") : l.Nome;
-            pontos[i].text = tipo == TipoDeRanking.Estagio ? $"Estágio {l.Pontos:0}" : FormatadorDeNumeros.Formatar(l.Pontos);
+            pontos[i].text = tipo == TipoDeRanking.Estagio ? $"Estágio {l.Pontos:0}" : tipo == TipoDeRanking.Arena ? $"{l.Pontos:0} pontos" : FormatadorDeNumeros.Formatar(l.Pontos);
         }
 
         async void Buscar(TipoDeRanking t)

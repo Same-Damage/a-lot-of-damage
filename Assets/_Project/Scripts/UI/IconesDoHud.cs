@@ -4,7 +4,7 @@ using static ALotOfDamage.UI.DesenhoDeIcone;
 
 namespace ALotOfDamage.UI
 {
-    public enum IconeDoHud { Inventario, Upgrades, Forja, Followers, Conquistas, Bestiario, Ascensao, Reliquias, Taverna, Expedicoes, Alquimia, Ranking, Conta, Menu, Heroi, Ouro, Espada, Ultimate, Fugir }
+    public enum IconeDoHud { Inventario, Upgrades, Forja, Followers, Conquistas, Bestiario, Ascensao, Reliquias, Taverna, Expedicoes, Alquimia, Ranking, Conta, Guilda, Arena, Cidade, Conversa, Menu, Heroi, Ouro, Espada, Ultimate, Fugir }
 
     // Ícones do HUD desenhados por código; arte de verdade em Resources/Icones/hud_<nome>.png é usada no lugar
     public static class IconesDoHud
@@ -93,6 +93,25 @@ namespace ALotOfDamage.UI
                 {
                     float w = Mathf.Abs(u), h = Mathf.Abs(v);
                     return (Mathf.Pow(w, 0.6f) + Mathf.Pow(h, 0.6f) - Mathf.Pow(0.92f, 0.6f)) * 0.55f;
+                }
+                case IconeDoHud.Arena: // espadas cruzadas
+                {
+                    float w = Mathf.Abs(u);
+                    float laminas = Mathf.Min(Segmento(u, v, -0.6f, -0.6f, 0.65f, 0.65f), Segmento(u, v, 0.6f, -0.6f, -0.65f, 0.65f)) - 0.1f;
+                    return Mathf.Min(laminas, Segmento(w, v, 0.2f, -0.62f, 0.62f, -0.2f) - 0.09f);
+                }
+                case IconeDoHud.Cidade: // casa
+                {
+                    float telhado = Mathf.Max(Mathf.Abs(u) * 0.75f + v - 0.62f, -v + 0.02f);
+                    return Mathf.Max(Mathf.Min(telhado, Caixa(u, v + 0.32f, 0.46f, 0.36f)), -Caixa(u, v + 0.45f, 0.13f, 0.26f));
+                }
+                case IconeDoHud.Conversa: // balão
+                    return Mathf.Min(Caixa(u, v - 0.15f, 0.48f, 0.28f) - 0.18f, Mathf.Max(Mathf.Abs(u + 0.25f) * 0.9f - v * 0.45f - 0.4f, Mathf.Max(v + 0.2f, -v - 0.75f)));
+                case IconeDoHud.Guilda: // escudo com faixa
+                {
+                    float w = Mathf.Abs(u);
+                    float escudo = v > 0 ? Mathf.Max(w - 0.6f, v - 0.7f) : Mathf.Max(w * 0.82f - v * 0.6f - 0.5f, w - 0.6f);
+                    return Mathf.Max(escudo, -(Mathf.Abs(u) - 0.07f));
                 }
                 case IconeDoHud.Ranking: // pódio
                     return Min(Caixa(u, v + 0.05f, 0.2f, 0.7f), Caixa(u + 0.5f, v + 0.35f, 0.2f, 0.4f), Caixa(u - 0.5f, v + 0.48f, 0.2f, 0.27f));

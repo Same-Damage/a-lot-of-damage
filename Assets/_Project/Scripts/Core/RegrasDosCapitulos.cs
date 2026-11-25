@@ -5,7 +5,7 @@ namespace ALotOfDamage.Core
 {
     public enum SistemaDoJogo
     {
-        Upgrades, Forja, Inventario, Bestiario, Followers, Conquistas, Reliquias, Taverna, Expedicoes, Alquimia, Ascensao,
+        Upgrades, Forja, Inventario, Bestiario, Followers, Conquistas, Reliquias, Taverna, Expedicoes, Alquimia, Ascensao, Cidade,
     }
 
     // A partir de que estágio (o maior já alcançado) o sistema aparece; sistema sem regra já vem aberto

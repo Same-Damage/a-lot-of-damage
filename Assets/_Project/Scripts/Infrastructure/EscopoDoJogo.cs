@@ -37,7 +37,7 @@ namespace ALotOfDamage.Infrastructure
             builder.Register<ISorteio, SorteioDaUnity>(Lifetime.Singleton);
             builder.Register<IRelogio, RelogioDoSistema>(Lifetime.Singleton);
             RegistrarOnline(builder);
-            builder.Register<FluxoDeEncontro>(Lifetime.Singleton);
+            builder.Register<FluxoDeEncontro>(Lifetime.Singleton).AsSelf().As<IEntradaNaArena, IPortaoDaCidade>();
 
             builder.Register<ComprarUpgrade>(Lifetime.Singleton);
             builder.Register<RefinarItem>(Lifetime.Singleton);
@@ -81,6 +81,10 @@ namespace ALotOfDamage.Infrastructure
             builder.Register<ListarPendencias>(Lifetime.Singleton);
             builder.Register<EscolhaDeHeroi>(Lifetime.Singleton);
             builder.Register<SincronizarProgresso>(Lifetime.Singleton);
+            builder.Register<GuildaDoJogador>(Lifetime.Singleton);
+            builder.Register<ArenaDoJogador>(Lifetime.Singleton);
+            builder.Register<ConversaDoJogador>(Lifetime.Singleton);
+            builder.Register<IBloqueados, BloqueadosNoAparelho>(Lifetime.Singleton);
         }
 
         // Sem projeto da Unity vinculado, e nos testes, o jogo não fala com a nuvem
@@ -90,12 +94,16 @@ namespace ALotOfDamage.Infrastructure
             builder.RegisterInstance<IGuardaDaSincronia>(new GuardaDaSincroniaEmArquivo(CaminhoDoSave, SystemInfo.deviceModel));
             if (RodandoTestes || string.IsNullOrEmpty(Application.cloudProjectId))
             {
-                builder.Register<OnlineDesligado>(Lifetime.Singleton).As<IContaOnline, INuvemDeProgresso, IRanking>();
+                builder.Register<OnlineDesligado>(Lifetime.Singleton).As<IContaOnline, INuvemDeProgresso, IRanking, IServicoDeGuilda>().As<IServicoDaArena, ITransporteDeChat, IServicoDeDenuncias>();
                 return;
             }
             builder.Register<IContaOnline, ContaDaUnity>(Lifetime.Singleton);
             builder.Register<INuvemDeProgresso, NuvemDaUnity>(Lifetime.Singleton);
             builder.Register<IRanking, RankingDaUnity>(Lifetime.Singleton);
+            builder.Register<IServicoDeGuilda, GuildaDaUnity>(Lifetime.Singleton);
+            builder.Register<IServicoDaArena, ArenaDaUnity>(Lifetime.Singleton);
+            builder.Register<ITransporteDeChat, ChatDaUnity>(Lifetime.Singleton);
+            builder.Register<IServicoDeDenuncias, DenunciasDaUnity>(Lifetime.Singleton);
         }
     }
 }

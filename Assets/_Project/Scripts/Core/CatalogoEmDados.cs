@@ -30,6 +30,9 @@ namespace ALotOfDamage.Core
         public ParametrosDasReliquias parametrosDasReliquias = new ParametrosDasReliquias();
         public ParametrosDasConquistas parametrosDasConquistas = new ParametrosDasConquistas();
 
+        public ParametrosDaGuilda guilda = new ParametrosDaGuilda();
+        public ParametrosDaArena arena = new ParametrosDaArena();
+
         public CatalogoEmDados() { }
 
         public static CatalogoEmDados De(ICatalogo c) => new CatalogoEmDados
@@ -55,6 +58,8 @@ namespace ALotOfDamage.Core
             limiteDaTavernaEmHoras = c.LimiteDaTavernaEmHoras,
             parametrosDasReliquias = c.ParametrosDasReliquias,
             parametrosDasConquistas = c.ParametrosDasConquistas,
+            guilda = c.Guilda,
+            arena = c.Arena,
         };
 
         // implementação explícita: para o serializador só existem os campos
@@ -80,5 +85,7 @@ namespace ALotOfDamage.Core
         double ICatalogo.LimiteDaTavernaEmHoras => limiteDaTavernaEmHoras;
         ParametrosDasReliquias ICatalogo.ParametrosDasReliquias => parametrosDasReliquias;
         ParametrosDasConquistas ICatalogo.ParametrosDasConquistas => parametrosDasConquistas;
+        ParametrosDaGuilda ICatalogo.Guilda => guilda;
+        ParametrosDaArena ICatalogo.Arena => arena;
     }
 }

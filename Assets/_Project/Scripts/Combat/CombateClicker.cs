@@ -60,6 +60,11 @@ namespace ALotOfDamage.Combat
         float ultimoClick, timerAutomatico, timerFollower, timerPontoFraco, pontoFracoRestante, ultimate;
         float cliquesTravadosAte, automaticoComecaEm, voltarEm = -1;
         double ouroMostrado = -1;
+        bool enviando;
+
+        GuildaDoJogador guilda;
+        ICatalogo catalogo;
+        LutaDaGuilda luta;      // null numa luta comum
 
         EscolhaDeHeroi escolhaDeHeroi;
         PersonagemVisual heroi;
@@ -70,8 +75,10 @@ namespace ALotOfDamage.Combat
 
         [Inject]
         public void Construir(FluxoDeEncontro encontro, IRepositorioDeProgresso repositorio, CalcularAtributos calcularAtributos,
-            CalcularInimigo calcularInimigo, RegistrarVitoria registrarVitoria, EscolhaDeHeroi escolhaDeHeroi)
+            CalcularInimigo calcularInimigo, RegistrarVitoria registrarVitoria, EscolhaDeHeroi escolhaDeHeroi, GuildaDoJogador guilda, ICatalogo catalogo)
         {
+            this.guilda = guilda;
+            this.catalogo = catalogo;
             this.escolhaDeHeroi = escolhaDeHeroi;
             this.encontro = encontro;
             this.repositorio = repositorio;
@@ -89,9 +96,10 @@ namespace ALotOfDamage.Combat
             feedback = gameObject.AddComponent<FeedbackDoGolpe>();
             feedback.alvo = visualDoInimigo;
             hud.PodeFugir(EmEncontro);
+            if (EmEncontro && encontro.Guilda != null) luta = new LutaDaGuilda(encontro.Guilda, catalogo.Guilda);
             NovoInimigo();
 
-            if (!EmEncontro) return;
+            if (!EmEncontro || luta != null) return;
             switch (encontro.Vantagem)
             {
                 case Vantagem.Preventivo:
@@ -109,7 +117,7 @@ namespace ALotOfDamage.Combat
 
         void NovoInimigo()
         {
-            inimigo = calcularInimigo.Executar(Tipo, Chefe);
+            inimigo = luta != null ? luta.Inimigo : calcularInimigo.Executar(Tipo, Chefe);
             vidaDoInimigo = inimigo.Vida;
             if (modeloDoInimigo)
             {
@@ -123,17 +131,27 @@ namespace ALotOfDamage.Combat
 
         void Fugir()
         {
-            if (EmEncontro && voltarEm < 0) encontro.Encerrar(false);
+            if (!EmEncontro || voltarEm > 0) return;
+            // a tentativa já foi gasta: sair antes vale o que foi feito até aqui
+            if (luta != null) TerminarLuta(); else encontro.Encerrar(false);
         }
 
         void Update()
         {
             float agora = Time.time;
 
+            if (enviando) return;
             if (voltarEm > 0)
             {
                 if (Time.unscaledTime >= voltarEm) encontro.Encerrar(true);
                 return;
+            }
+
+            if (luta != null)
+            {
+                luta.Avancar(Time.deltaTime);
+                hud.Inimigo(luta.Titulo);
+                if (luta.Acabou) { TerminarLuta(); return; }
             }
 
             var teclado = Keyboard.current;
@@ -194,6 +212,7 @@ namespace ALotOfDamage.Combat
             if (!limitador.Registrar(Time.unscaledTime)) return;
 
             combo++;
+            luta?.Clique(combo, pontoFracoRestante > 0);
             ultimoClick = agora;
             ultimate = Mathf.Min(100, ultimate + cargaDaUltimatePorClick);
 
@@ -215,12 +234,13 @@ namespace ALotOfDamage.Combat
         // Botão do HUD, Espaço ou Y no controle
         void PedirUltimate()
         {
-            if (voltarEm < 0 && ultimate >= 100) DispararUltimate();
+            if (voltarEm < 0 && !enviando && ultimate >= 100) DispararUltimate();
         }
 
         void DispararUltimate()
         {
             ultimate = 0;
+            luta?.Ultimate();
             var classe = atributos.Classe;
             double multiplicador = classe?.MultiplicadorDaUltimate ?? multiplicadorDaUltimate;
             if (!string.IsNullOrEmpty(classe?.NomeDaUltimate)) hud.Faixa.Mostrar(classe.NomeDaUltimate.ToUpperInvariant() + "!");
@@ -230,15 +250,16 @@ namespace ALotOfDamage.Combat
 
         void Acertar(double dano, TipoDeGolpe tipo, Color cor, int tamanho)
         {
-            if (voltarEm > 0) return;
-            vidaDoInimigo -= dano;
+            if (voltarEm > 0 || enviando) return;
+            // contra o chefe da guilda o dano mostrado é o de sempre, mas quem tira vida são os pontos
+            if (luta == null) vidaDoInimigo -= dano;
 
             feedback.Golpe(tipo, cor);
             var desvio = new Vector2(Random.Range(-160f, 160f), Random.Range(-40f, 60f));
             hud.Numeros.Mostrar(FormatadorDeNumeros.Formatar(dano), cor, tamanho, desvio);
             AtualizarVida();
 
-            if (vidaDoInimigo > 0) return;
+            if (luta != null || vidaDoInimigo > 0) return;
 
             var v = registrarVitoria.Executar(Tipo, Chefe);
             if (EmEncontro)
@@ -261,9 +282,35 @@ namespace ALotOfDamage.Combat
             }
         }
 
-        void AtualizarVida() =>
+        async void TerminarLuta()
+        {
+            enviando = true;
+            hud.PodeFugir(false);
+            hud.Faixa.Fixar("Enviando o resultado...");
+            string texto;
+            try
+            {
+                double pontos = await guilda.TerminarLuta(encontro.Guilda.LutaId, luta.Contagem);
+                texto = $"{FormatadorDeNumeros.Formatar(pontos)} PONTOS PARA A GUILDA!";
+            }
+            catch (FalhaOnline e) { texto = $"O resultado não foi enviado.\n{e.Message}"; }
+            catch (System.Exception e) { Debug.LogException(e); texto = "O resultado não foi enviado."; }
+            if (!this) return;
+            enviando = false;
+            hud.Faixa.Fixar(texto);
+            voltarEm = Time.unscaledTime + 2.5f;
+        }
+
+        void AtualizarVida()
+        {
+            if (luta != null)
+            {
+                hud.Vida(luta.VidaRestante, luta.Vida, $"{FormatadorDeNumeros.Formatar(luta.VidaRestante)} / {FormatadorDeNumeros.Formatar(luta.Vida)}  ·  {FormatadorDeNumeros.Formatar(luta.Pontos)} pontos");
+                return;
+            }
             hud.Vida(vidaDoInimigo, inimigo.Vida,
                 $"{FormatadorDeNumeros.Formatar(System.Math.Max(0, vidaDoInimigo))} / {FormatadorDeNumeros.Formatar(inimigo.Vida)}");
+        }
 
         void AtualizarOuro()
         {

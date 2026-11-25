@@ -11,5 +11,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Batalha.unity
     guid: bfd0ca17dcf0d7742929500baa37d60a
+  - enabled: 1
+    path: Assets/_Project/Scenes/Cidade.unity
+    guid: a7234801d2c52fd4ba30396027226d1c
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

@@ -44,7 +44,7 @@ namespace ALotOfDamage.World
         {
             var visual = herois.Mostrar(nome);
             movimento.boneco = visual;
-            ataque.boneco = visual;
+            if (ataque) ataque.boneco = visual;   // na cidade não se ataca
             rotulo.text = visual.name;
         }
     }

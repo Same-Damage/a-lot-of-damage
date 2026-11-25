@@ -2,6 +2,7 @@ using ALotOfDamage.Combat;
 using ALotOfDamage.Core;
 using ALotOfDamage.Infrastructure;
 using ALotOfDamage.UI;
+using ALotOfDamage.Network;
 using ALotOfDamage.World;
 using ALotOfDamage.Visual;
 using UnityEditor;
@@ -27,11 +28,13 @@ namespace ALotOfDamage.Ferramentas
             CriarBalanceamento();
             CriarBatalha();
             CriarComparacao();
+            CriarCidade();
             CriarMapa();
             EditorBuildSettings.scenes = new[]
             {
                 new EditorBuildSettingsScene($"{Pasta}/Mapa.unity", true),
                 new EditorBuildSettingsScene($"{Pasta}/Batalha.unity", true),
+                new EditorBuildSettingsScene($"{Pasta}/Cidade.unity", true),
             };
         }
 
@@ -47,6 +50,7 @@ namespace ALotOfDamage.Ferramentas
             CriarAssetSeFaltar<BalanceamentoDasConquistas>();
             CriarAssetSeFaltar<BalanceamentoDasReliquias>();
             CriarAssetSeFaltar<BalanceamentoDaTaverna>();
+            CriarAssetSeFaltar<BalanceamentoDaGuilda>();
             CriarAssetSeFaltar<BalanceamentoDaHistoria>();
             AssetDatabase.SaveAssets();
         }
@@ -154,6 +158,10 @@ namespace ALotOfDamage.Ferramentas
             janelas.AddComponent<JanelaDaTaverna>();
             janelas.AddComponent<JanelaDasExpedicoes>();
             janelas.AddComponent<JanelaDaAlquimia>();
+            janelas.AddComponent<JanelaDaGuilda>();
+            janelas.AddComponent<JanelaDaArena>();
+            janelas.AddComponent<PortaoDaCidade>();
+            janelas.AddComponent<JanelaDeChat>();
             janelas.AddComponent<JanelaDoRanking>();
             janelas.AddComponent<JanelaDaConta>();
             var vitrine = new GameObject("Vitrine do herói").AddComponent<VitrineDoHeroi>();
@@ -475,6 +483,93 @@ namespace ALotOfDamage.Ferramentas
             Salvar(cena, "Batalha");
         }
 
+
+        const string CaminhoDoJogadorDaRede = "Assets/_Project/Online/JogadorNaCidade.prefab";
+
+        // Cidade online: praça com casas numa ilha; os outros jogadores são desenhados pela CidadeOnline
+        [MenuItem("A Lot of Damage/Criar cena: Cidade")]
+        public static void CriarCidade()
+        {
+            var cena = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+            new GameObject("Escopo da Cena").AddComponent<EscopoDaCena>();
+
+            var predios = new GameObject("Cidade", typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider));
+            var malha = SalvarAsset(ModeloDaCidade.Criar(RegrasDaCidade.Raio), $"{Pasta}/Mapa/Cidade.asset");
+            predios.GetComponent<MeshFilter>().sharedMesh = malha;
+            predios.GetComponent<MeshCollider>().sharedMesh = malha;
+            var materiais = new Material[ModeloDaCidade.Cores.Length];
+            for (int i = 0; i < materiais.Length; i++)
+            {
+                materiais[i] = MaterialDoMapa($"Cidade {i}", "Universal Render Pipeline/Lit");
+                ColorUtility.TryParseHtmlString(ModeloDaCidade.Cores[i], out var cor);
+                materiais[i].SetColor("_BaseColor", cor);
+                materiais[i].SetFloat("_Smoothness", 0.05f);
+                EditorUtility.SetDirty(materiais[i]);
+            }
+            predios.GetComponent<MeshRenderer>().sharedMaterials = materiais;
+            CriarMuralha(new ParametrosDaIlha { RaioAndavel = RegrasDaCidade.Raio });
+
+            var jogador = new GameObject("Jogador") { tag = "Player" };
+            jogador.transform.position = new Vector3(0, 1.1f, -9);
+            jogador.AddComponent<CharacterController>();
+            var movimento = jogador.AddComponent<MovimentoDoJogador>();
+            movimento.voltaAoPonto = false;
+            var herois = CriarHerois(jogador.transform, new Vector3(0, -1f, 0), AlturaDoPersonagem3D, Quaternion.identity);
+            movimento.boneco = herois.herois[0];
+            CriarSombra(jogador.transform, new Vector3(0, -0.98f, 0), 0.9f, 0.5f, 0.6f);
+            var troca = jogador.AddComponent<TrocaDeHeroi>();
+            troca.herois = herois;
+            troca.movimento = movimento;
+            var follower = CriarFollower(new Vector3(-1.6f, 2.8f, -9), Vector3.back);
+            follower.seguidor = follower.gameObject.AddComponent<SeguidorNoMapa>();
+            follower.seguidor.alvo = jogador.transform;
+
+            var cam = Camera.main;
+            var iso = cam.gameObject.AddComponent<CameraIsometrica>();
+            iso.inclinacao = 32f;
+            iso.distancia = 30f;
+            cam.fieldOfView = 24f;
+            iso.alvo = jogador.transform;
+            movimento.camera_ = cam.transform;
+            var sol = Object.FindAnyObjectByType<Light>();
+            sol.color = new Color(1f, 0.93f, 0.8f);
+            sol.intensity = 1.25f;
+            sol.transform.rotation = Quaternion.Euler(48, -35, 0);
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = new Color(0.55f, 0.58f, 0.66f);
+            RenderSettings.fog = true;
+            RenderSettings.fogMode = FogMode.Linear;
+            RenderSettings.fogColor = new Color(0.62f, 0.78f, 0.9f);
+            RenderSettings.fogStartDistance = 45;
+            RenderSettings.fogEndDistance = 120;
+
+            // rede: a CidadeOnline liga quando entra numa sala
+            var rede = new GameObject("Rede").AddComponent<Unity.Netcode.NetworkManager>();
+            var transporte = rede.gameObject.AddComponent<Unity.Netcode.Transports.UTP.UnityTransport>();
+            rede.NetworkConfig = new Unity.Netcode.NetworkConfig { NetworkTransport = transporte, PlayerPrefab = JogadorDaRede(), EnableSceneManagement = false, TickRate = 10 };
+
+            var cidade = new GameObject("Cidade online").AddComponent<CidadeOnline>();
+            cidade.jogador = jogador.transform;
+            cidade.herois = herois;
+            cidade.modeloDeFollower = follower.modelo;
+            cidade.modeloDeSombra = jogador.GetComponentInChildren<SombraDeContato>();
+
+            CriarControlesDeToque();
+            new GameObject("Janelas").AddComponent<JanelaDeChat>();
+            new GameObject("Presença").AddComponent<JanelaDaRecompensaAfk>().mostrarJanela = false;
+            new GameObject("Nuvem").AddComponent<SincroniaDaNuvem>().mostrarTelas = false;
+            Salvar(cena, "Cidade");
+        }
+
+        static GameObject JogadorDaRede()
+        {
+            var pronto = AssetDatabase.LoadAssetAtPath<GameObject>(CaminhoDoJogadorDaRede);
+            if (pronto) return pronto;   // recriar mudaria o id do objeto na rede
+            var go = new GameObject("JogadorNaCidade", typeof(Unity.Netcode.NetworkObject), typeof(JogadorNaCidade));
+            pronto = PrefabUtility.SaveAsPrefabAsset(go, CaminhoDoJogadorDaRede);
+            Object.DestroyImmediate(go);
+            return pronto;
+        }
 
         // Altura no mapa dos personagens 3D, parecida com a do boneco de recorte para comparar
         const float AlturaDoPersonagem3D = 2.3f;

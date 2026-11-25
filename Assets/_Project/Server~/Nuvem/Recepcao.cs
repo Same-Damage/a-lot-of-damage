@@ -14,6 +14,9 @@ namespace ALotOfDamage.Nuvem
         static readonly JsonSerializerOptions Opcoes = new JsonSerializerOptions { IncludeFields = true };
         static readonly Lazy<CatalogoEmDados> Catalogo = new Lazy<CatalogoEmDados>(LerCatalogo);
 
+        public static ParametrosDaArena Arena => Catalogo.Value.arena;
+        public static ParametrosDaGuilda Guilda => Catalogo.Value.guilda;
+
         public static T Ler<T>(string json) where T : class
         {
             if (string.IsNullOrEmpty(json)) return null;

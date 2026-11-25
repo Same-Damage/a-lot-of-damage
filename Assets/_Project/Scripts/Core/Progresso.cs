@@ -77,6 +77,30 @@ namespace ALotOfDamage.Core
             Cristais -= quantidade;
             return true;
         }
+        // Tudo que a guilda já entregou a este progresso; só a diferença para o total do servidor é somada
+        public long CristaisDaGuilda { get; private set; }
+        public long FragmentosDaGuilda { get; private set; }
+
+        public RecompensaDaGuilda ReceberDaGuilda(long cristaisTotais, long fragmentosTotais)
+        {
+            var r = new RecompensaDaGuilda { Cristais = Math.Max(0, cristaisTotais - CristaisDaGuilda), Fragmentos = Math.Max(0, fragmentosTotais - FragmentosDaGuilda) };
+            CristaisDaGuilda += r.Cristais;
+            FragmentosDaGuilda += r.Fragmentos;
+            ReceberCristais(r.Cristais);
+            ReceberFragmentos(r.Fragmentos);
+            return r;
+        }
+
+        public long CristaisDaArena { get; private set; }
+
+        public long ReceberDaArena(long cristaisTotais)
+        {
+            long ganho = Math.Max(0, cristaisTotais - CristaisDaArena);
+            CristaisDaArena += ganho;
+            ReceberCristais(ganho);
+            return ganho;
+        }
+
         public void ContarChefe() => ChefesDerrotados++;
 
         // Cenas de história já vistas
@@ -315,6 +339,7 @@ namespace ALotOfDamage.Core
             ChefesDerrotados = ChefesDerrotados, EstagioMaximo = EstagioMaximo, ItensEpicosObtidos = ItensEpicosObtidos,
             MaiorRefino = MaiorRefino, ItensFabricados = ItensFabricados, OuroTotalGanho = OuroTotalGanho,
             ConquistasColetadas = Pares(conquistasColetadas),
+            CristaisDaArena = CristaisDaArena, CristaisDaGuilda = CristaisDaGuilda, FragmentosDaGuilda = FragmentosDaGuilda,
             Fragmentos = Fragmentos, Reliquias = Pares(reliquias),
             Predios = Pares(predios), UltimaColetaDaTavernaUtc = UltimaColetaDaTavernaUtc,
             Expedicoes = new List<ExpedicaoEmAndamento>(expedicoes),
@@ -353,6 +378,9 @@ namespace ALotOfDamage.Core
             Preencher(p.conquistasColetadas, d.ConquistasColetadas);
             Preencher(p.followers, d.Followers);
             p.Fragmentos = Math.Max(0, d.Fragmentos);
+            p.CristaisDaArena = Math.Max(0, d.CristaisDaArena);
+            p.CristaisDaGuilda = Math.Max(0, d.CristaisDaGuilda);
+            p.FragmentosDaGuilda = Math.Max(0, d.FragmentosDaGuilda);
             Preencher(p.reliquias, d.Reliquias);
             Preencher(p.predios, d.Predios);
             p.RecursosColetados = Math.Max(0, d.RecursosColetados);
@@ -478,6 +506,9 @@ namespace ALotOfDamage.Core
         public List<ParDeValor> ConquistasColetadas = new List<ParDeValor>();
         public List<ParDeValor> Followers = new List<ParDeValor>();
         public long Fragmentos;
+        public long CristaisDaGuilda;
+        public long FragmentosDaGuilda;
+        public long CristaisDaArena;
         public List<ParDeValor> Reliquias = new List<ParDeValor>();
         public List<ParDeValor> Predios = new List<ParDeValor>();
         public long UltimaColetaDaTavernaUtc;

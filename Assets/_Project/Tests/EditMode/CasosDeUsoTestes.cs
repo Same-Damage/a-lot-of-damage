@@ -12,6 +12,8 @@ namespace ALotOfDamage.Testes
             public IReadOnlyList<DefinicaoDeUpgrade> Upgrades { get; set; } = new List<DefinicaoDeUpgrade>();
             public IReadOnlyList<DefinicaoDeItem> Itens { get; set; } = new List<DefinicaoDeItem>();
             public IReadOnlyList<DefinicaoDeMonstro> Monstros { get; set; } = new List<DefinicaoDeMonstro>();
+            public ParametrosDaArena Arena { get; set; } = new ParametrosDaArena();
+            public ParametrosDaGuilda Guilda { get; set; } = new ParametrosDaGuilda();
             public ParametrosDoBestiario Bestiario { get; set; } = new ParametrosDoBestiario();
             public IReadOnlyList<DefinicaoDeClasse> Classes { get; set; } = new List<DefinicaoDeClasse>();
             public IReadOnlyList<DefinicaoDeFollower> Followers { get; set; } = new List<DefinicaoDeFollower>();
