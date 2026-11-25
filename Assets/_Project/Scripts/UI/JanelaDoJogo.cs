@@ -30,6 +30,9 @@ namespace ALotOfDamage.UI
         protected abstract int Ordem { get; }   // posição no MenuDoMapa (as primeiras ficam sempre à vista)
         protected abstract IconeDoHud Icone { get; }
         protected virtual TipoDePendencia? Pendencia => null;   // o que acende o selo do ícone
+        protected virtual SistemaDoJogo? Sistema => null;        // sistema liberado pela história; null = sempre aberto
+        float proximaLiberacao;
+        bool liberada = true;
         protected abstract int Linhas { get; }
         protected abstract float AlturaDaLinha { get; }
         protected abstract void MontarLinha(int i, RectTransform linha);
@@ -98,8 +101,17 @@ namespace ALotOfDamage.UI
 
         protected virtual void Update()
         {
+            // trancada pela história: sem ícone e sem tecla até o estágio de liberação
+            if (Sistema.HasValue && Time.unscaledTime >= proximaLiberacao)
+            {
+                proximaLiberacao = Time.unscaledTime + 1f;
+                liberada = RegrasDosCapitulos.Liberado(catalogo.Liberacoes, Sistema.Value, Progresso.EstagioMaximo);
+                if (botao.Rect.gameObject.activeSelf != liberada) botao.Rect.gameObject.SetActive(liberada);
+                if (!liberada && Aberta) Alternar();
+            }
+
             var k = Keyboard.current;
-            if (k != null && (k[Tecla].wasPressedThisFrame || (Aberta && k.escapeKey.wasPressedThisFrame))) Alternar();
+            if (liberada && k != null && (k[Tecla].wasPressedThisFrame || (Aberta && k.escapeKey.wasPressedThisFrame))) Alternar();
 
             if (painel.gameObject.activeSelf != Aberta)
             {

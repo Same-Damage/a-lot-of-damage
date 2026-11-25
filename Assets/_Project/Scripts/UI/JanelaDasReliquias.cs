@@ -13,6 +13,7 @@ namespace ALotOfDamage.UI
         protected override string Titulo => "Relíquias";
         protected override Key Tecla => Key.R;
         protected override IconeDoHud Icone => IconeDoHud.Reliquias;
+        protected override SistemaDoJogo? Sistema => SistemaDoJogo.Reliquias;
         protected override int Ordem => 7;
         protected override int Linhas => catalogo.Reliquias.Count;
         protected override float AlturaDaLinha => 64;

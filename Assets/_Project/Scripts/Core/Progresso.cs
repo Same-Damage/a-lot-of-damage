@@ -79,6 +79,11 @@ namespace ALotOfDamage.Core
         }
         public void ContarChefe() => ChefesDerrotados++;
 
+        // Cenas de história já vistas
+        readonly HashSet<string> cenasVistas = new HashSet<string>();
+        public bool CenaVista(string id) => id != null && cenasVistas.Contains(id);
+        public void MarcarCenaVista(string id) { if (!string.IsNullOrEmpty(id)) cenasVistas.Add(id); }
+
         // Poções bebidas: quando cada efeito acaba (ticks UTC; long.MaxValue = até ser usada)
         readonly Dictionary<string, long> pocoes = new Dictionary<string, long>();
         public long FimDaPocao(string id) => pocoes.TryGetValue(id ?? "", out var f) ? f : 0;
@@ -315,6 +320,7 @@ namespace ALotOfDamage.Core
             Expedicoes = new List<ExpedicaoEmAndamento>(expedicoes),
             RecursosColetados = RecursosColetados,
             Pocoes = ParesLongos(pocoes),
+            CenasVistas = new List<string>(cenasVistas),
             Followers = Pares(followers), InvocacoesSemEpico = InvocacoesSemEpico, InvocacoesSemLendario = InvocacoesSemLendario,
         };
 
@@ -350,6 +356,7 @@ namespace ALotOfDamage.Core
             Preencher(p.reliquias, d.Reliquias);
             Preencher(p.predios, d.Predios);
             p.RecursosColetados = Math.Max(0, d.RecursosColetados);
+            if (d.CenasVistas != null) foreach (var c in d.CenasVistas) p.MarcarCenaVista(c);
             if (d.Pocoes != null) foreach (var x in d.Pocoes) if (!string.IsNullOrEmpty(x.Id)) p.pocoes[x.Id] = x.Valor;
             if (d.Expedicoes != null) foreach (var e in d.Expedicoes) if (e != null && !string.IsNullOrEmpty(e.FollowerId)) p.expedicoes.Add(e);
             p.UltimaColetaDaTavernaUtc = Math.Max(0, d.UltimaColetaDaTavernaUtc);
@@ -477,6 +484,7 @@ namespace ALotOfDamage.Core
         public List<ExpedicaoEmAndamento> Expedicoes = new List<ExpedicaoEmAndamento>();
         public int RecursosColetados;
         public List<ParDeValorLongo> Pocoes = new List<ParDeValorLongo>();
+        public List<string> CenasVistas = new List<string>();
         public int InvocacoesSemEpico;
         public int InvocacoesSemLendario;
         public List<ParDeValor> Materiais = new List<ParDeValor>();

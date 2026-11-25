@@ -65,6 +65,8 @@ namespace ALotOfDamage.Testes
                 new DefinicaoDePocao { Id = "sono", Nome = "Poção do Sono", Efeito = EfeitoDaPocao.Afk, Valor = 1, DuracaoEmMinutos = 0, CustoEmVitorias = 0,
                     Ingredientes = new List<ParDeValor>() },
             };
+            public IReadOnlyList<LiberacaoDeSistema> Liberacoes { get; set; } = new List<LiberacaoDeSistema>();
+            public IReadOnlyList<DefinicaoDeCapitulo> Capitulos { get; set; } = new List<DefinicaoDeCapitulo>();
             public IReadOnlyList<DefinicaoDeConquista> Conquistas { get; set; } = new List<DefinicaoDeConquista>
             {
                 new DefinicaoDeConquista { Id = "vitorias", Nome = "Guerreiro incansável", Descricao = "Vença {0} batalhas", Meta = MetaDaConquista.Vitorias, Degraus = new double[] { 1, 3 } },
@@ -1139,6 +1141,68 @@ namespace ALotOfDamage.Testes
             new PrepararPocao(repositorio, catalogo, relogio).Executar("sono");
             var copia = Progresso.Importar(repositorio.Progresso.Exportar());
             Assert.Greater(copia.FimDaPocao("sono"), 0);
+        }
+
+        void CapituloDeTeste()
+        {
+            catalogo.Capitulos = new List<DefinicaoDeCapitulo>
+            {
+                new DefinicaoDeCapitulo
+                {
+                    Numero = 1, Nome = "O Porto", EstagioFinal = 5, NomeDoChefeFinal = "Almirante", MultiplicadorDoChefeFinal = 3,
+                    Cenas = new List<DefinicaoDeCena>
+                    {
+                        new DefinicaoDeCena { Id = "inicio", Estagio = 1, Falas = new List<Fala> { new Fala { Quem = "Marina", Texto = "Olá" } } },
+                        new DefinicaoDeCena { Id = "forja", Estagio = 3, Falas = new List<Fala> { new Fala { Quem = "Brunhilda", Texto = "Forja!" } } },
+                    },
+                },
+            };
+            catalogo.Liberacoes = new List<LiberacaoDeSistema> { new LiberacaoDeSistema { Sistema = SistemaDoJogo.Forja, Estagio = 3 } };
+        }
+
+        [Test]
+        public void Cenas_aparecem_em_ordem_quando_o_estagio_chega_e_uma_vez_so()
+        {
+            CapituloDeTeste();
+            var proxima = new ProximaCena(repositorio, catalogo);
+            var vista = new MarcarCenaVista(repositorio, catalogo);
+            Assert.AreEqual("inicio", proxima.Executar().Id);
+            vista.Executar("inicio");
+            Assert.IsNull(proxima.Executar(), "a cena da forja só no estágio 3");
+            ChegarAoEstagio(3);
+            Assert.AreEqual("forja", proxima.Executar().Id);
+            vista.Executar("forja");
+            Assert.IsNull(proxima.Executar());
+            Assert.IsTrue(Progresso.Importar(repositorio.Progresso.Exportar()).CenaVista("forja"));
+        }
+
+        [Test]
+        public void Sistema_trancado_nao_vira_pendencia_e_libera_no_estagio()
+        {
+            CapituloDeTeste();
+            EspadaEquipada();
+            repositorio.Progresso.ReceberOuro(10);
+            repositorio.Progresso.AdicionarMaterial("presa", 1);
+            var consultar = new ConsultarLiberacao(repositorio, catalogo);
+            Assert.IsFalse(consultar.Executar(SistemaDoJogo.Forja));
+            var lista = new List<Pendencia>();
+            new ListarPendencias(repositorio, catalogo).Executar(lista);
+            CollectionAssert.DoesNotContain(lista.ConvertAll(x => x.Tipo), TipoDePendencia.Forja);
+
+            ChegarAoEstagio(3);
+            Assert.IsTrue(consultar.Executar(SistemaDoJogo.Forja));
+        }
+
+        [Test]
+        public void Chefe_final_do_capitulo_tem_nome_proprio_e_mais_vida()
+        {
+            CapituloDeTeste();
+            catalogo.Campanha.ChefeACada = 5;
+            ChegarAoEstagio(5);
+            var normal = new CalcularInimigo(repositorio, catalogo).Executar("lobo", false);
+            var chefe = new CalcularInimigo(repositorio, catalogo).Executar("lobo", true);
+            Assert.AreEqual("Almirante", chefe.Nome);
+            Assert.AreEqual(normal.Vida * 10 * 3, chefe.Vida, 1e-6);
         }
 
         [Test]

@@ -47,6 +47,7 @@ namespace ALotOfDamage.Ferramentas
             CriarAssetSeFaltar<BalanceamentoDasConquistas>();
             CriarAssetSeFaltar<BalanceamentoDasReliquias>();
             CriarAssetSeFaltar<BalanceamentoDaTaverna>();
+            CriarAssetSeFaltar<BalanceamentoDaHistoria>();
             AssetDatabase.SaveAssets();
         }
 
@@ -159,6 +160,7 @@ namespace ALotOfDamage.Ferramentas
             vitrine.janela = janelas.AddComponent<JanelaDeInventario>();
             new GameObject("HUD do Mapa").AddComponent<HudDoMapa>();
             new GameObject("Recompensa AFK").AddComponent<JanelaDaRecompensaAfk>();
+            new GameObject("História").AddComponent<CaixaDeDialogo>();
             Salvar(cena, "Mapa");
         }
 

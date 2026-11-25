@@ -13,6 +13,7 @@ namespace ALotOfDamage.UI
         protected override Key Tecla => Key.J;
         protected override int Ordem => 2;
         protected override IconeDoHud Icone => IconeDoHud.Forja;
+        protected override SistemaDoJogo? Sistema => SistemaDoJogo.Forja;
         protected override TipoDePendencia? Pendencia => TipoDePendencia.Forja;
         protected override int Linhas => catalogo.Itens.Count;
         protected override float AlturaDaLinha => 92;

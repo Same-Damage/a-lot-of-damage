@@ -14,6 +14,7 @@ namespace ALotOfDamage.UI
         protected override string Titulo => "Expedições";
         protected override Key Tecla => Key.E;
         protected override IconeDoHud Icone => IconeDoHud.Expedicoes;
+        protected override SistemaDoJogo? Sistema => SistemaDoJogo.Expedicoes;
         protected override int Ordem => 9;
         protected override int Linhas => catalogo.VagasDeExpedicao + 1;
         protected override float AlturaDaLinha => 96;

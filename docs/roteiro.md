@@ -178,7 +178,10 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 - **Estágios** (implementado): 10 vitórias para avançar; vida dos monstros ×1,25 por estágio; ouro proporcional à vida.
 - **Chefe a cada 5 estágios** (implementado): aparece no mapa maior e avermelhado, com ×10 de vida; só derrotá-lo avança.
 - Regiões trocam a cada 10 estágios.
-- Futuro: capítulos de história antes dos estágios infinitos; torre infinita.
+- **Mundo e história** (implementado no Capítulo 1): um mundo de ilhas de terra num mar sem fim. Quando a Coroa Celeste se partiu, os fragmentos caíram pelas ilhas e despertaram monstros. Ilhas próximas se alcançam de barco; as perigosas demais para o mar, só pelo céu, em naves aéreas. O Rei Caído caça os fragmentos para refazer a coroa.
+- **Capítulo 1 — O Porto de Partida** (implementado, estágios 1 a 30): o herói sobrevive a um naufrágio e ajuda a Capitã Marina a consertar o navio. Termina no chefe do estágio 30, o **Almirante Espectral** (nome próprio e ×3 de vida), e no gancho da nave aérea. As cenas aparecem uma vez numa caixa de diálogo embaixo da tela (nome de quem fala; avança com clique, Enter ou A), quando o maior estágio alcançado chega ao delas (`BalanceamentoDaHistoria`, `RegrasDosCapitulos`).
+- **Liberação dos sistemas** (implementado): cada sistema aparece por estágio, apresentado por uma cena: Forja 3, Inventário 5, Bestiário 7, Followers 10, Conquistas 12, Relíquias 15, Taverna 18, Expedições 21, Alquimia 24, Ascensão 50. Trancado, o ícone some do menu, a tecla não abre e as pendências dele não aparecem.
+- Futuro: capítulos seguintes (nave aérea, ilhas do céu); torre infinita.
 - **Recompensa AFK** (implementado): enquanto o jogador está fora, o herói luta sozinho no estágio atual só com auto-ataque e follower (cada luta dura vida ÷ dano por segundo, mais 5 s entre lutas). Rende **25%** dessas lutas em ouro, material dos monstros da região e itens pela chance de drop, até **12 h**. Ao abrir o mapa, uma janela mostra o tempo, as vitórias e o que foi ganho, com o botão Coletar. A presença é marcada a cada 30 s e ao pausar ou fechar o jogo. No online, calculada no servidor pelo tempo e pelo poder.
 - **Save** (implementado): progresso salvo em JSON no dispositivo, com gravação segura (temporário + troca).
 
@@ -287,7 +290,7 @@ O que já existe na `main` (PRs #1 a #15):
 3. **Mago, Arqueiro e Ladino**, com escolha de classe.
 4. **Gacha de followers** com cristais ganhos jogando, pity e taxas públicas.
 5. **Sistemas fora do combate**, um por capítulo: taverna, expedições, coleta, alquimia, relíquias, conquistas.
-6. **Capítulo 1 com história** e mudanças de mapa.
+6. **Capítulo 1 com história** (feito). Falta o mapa acompanhar a ambientação: ilhas de terra com mar em volta no lugar da ilha flutuante.
 
 ### Fase 3 em diante
 
@@ -309,8 +312,6 @@ Nakama, contas, save na nuvem (novo adaptador da mesma porta), lobby/taverna com
 ### Decisões em aberto
 
 - Animação do humanoide: partes ou imagem inteira com movimento procedural.
-- Porcentagem do ganho AFK e estágio de liberação da Ascensão.
-- Ambientação e história do mundo de A Lot of Damage.
 - Número de regiões e capítulos antes dos estágios infinitos.
 - PvP ao vivo: entra ou não.
 - Plataformas de PC: Steam, itch.io ou download próprio.
