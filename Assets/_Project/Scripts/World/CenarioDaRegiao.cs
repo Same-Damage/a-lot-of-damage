@@ -10,7 +10,7 @@ using VContainer;
 namespace ALotOfDamage.World
 {
     // Monta o visual do mapa conforme a região da campanha: relevo da ilha, árvores, pedras, cristais e ruínas,
-    // luz do sol, névoa, céu, pós-processamento (bloom, vinheta, cor e desfoque no fundo), mar de nuvens e partículas.
+    // luz do sol, névoa, céu, pós-processamento (bloom, vinheta, cor e desfoque no fundo), mar de mar e partículas.
     // As regras de onde cada coisa nasce ficam em RegrasDoCenario; aqui só se desenha.
     public class CenarioDaRegiao : MonoBehaviour
     {
@@ -18,14 +18,14 @@ namespace ALotOfDamage.World
         public Camera camera_;
         public Transform jogador;
         public Material materialBase;          // URP Lit
-        public Material materialDasNuvens;     // URP Unlit
+        public Material materialDoMar;     // URP Unlit
         public Material materialDasParticulas; // URP Particles Unlit, transparente aditivo
         public ParametrosDaIlha ilha = new ParametrosDaIlha();
 
         ConsultarCampanha consultarCampanha;
         readonly List<Object> criados = new List<Object>();
-        Material nuvens;
-        Vector2 deslocamentoDasNuvens;
+        Material mar;
+        Vector2 ondulacao;
         Transform particulas;
 
         [Inject]
@@ -41,17 +41,17 @@ namespace ALotOfDamage.World
             MontarObjetos(visual, semente);
             Iluminar(visual);
             PosProcessamento(visual);
-            MontarNuvens(visual);
+            MontarMar(visual);
             MontarParticulas(visual);
         }
 
         void Update()
         {
-            if (nuvens)
+            if (mar)
             {
-                deslocamentoDasNuvens.x += Time.deltaTime * 0.0035f;
-                deslocamentoDasNuvens.y += Time.deltaTime * 0.0015f;
-                nuvens.mainTextureOffset = deslocamentoDasNuvens;
+                ondulacao.x += Time.deltaTime * 0.0035f;
+                ondulacao.y += Time.deltaTime * 0.0015f;
+                mar.mainTextureOffset = ondulacao;
             }
             if (particulas && jogador) particulas.position = jogador.position;
         }
@@ -98,7 +98,7 @@ namespace ALotOfDamage.World
             var chao = NovoMaterial(Color.white);
             chao.mainTexture = TexturaDoChao(v, semente);
             criados.Add(chao.mainTexture);
-            GetComponent<MeshRenderer>().sharedMaterials = new[] { chao, NovoMaterial(Cor(v.CorDaRocha) * 0.85f) };
+            GetComponent<MeshRenderer>().sharedMaterials = new[] { chao, NovoMaterial(Cor(v.CorDaAreia)) };
         }
 
         void MontarObjetos(VisualDaRegiao v, int semente)
@@ -225,32 +225,33 @@ namespace ALotOfDamage.World
             desfoque.gaussianMaxRadius.Override(0.8f);
         }
 
-        // ---------- nuvens e partículas ----------
+        // ---------- mar e partículas ----------
 
-        void MontarNuvens(VisualDaRegiao v)
+        // Plano de água no nível do mar, com o ruído suave deslizando como ondulação
+        void MontarMar(VisualDaRegiao v)
         {
-            if (!materialDasNuvens) return;
+            if (!materialDoMar) return;
             var m = new Malhas(1);
             const float lado = 500;
             m.Quad(0, new Vector3(-lado, 0, -lado), new Vector3(-lado, 0, lado), new Vector3(lado, 0, lado), new Vector3(lado, 0, -lado));
-            var malha = m.Criar("Mar de Nuvens");
+            var malha = m.Criar("Mar");
             var uv = new Vector2[malha.vertexCount];
             var vertices = malha.vertices;
             for (int i = 0; i < uv.Length; i++) uv[i] = new Vector2(vertices[i].x, vertices[i].z) / (lado * 2) + Vector2.one * 0.5f;
             malha.uv = uv;
             criados.Add(malha);
 
-            nuvens = new Material(materialDasNuvens) { color = Cor(v.CorDasNuvens), mainTexture = TexturaDasNuvens() };
-            nuvens.mainTextureScale = new Vector2(7, 7);
-            criados.Add(nuvens);
-            criados.Add(nuvens.mainTexture);
+            mar = new Material(materialDoMar) { color = Cor(v.CorDoMar), mainTexture = TexturaDaOndulacao() };
+            mar.mainTextureScale = new Vector2(40, 40);
+            criados.Add(mar);
+            criados.Add(mar.mainTexture);
 
-            var go = new GameObject("Mar de Nuvens", typeof(MeshFilter), typeof(MeshRenderer));
+            var go = new GameObject("Mar", typeof(MeshFilter), typeof(MeshRenderer));
             go.transform.SetParent(transform, false);
-            go.transform.localPosition = new Vector3(0, -32, 0);
+            go.transform.localPosition = new Vector3(0, ilha.NivelDoMar, 0);
             go.GetComponent<MeshFilter>().sharedMesh = malha;
             var r = go.GetComponent<MeshRenderer>();
-            r.sharedMaterial = nuvens;
+            r.sharedMaterial = mar;
             r.shadowCastingMode = ShadowCastingMode.Off;
         }
 
@@ -285,7 +286,7 @@ namespace ALotOfDamage.World
         }
 
         // Ruído suave que se repete nas bordas, para a textura ladrilhar sem emenda
-        static Texture2D TexturaDasNuvens()
+        static Texture2D TexturaDaOndulacao()
         {
             const int n = 128;
             var t = new Texture2D(n, n, TextureFormat.RGBA32, true) { wrapMode = TextureWrapMode.Repeat };

@@ -134,7 +134,8 @@ MonoBehaviour:
       CorDoSol: '#FFE9C4'
       CorDoCeu: '#9CC8F0'
       CorDaNevoa: '#C9DDEB'
-      CorDasNuvens: '#F4F1EC'
+      CorDoMar: '#3E8DB5'
+      CorDaAreia: '#DCC795'
       IntensidadeDoSol: 1.25
       DensidadeDaNevoa: 0.003
       Arvores: 70
@@ -159,7 +160,8 @@ MonoBehaviour:
       CorDoSol: '#FFE2C2'
       CorDoCeu: '#8A9BC4'
       CorDaNevoa: '#8C9AB4'
-      CorDasNuvens: '#B8BFD6'
+      CorDoMar: '#2F5E6E'
+      CorDaAreia: '#DCC795'
       IntensidadeDoSol: 1.05
       DensidadeDaNevoa: 0.005
       Arvores: 45
@@ -184,7 +186,8 @@ MonoBehaviour:
       CorDoSol: '#FFF0D8'
       CorDoCeu: '#E9D6B4'
       CorDaNevoa: '#E6D8BE'
-      CorDasNuvens: '#FBEBD3'
+      CorDoMar: '#4FA6C2'
+      CorDaAreia: '#DCC795'
       IntensidadeDoSol: 1.25
       DensidadeDaNevoa: 0.004
       Arvores: 18
