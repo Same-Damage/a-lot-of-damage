@@ -60,7 +60,7 @@ Versão 0.3 — 23/11/2026. Documento vivo: atualizar conforme as decisões fore
 ### Mapa evolutivo
 
 - O mundo é dividido em regiões que mudam com a campanha: monstros, cenário, cores, luz, névoa e partículas.
-- Hoje cada região é uma **ilha flutuante** gerada por regras determinísticas pela semente da região (o mesmo mapa se reproduz sempre, inclusive no servidor).
+- Hoje cada região é uma **ilha de terra no mar** (morros, praia e água em volta) gerada por regras determinísticas pela semente da região (o mesmo mapa se reproduz sempre, inclusive no servidor).
 - Regiões atuais (trocam a cada 10 estágios e se repetem): **Campos Verdes** (slime e lobo), **Bosque Sombrio** (lobo e golem), **Ruínas Antigas** (slime e golem).
 - Monstros ficam visíveis andando pelo mapa e desviam dos obstáculos (NavMesh). Não há encontro aleatório. Derrotado, o monstro volta depois de 30 s.
 - Pontos de interesse (futuro): baús, coleta, NPCs com missões, portais.
@@ -240,7 +240,7 @@ Decisão tomada: **Unity 6 (6000.6.10f1) com URP**, Personal (gratuita). Na comp
 - **Animação:** procedural, por código, a partir de uma pose: parado (respiração), andar (passo com perna levantada, balanço, virar como papel), golpe e dano. Aves batem as asas.
 - **Exibição:** billboard de frente para a câmera, sombra de contato oval, filtro bilinear com mipmaps, ASTC 6x6 no celular.
 - **Monstros:** por enquanto low-poly animados por código (gosma, quadrúpede, golem), até ganharem arte pintada.
-- **Cenário:** ilha flutuante low-poly gerada por código, com textura de chão em pixel art, luz, névoa, partículas e pós-processamento por região (desfoque desligado no celular).
+- **Cenário:** ilha de terra low-poly com praia e mar gerada por código, com textura de chão em pixel art, luz, névoa, partículas e pós-processamento por região (desfoque desligado no celular).
 - **Interface:** uGUI montada por código, com moldura dourada, botões de bronze e couro gerados por código (9-slice); arte de verdade entra trocando os sprites.
 
 ## 15. Equipe
@@ -267,7 +267,7 @@ Decisão tomada: **Unity 6 (6000.6.10f1) com URP**, Personal (gratuita). Na comp
 
 O que já existe na `main` (PRs #1 a #15):
 
-- **Mapa:** ilha flutuante por região, monstros low-poly animados andando com NavMesh, ataque no mapa com preventivo e emboscada, câmera isométrica com zona morta, controles de teclado, gamepad e toque.
+- **Mapa:** ilha de terra no mar por região, monstros low-poly animados andando com NavMesh, ataque no mapa com preventivo e emboscada, câmera isométrica com zona morta, controles de teclado, gamepad e toque.
 - **Batalha:** auto-ataque, click com combo e limite de 15/s, ponto fraco, ultimate, Fúria do Guerreiro, Pip atacando junto, hit stop, partículas, sons, números de dano.
 - **Progressão:** upgrades com marcos, forja com sucesso crítico, bestiário, Poder Total com ganho relativo, campanha com estágios, chefes e três regiões, save local.
 - **Interface:** HUD do mapa, painel "Pronto para fazer", janelas de Upgrades, Forja e Bestiário, HUD de batalha, tudo com tema ornamentado.
@@ -290,7 +290,7 @@ O que já existe na `main` (PRs #1 a #15):
 3. **Mago, Arqueiro e Ladino**, com escolha de classe.
 4. **Gacha de followers** com cristais ganhos jogando, pity e taxas públicas.
 5. **Sistemas fora do combate**, um por capítulo: taverna, expedições, coleta, alquimia, relíquias, conquistas.
-6. **Capítulo 1 com história** (feito). Falta o mapa acompanhar a ambientação: ilhas de terra com mar em volta no lugar da ilha flutuante.
+6. **Capítulo 1 com história** (feito), com o mapa já como ilha de terra no mar.
 
 ### Fase 3 em diante
 

@@ -7,7 +7,9 @@ namespace ALotOfDamage.Core
     public class ParametrosDaIlha
     {
         public float RaioAndavel = 46;        // área plana onde se anda e luta
-        public float RaioDaBorda = 58;        // fim da ilha: daqui para fora é penhasco e nuvem
+        public float RaioDaBorda = 58;        // topo dos morros; daqui para fora a praia desce até o mar
+        public float RaioDaPraia = 72;        // onde a areia entra na água
+        public float NivelDoMar = -1.5f;
         public float RaioLivreNoInicio = 7;   // em volta do ponto inicial do jogador
         public float DistanciaMinima = 2.4f;  // entre obstáculos, para sobrar caminho
         public float AlturaDosMorros = 4.5f;
@@ -26,7 +28,8 @@ namespace ALotOfDamage.Core
         public string CorDoSol = "#FFE9C4";
         public string CorDoCeu = "#9CC8F0";
         public string CorDaNevoa = "#C9DDEB";
-        public string CorDasNuvens = "#F4F1EC";
+        public string CorDoMar = "#3E8DB5";
+        public string CorDaAreia = "#DCC795";
         public float IntensidadeDoSol = 1.25f;
         public float DensidadeDaNevoa = 0.003f;
         public int Arvores = 70;
@@ -65,19 +68,28 @@ namespace ALotOfDamage.Core
         public static bool Bloqueia(TipoDeItemDoCenario tipo) =>
             tipo != TipoDeItemDoCenario.Grama && tipo != TipoDeItemDoCenario.Arbusto;
 
-        // Plano na área andável; na borda, morros com altura variando pela volta da ilha
+        // Ilha de terra no mar: plano na área andável, morros na borda com altura variando pela volta da ilha,
+        // depois a praia descendo até entrar na água e o fundo do mar afundando devagar
         public static float Altura(ParametrosDaIlha p, float x, float z, int semente)
         {
             float r = (float)Math.Sqrt(x * x + z * z);
             if (r <= p.RaioAndavel) return 0f;
-            float t = Math.Min(1f, (r - p.RaioAndavel) / (p.RaioDaBorda - p.RaioAndavel));
-            float suave = t * t * (3 - 2 * t);
             double ang = Math.Atan2(z, x);
             var fase = new Random(semente);
             double f1 = fase.NextDouble() * Math.PI * 2, f2 = fase.NextDouble() * Math.PI * 2;
             float onda = (float)(0.6 + 0.3 * Math.Sin(3 * ang + f1) + 0.2 * Math.Sin(7 * ang + f2));
-            return suave * p.AlturaDosMorros * Math.Max(0.15f, onda);
+            float morro = p.AlturaDosMorros * Math.Max(0.15f, onda);
+            if (r <= p.RaioDaBorda) return Suave((r - p.RaioAndavel) / (p.RaioDaBorda - p.RaioAndavel)) * morro;
+            float naAgua = p.NivelDoMar - 1f;
+            if (r <= p.RaioDaPraia)
+            {
+                float s = Suave((r - p.RaioDaBorda) / (p.RaioDaPraia - p.RaioDaBorda));
+                return morro + (naAgua - morro) * s;
+            }
+            return naAgua - (r - p.RaioDaPraia) * 0.3f;
         }
+
+        static float Suave(float t) => t * t * (3 - 2 * t);
 
         public static List<ItemDoCenario> Espalhar(ParametrosDaIlha p, VisualDaRegiao v, int semente, IReadOnlyList<AreaLivre> livres)
         {

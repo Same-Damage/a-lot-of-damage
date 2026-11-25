@@ -81,7 +81,7 @@ namespace ALotOfDamage.Ferramentas
             var cenario = ilha.AddComponent<CenarioDaRegiao>();
             cenario.ilha = parametrosDaIlha;
             cenario.materialBase = materialDoCenario;
-            cenario.materialDasNuvens = MaterialDoMapa("Nuvens", "Universal Render Pipeline/Unlit");
+            cenario.materialDoMar = MaterialDoMapa("Mar", "Universal Render Pipeline/Unlit");
             cenario.materialDasParticulas = MaterialDoMapa("Particulas", "Universal Render Pipeline/2D/Sprite-Unlit-Default");
             CriarMuralha(parametrosDaIlha);
 

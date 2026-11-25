@@ -124,5 +124,25 @@ namespace ALotOfDamage.Testes.EditMode
             foreach (var i in RegrasDoCenario.Espalhar(Ilha, Visual(), 8, null))
                 Assert.AreEqual(RegrasDoCenario.Altura(Ilha, i.X, i.Z, 8), i.Y, 0.0001f);
         }
+
+        [Test]
+        public void Depois_dos_morros_a_praia_desce_ate_o_mar()
+        {
+            for (int a = 0; a < 12; a++)
+            {
+                double ang = a * Math.PI / 6;
+                float Em(float r) => RegrasDoCenario.Altura(Ilha, (float)(Math.Cos(ang) * r), (float)(Math.Sin(ang) * r), 3);
+                Assert.Greater(Em(Ilha.RaioDaBorda), Ilha.NivelDoMar);
+                Assert.Less(Em(Ilha.RaioDaPraia), Ilha.NivelDoMar);
+                Assert.Greater(Em(Ilha.RaioDaBorda), Em((Ilha.RaioDaBorda + Ilha.RaioDaPraia) * 0.5f));
+            }
+        }
+
+        [Test]
+        public void A_area_andavel_fica_acima_do_mar()
+        {
+            Assert.Greater(RegrasDoCenario.Altura(Ilha, 0, 0, 1), Ilha.NivelDoMar);
+            Assert.Less(Ilha.RaioDaBorda, Ilha.RaioDaPraia);
+        }
     }
 }
