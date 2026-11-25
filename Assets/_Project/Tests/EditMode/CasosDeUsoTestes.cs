@@ -48,6 +48,12 @@ namespace ALotOfDamage.Testes
                 new DefinicaoDePredio { Id = "adega", Nome = "Adega", Efeito = EfeitoDoPredio.Ouro, BonusPorNivel = 0.1, CustoBase = 100, CrescimentoDoCusto = 2 },
             };
             public double LimiteDaTavernaEmHoras { get; set; } = 12;
+            public IReadOnlyList<DefinicaoDeMissao> Missoes { get; set; } = new List<DefinicaoDeMissao>
+            {
+                new DefinicaoDeMissao { Id = "curta", Nome = "Patrulha", Horas = 1, Cristais = 5, Lutas = 10, ChanceDeItem = 0 },
+                new DefinicaoDeMissao { Id = "longa", Nome = "Caçada", Horas = 8, Cristais = 60, Lutas = 90, ChanceDeItem = 1 },
+            };
+            public int VagasDeExpedicao { get; set; } = 2;
             public IReadOnlyList<DefinicaoDeConquista> Conquistas { get; set; } = new List<DefinicaoDeConquista>
             {
                 new DefinicaoDeConquista { Id = "vitorias", Nome = "Guerreiro incansável", Descricao = "Vença {0} batalhas", Meta = MetaDaConquista.Vitorias, Degraus = new double[] { 1, 3 } },
@@ -973,6 +979,84 @@ namespace ALotOfDamage.Testes
             var copia = Progresso.Importar(p.Exportar());
             Assert.AreEqual(1, copia.NivelDoPredio("cozinha"));
             Assert.AreEqual(p.UltimaColetaDaTavernaUtc, copia.UltimaColetaDaTavernaUtc);
+        }
+
+        (RelogioFalso relogio, IniciarExpedicao iniciar, ColetarExpedicao coletar, ListarExpedicoes listar) Expedicoes()
+        {
+            ElencoDoGacha();
+            ((List<DefinicaoDeRegiao>)catalogo.Regioes)[0].Monstros.Add("lobo");
+            var relogio = new RelogioFalso();
+            return (relogio, new IniciarExpedicao(repositorio, catalogo, relogio), new ColetarExpedicao(repositorio, catalogo, relogio, SemDrop),
+                new ListarExpedicoes(repositorio, catalogo, relogio));
+        }
+
+        [Test]
+        public void Expedicao_so_aceita_follower_que_tem_e_que_nao_esta_lutando()
+        {
+            var (_, iniciar, _, _) = Expedicoes();
+            Assert.IsFalse(iniciar.Executar("curta", Progresso.FollowerPadrao), "o Pip é o follower ativo");
+            Assert.IsFalse(iniciar.Executar("curta", "lontra"), "ainda não tem a lontra");
+            repositorio.Progresso.ReceberFollower("lontra", 5);
+            Assert.IsTrue(iniciar.Executar("curta", "lontra"));
+            Assert.IsFalse(iniciar.Executar("longa", "lontra"), "a lontra já está fora");
+        }
+
+        [Test]
+        public void Vagas_de_expedicao_sao_limitadas()
+        {
+            var (_, iniciar, _, _) = Expedicoes();
+            var p = repositorio.Progresso;
+            p.ReceberFollower("lontra", 5);
+            p.ReceberFollower("dragao", 5);
+            p.ReceberFollower(Progresso.FollowerPadrao, 5);
+            new EscolherFollower(repositorio, catalogo).Executar("dragao");
+            Assert.IsTrue(iniciar.Executar("curta", "lontra"));
+            Assert.IsTrue(iniciar.Executar("curta", Progresso.FollowerPadrao));
+            new EscolherFollower(repositorio, catalogo).Executar("lontra");
+            Assert.AreEqual("dragao", p.FollowerAtivoId, "follower em expedição não pode ser escolhido");
+        }
+
+        [Test]
+        public void Coletar_antes_do_tempo_nao_da_nada()
+        {
+            var (relogio, iniciar, coletar, listar) = Expedicoes();
+            repositorio.Progresso.ReceberFollower("lontra", 5);
+            iniciar.Executar("curta", "lontra");
+            relogio.Agora = relogio.Agora.AddMinutes(30);
+            Assert.IsFalse(listar.Executar()[0].Pronta);
+            Assert.AreEqual(1800, listar.Executar()[0].SegundosRestantes, 1e-6);
+            Assert.IsNull(coletar.Executar(0));
+        }
+
+        [Test]
+        public void Expedicao_pronta_da_cristais_material_e_item_e_libera_a_vaga()
+        {
+            var (relogio, iniciar, coletar, listar) = Expedicoes();
+            var p = repositorio.Progresso;
+            p.ReceberFollower("dragao", 5);   // Épico: fator 1 + 3 × 0,5 = 2,5
+            iniciar.Executar("longa", "dragao");
+            relogio.Agora = relogio.Agora.AddHours(8);
+            Assert.IsTrue(listar.Executar()[0].Pronta);
+
+            var r = coletar.Executar(0);
+            Assert.IsNotNull(r);
+            Assert.AreEqual(150, r.Value.Cristais, "60 × 2,5");
+            Assert.AreEqual(150, p.Cristais);
+            Assert.AreEqual((int)(90 * 2.5) * 2, p.Material("presa"), "225 lutas contra lobos, 2 presas cada");
+            Assert.AreEqual(1, p.Inventario.Count, "chance de item 100%");
+            Assert.IsEmpty(listar.Executar());
+            Assert.IsTrue(new EscolherFollower(repositorio, catalogo).Executar("dragao"), "voltou e pode lutar");
+        }
+
+        [Test]
+        public void Expedicoes_vao_e_voltam_do_save()
+        {
+            var (_, iniciar, _, _) = Expedicoes();
+            repositorio.Progresso.ReceberFollower("lontra", 5);
+            iniciar.Executar("curta", "lontra");
+            var copia = Progresso.Importar(repositorio.Progresso.Exportar());
+            Assert.AreEqual(1, copia.Expedicoes.Count);
+            Assert.AreEqual("lontra", copia.Expedicoes[0].FollowerId);
         }
 
         [Test]

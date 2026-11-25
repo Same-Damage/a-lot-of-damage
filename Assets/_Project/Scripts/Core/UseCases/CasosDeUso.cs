@@ -389,6 +389,22 @@ namespace ALotOfDamage.Core
 
         public RecompensaAfk Executar() => Calcular(repositorio.Carregar(), catalogo, relogio, atributos);
 
+        // Material de tantas lutas na região atual: os monstros dela se revezam em partes iguais
+        internal static List<ParDeValor> MateriaisDaRegiao(Progresso p, ICatalogo catalogo, long lutasNoTotal)
+        {
+            var materiais = new List<ParDeValor>();
+            var regiao = RegrasDaCampanha.Regiao(catalogo.Campanha, catalogo.Regioes, p.Estagio);
+            if (regiao == null || regiao.Monstros.Count == 0) return materiais;
+            for (int i = 0; i < regiao.Monstros.Count; i++)
+            {
+                var m = catalogo.Monstro(regiao.Monstros[i]);
+                if (m == null || string.IsNullOrEmpty(m.MaterialId)) continue;
+                long lutas = lutasNoTotal / regiao.Monstros.Count + (i < lutasNoTotal % regiao.Monstros.Count ? 1 : 0);
+                if (lutas > 0) materiais.Add(new ParDeValor { Id = m.MaterialId, Valor = (int)Math.Min(int.MaxValue, lutas * m.MaterialPorVitoria) });
+            }
+            return materiais;
+        }
+
         internal static RecompensaAfk Calcular(Progresso p, ICatalogo catalogo, IRelogio relogio, CalcularAtributos atributos)
         {
             var c = catalogo.Campanha;
@@ -401,17 +417,7 @@ namespace ALotOfDamage.Core
             var inimigo = CalcularInimigo.Para(p, catalogo, null, false);
             long vitorias = (long)Math.Floor(RegrasDoAfk.Vitorias(c, segundos, porSegundo, inimigo.Vida) * (1 + a.BonusDeAfk));
 
-            // o material vem dos monstros da região atual, em partes iguais
-            var materiais = new List<ParDeValor>();
-            var regiao = RegrasDaCampanha.Regiao(c, catalogo.Regioes, p.Estagio);
-            if (regiao != null && regiao.Monstros.Count > 0)
-                for (int i = 0; i < regiao.Monstros.Count; i++)
-                {
-                    var m = catalogo.Monstro(regiao.Monstros[i]);
-                    if (m == null || string.IsNullOrEmpty(m.MaterialId)) continue;
-                    long lutas = vitorias / regiao.Monstros.Count + (i < vitorias % regiao.Monstros.Count ? 1 : 0);
-                    if (lutas > 0) materiais.Add(new ParDeValor { Id = m.MaterialId, Valor = (int)Math.Min(int.MaxValue, lutas * m.MaterialPorVitoria) });
-                }
+            var materiais = MateriaisDaRegiao(p, catalogo, vitorias);
 
             return new RecompensaAfk
             {
@@ -654,7 +660,7 @@ namespace ALotOfDamage.Core
         public bool Executar(string followerId)
         {
             var p = repositorio.Carregar();
-            if (catalogo.Follower(followerId) == null || !p.EscolherFollower(followerId)) return false;
+            if (catalogo.Follower(followerId) == null || !p.EscolherFollower(followerId)) return false;   // em expedição não pode
             repositorio.Salvar(p);
             return true;
         }
@@ -828,6 +834,105 @@ namespace ALotOfDamage.Core
             bool subiu = p.MelhorarPredio(id, RegrasDaTaverna.Custo(d, p.NivelDoPredio(id)));
             repositorio.Salvar(p);
             return subiu;
+        }
+    }
+
+    public struct SituacaoDaExpedicao
+    {
+        public int Indice;
+        public DefinicaoDeMissao Missao;
+        public DefinicaoDeFollower Follower;
+        public double SegundosRestantes;
+        public bool Pronta;
+    }
+
+    public struct RecompensaDaExpedicao
+    {
+        public string Follower;
+        public int Cristais;
+        public List<ParDeValor> Materiais;
+        public int Itens;
+    }
+
+    public class ListarExpedicoes : CasoDeUso
+    {
+        readonly IRelogio relogio;
+
+        public ListarExpedicoes(IRepositorioDeProgresso r, ICatalogo c, IRelogio relogio) : base(r, c) => this.relogio = relogio;
+
+        public List<SituacaoDaExpedicao> Executar()
+        {
+            var p = repositorio.Carregar();
+            var lista = new List<SituacaoDaExpedicao>();
+            for (int i = 0; i < p.Expedicoes.Count; i++)
+            {
+                var e = p.Expedicoes[i];
+                var m = Missao(catalogo, e.MissaoId);
+                double passados = (relogio.AgoraUtc - new DateTime(e.InicioUtc, DateTimeKind.Utc)).TotalSeconds;
+                double restantes = m == null ? 0 : RegrasDasExpedicoes.SegundosRestantes(m, passados);
+                lista.Add(new SituacaoDaExpedicao
+                {
+                    Indice = i, Missao = m, Follower = catalogo.Follower(e.FollowerId), SegundosRestantes = restantes, Pronta = restantes <= 0,
+                });
+            }
+            return lista;
+        }
+
+        internal static DefinicaoDeMissao Missao(ICatalogo c, string id)
+        {
+            foreach (var m in c.Missoes) if (m.Id == id) return m;
+            return null;
+        }
+    }
+
+    // Manda um follower que não está lutando numa missão, se houver vaga
+    public class IniciarExpedicao : CasoDeUso
+    {
+        readonly IRelogio relogio;
+
+        public IniciarExpedicao(IRepositorioDeProgresso r, ICatalogo c, IRelogio relogio) : base(r, c) => this.relogio = relogio;
+
+        public bool Executar(string missaoId, string followerId)
+        {
+            if (ListarExpedicoes.Missao(catalogo, missaoId) == null || catalogo.Follower(followerId) == null) return false;
+            var p = repositorio.Carregar();
+            if (!p.IniciarExpedicao(missaoId, followerId, relogio.AgoraUtc, catalogo.VagasDeExpedicao)) return false;
+            repositorio.Salvar(p);
+            return true;
+        }
+    }
+
+    // Recebe a recompensa de uma expedição terminada e libera a vaga; null se ainda não terminou
+    public class ColetarExpedicao : CasoDeUso
+    {
+        readonly IRelogio relogio;
+        readonly ISorteio sorteio;
+
+        public ColetarExpedicao(IRepositorioDeProgresso r, ICatalogo c, IRelogio relogio, ISorteio sorteio) : base(r, c)
+        {
+            this.relogio = relogio;
+            this.sorteio = sorteio;
+        }
+
+        public RecompensaDaExpedicao? Executar(int indice)
+        {
+            var lista = new ListarExpedicoes(repositorio, catalogo, relogio).Executar();
+            if (indice < 0 || indice >= lista.Count || !lista[indice].Pronta) return null;
+            var p = repositorio.Carregar();
+            var e = p.EncerrarExpedicao(indice);
+            var m = lista[indice].Missao;
+            var f = lista[indice].Follower;
+            if (m == null || f == null) { repositorio.Salvar(p); return null; }
+
+            double fator = RegrasDasExpedicoes.Fator(catalogo.Gacha, f, p.Estrelas(e.FollowerId));
+            int cristais = (int)Math.Round(m.Cristais * fator);
+            p.ReceberCristais(cristais);
+            var materiais = ConsultarRecompensaAfk.MateriaisDaRegiao(p, catalogo, (long)Math.Floor(m.Lutas * fator));
+            foreach (var mat in materiais) p.AdicionarMaterial(mat.Id, mat.Valor);
+            int itens = catalogo.Itens.Count == 0 ? 0 : RegrasDasExpedicoes.Itens(m.ChanceDeItem, sorteio.Proximo());
+            for (int i = 0; i < itens; i++) DropDeItens.Entregar(p, catalogo, sorteio, false, p.Estagio, out _);
+            repositorio.Salvar(p);
+            return new RecompensaDaExpedicao { Follower = f.Nome, Cristais = cristais, Materiais = materiais, Itens = itens };
         }
     }
 

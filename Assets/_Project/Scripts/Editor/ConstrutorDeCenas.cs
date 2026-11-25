@@ -139,6 +139,7 @@ namespace ALotOfDamage.Ferramentas
             janelas.AddComponent<JanelaDosFollowers>();
             janelas.AddComponent<JanelaDasReliquias>();
             janelas.AddComponent<JanelaDaTaverna>();
+            janelas.AddComponent<JanelaDasExpedicoes>();
             var vitrine = new GameObject("Vitrine do herói").AddComponent<VitrineDoHeroi>();
             vitrine.herois = herois;
             vitrine.brilho = herois.GetComponent<BrilhoDasArmas>();
