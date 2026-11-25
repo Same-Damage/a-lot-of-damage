@@ -4,7 +4,7 @@ using static ALotOfDamage.UI.DesenhoDeIcone;
 
 namespace ALotOfDamage.UI
 {
-    public enum IconeDoHud { Inventario, Upgrades, Forja, Followers, Conquistas, Bestiario, Ascensao, Reliquias, Menu, Heroi, Ouro, Espada, Ultimate, Fugir }
+    public enum IconeDoHud { Inventario, Upgrades, Forja, Followers, Conquistas, Bestiario, Ascensao, Reliquias, Taverna, Menu, Heroi, Ouro, Espada, Ultimate, Fugir }
 
     // Ícones do HUD desenhados por código; arte de verdade em Resources/Icones/hud_<nome>.png é usada no lugar
     public static class IconesDoHud
@@ -54,6 +54,13 @@ namespace ALotOfDamage.UI
                     float asas = Mathf.Max(Mathf.Abs(Circulo(w - 0.52f, v - 0.3f, 0.22f)) - 0.07f, 0.45f - w);
                     float pe = Mathf.Min(Caixa(u, v + 0.4f, 0.1f, 0.25f), Caixa(u, v + 0.68f, 0.38f, 0.1f));
                     return Min(copo, asas, pe);
+                }
+                case IconeDoHud.Taverna: // caneca com alça e espuma
+                {
+                    float copo = Caixa(u + 0.12f, v + 0.12f, 0.36f, 0.5f) - 0.08f;
+                    float alca = Mathf.Max(Mathf.Abs(Circulo(u - 0.42f, v + 0.1f, 0.24f)) - 0.08f, 0.3f - u);
+                    float espuma = Mathf.Min(Circulo(u + 0.3f, v - 0.5f, 0.2f), Circulo(u + 0.02f, v - 0.55f, 0.22f));
+                    return Min(copo, alca, Mathf.Min(espuma, Circulo(u + 0.5f, v - 0.42f, 0.14f)));
                 }
                 case IconeDoHud.Reliquias: // amuleto: losango com pedra no meio e argola em cima
                 {

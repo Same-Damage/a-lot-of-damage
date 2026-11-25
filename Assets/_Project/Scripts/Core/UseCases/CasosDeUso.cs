@@ -740,6 +740,97 @@ namespace ALotOfDamage.Core
         }
     }
 
+    public struct SituacaoDoPredio
+    {
+        public DefinicaoDePredio Definicao;
+        public int Nivel;
+        public double Custo;
+        public double Bonus;
+    }
+
+    public struct SituacaoDaTaverna
+    {
+        public double OuroPorSegundo;
+        public double Guardado;        // pronto para coletar (até o limite de horas)
+        public double LimiteEmHoras;
+        public List<SituacaoDoPredio> Predios;
+    }
+
+    public class ConsultarTaverna : CasoDeUso
+    {
+        readonly IRelogio relogio;
+
+        public ConsultarTaverna(IRepositorioDeProgresso r, ICatalogo c, IRelogio relogio) : base(r, c) => this.relogio = relogio;
+
+        public SituacaoDaTaverna Executar() => Calcular(repositorio.Carregar(), catalogo, relogio);
+
+        internal static SituacaoDaTaverna Calcular(Progresso p, ICatalogo catalogo, IRelogio relogio)
+        {
+            double ouroDaVitoria = CalcularInimigo.Para(p, catalogo, null, false).Ouro;
+            double porSegundo = 0;
+            var predios = new List<SituacaoDoPredio>(catalogo.Predios.Count);
+            foreach (var d in catalogo.Predios)
+            {
+                int nivel = p.NivelDoPredio(d.Id);
+                porSegundo += RegrasDaTaverna.OuroPorSegundo(d, nivel, ouroDaVitoria);
+                predios.Add(new SituacaoDoPredio { Definicao = d, Nivel = nivel, Custo = RegrasDaTaverna.Custo(d, nivel), Bonus = RegrasDaTaverna.Bonus(d, nivel) });
+            }
+            double segundos = p.UltimaColetaDaTavernaUtc <= 0 ? 0
+                : (relogio.AgoraUtc - new DateTime(p.UltimaColetaDaTavernaUtc, DateTimeKind.Utc)).TotalSeconds;
+            return new SituacaoDaTaverna
+            {
+                OuroPorSegundo = porSegundo,
+                Guardado = RegrasDaTaverna.Acumulado(porSegundo, segundos, catalogo.LimiteDaTavernaEmHoras),
+                LimiteEmHoras = catalogo.LimiteDaTavernaEmHoras,
+                Predios = predios,
+            };
+        }
+
+        // Entrega o guardado e recomeça a contar
+        internal static double Coletar(Progresso p, ICatalogo catalogo, IRelogio relogio)
+        {
+            double guardado = Calcular(p, catalogo, relogio).Guardado;
+            p.ReceberOuro(guardado);
+            p.MarcarColetaDaTaverna(relogio.AgoraUtc);
+            return guardado;
+        }
+    }
+
+    public class ColetarTaverna : CasoDeUso
+    {
+        readonly IRelogio relogio;
+
+        public ColetarTaverna(IRepositorioDeProgresso r, ICatalogo c, IRelogio relogio) : base(r, c) => this.relogio = relogio;
+
+        public double Executar()
+        {
+            var p = repositorio.Carregar();
+            double ouro = ConsultarTaverna.Coletar(p, catalogo, relogio);
+            repositorio.Salvar(p);
+            return ouro;
+        }
+    }
+
+    // Sobe um prédio de nível; antes entrega o ouro guardado, para o ritmo novo não valer para o tempo que já passou
+    public class MelhorarPredio : CasoDeUso
+    {
+        readonly IRelogio relogio;
+
+        public MelhorarPredio(IRepositorioDeProgresso r, ICatalogo c, IRelogio relogio) : base(r, c) => this.relogio = relogio;
+
+        public bool Executar(string id)
+        {
+            DefinicaoDePredio d = null;
+            foreach (var x in catalogo.Predios) if (x.Id == id) d = x;
+            if (d == null) return false;
+            var p = repositorio.Carregar();
+            ConsultarTaverna.Coletar(p, catalogo, relogio);
+            bool subiu = p.MelhorarPredio(id, RegrasDaTaverna.Custo(d, p.NivelDoPredio(id)));
+            repositorio.Salvar(p);
+            return subiu;
+        }
+    }
+
     // Vida e recompensa do inimigo conforme o estágio atual da campanha
     public class CalcularInimigo : CasoDeUso
     {
@@ -829,8 +920,15 @@ namespace ALotOfDamage.Core
             double Mult(AlvoDoItem alvo) => p.MultiplicadorDeDano(alvo, tipoDoMonstro, catalogo.Itens, catalogo.ParametrosDosItens, catalogo.Bestiario);
             double Reliquia(AlvoDaReliquia alvo) => RegrasDasReliquias.Multiplicador(catalogo.Reliquias, p.NivelDaReliquia, alvo);
             double SomaDaReliquia(AlvoDaReliquia alvo) => RegrasDasReliquias.Soma(catalogo.Reliquias, p.NivelDaReliquia, alvo);
+            double Taverna(EfeitoDoPredio e)
+            {
+                double b = 0;
+                foreach (var d in catalogo.Predios) if (d.Efeito == e) b += RegrasDaTaverna.Bonus(d, p.NivelDoPredio(d.Id));
+                return b;
+            }
             double almas = RegrasDaAscensao.Multiplicador(catalogo.Campanha, p.Almas)
-                * RegrasDasConquistas.Multiplicador(catalogo.ParametrosDasConquistas, p.TotalDeConquistasColetadas);
+                * RegrasDasConquistas.Multiplicador(catalogo.ParametrosDasConquistas, p.TotalDeConquistasColetadas)
+                * (1 + Taverna(EfeitoDoPredio.Dano));
             double automatico = Valor(IdsDosUpgrades.Automatico) * Mult(AlvoDoItem.Automatico) * almas * Reliquia(AlvoDaReliquia.Automatico);
             var follower = catalogo.Follower(p.FollowerAtivoId);
             int estrelas = Math.Max(1, p.Estrelas(p.FollowerAtivoId));
@@ -845,8 +943,8 @@ namespace ALotOfDamage.Core
                 EstrelasDoFollower = follower == null ? 0 : estrelas,
                 DanoDoFollower = automatico * RegrasDoGacha.FracaoDoAutoAtaque(catalogo.Gacha, follower, estrelas) * Reliquia(AlvoDaReliquia.Follower),
                 BonusNoPontoFraco = Efeito(EfeitoDoFollower.PontoFraco) + SomaDaReliquia(AlvoDaReliquia.PontoFraco),
-                BonusDeOuro = Efeito(EfeitoDoFollower.Ouro) + SomaDaReliquia(AlvoDaReliquia.Ouro),
-                BonusDeAfk = Efeito(EfeitoDoFollower.Afk) + SomaDaReliquia(AlvoDaReliquia.Afk),
+                BonusDeOuro = Efeito(EfeitoDoFollower.Ouro) + SomaDaReliquia(AlvoDaReliquia.Ouro) + Taverna(EfeitoDoPredio.Ouro),
+                BonusDeAfk = Efeito(EfeitoDoFollower.Afk) + SomaDaReliquia(AlvoDaReliquia.Afk) + Taverna(EfeitoDoPredio.Afk),
                 BonusDeDrop = Efeito(EfeitoDoFollower.Drop) + SomaDaReliquia(AlvoDaReliquia.Drop),
             };
         }

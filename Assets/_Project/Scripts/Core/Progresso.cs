@@ -81,6 +81,20 @@ namespace ALotOfDamage.Core
 
         // Relíquias: fragmentos de chefe e o nível de cada relíquia (0 = não montada); ficam na Ascensão
         public long Fragmentos { get; private set; }
+
+        // Taverna própria: nível de cada prédio e quando o ouro guardado foi coletado (ticks UTC; 0 = nunca)
+        readonly Dictionary<string, int> predios = new Dictionary<string, int>();
+        public int NivelDoPredio(string id) => Ler(predios, id);
+        public long UltimaColetaDaTavernaUtc { get; private set; }
+        public void MarcarColetaDaTaverna(DateTime agoraUtc) => UltimaColetaDaTavernaUtc = agoraUtc.Ticks;
+
+        public bool MelhorarPredio(string id, double custo)
+        {
+            if (custo > Ouro) return false;
+            Ouro -= custo;
+            predios[id] = NivelDoPredio(id) + 1;
+            return true;
+        }
         readonly Dictionary<string, int> reliquias = new Dictionary<string, int>();
         public int NivelDaReliquia(string id) => Ler(reliquias, id);
         public void ReceberFragmentos(long n) { if (n > 0) Fragmentos += n; }
@@ -269,6 +283,7 @@ namespace ALotOfDamage.Core
             MaiorRefino = MaiorRefino, ItensFabricados = ItensFabricados, OuroTotalGanho = OuroTotalGanho,
             ConquistasColetadas = Pares(conquistasColetadas),
             Fragmentos = Fragmentos, Reliquias = Pares(reliquias),
+            Predios = Pares(predios), UltimaColetaDaTavernaUtc = UltimaColetaDaTavernaUtc,
             Followers = Pares(followers), InvocacoesSemEpico = InvocacoesSemEpico, InvocacoesSemLendario = InvocacoesSemLendario,
         };
 
@@ -302,6 +317,8 @@ namespace ALotOfDamage.Core
             Preencher(p.followers, d.Followers);
             p.Fragmentos = Math.Max(0, d.Fragmentos);
             Preencher(p.reliquias, d.Reliquias);
+            Preencher(p.predios, d.Predios);
+            p.UltimaColetaDaTavernaUtc = Math.Max(0, d.UltimaColetaDaTavernaUtc);
             if (p.Estrelas(FollowerPadrao) <= 0) p.followers[FollowerPadrao] = 1;
             p.RegistrarPity(d.InvocacoesSemEpico, d.InvocacoesSemLendario);
             return p;
@@ -407,6 +424,8 @@ namespace ALotOfDamage.Core
         public List<ParDeValor> Followers = new List<ParDeValor>();
         public long Fragmentos;
         public List<ParDeValor> Reliquias = new List<ParDeValor>();
+        public List<ParDeValor> Predios = new List<ParDeValor>();
+        public long UltimaColetaDaTavernaUtc;
         public int InvocacoesSemEpico;
         public int InvocacoesSemLendario;
         public List<ParDeValor> Materiais = new List<ParDeValor>();

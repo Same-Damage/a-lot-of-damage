@@ -157,7 +157,7 @@ O jogador nunca é punido por parar de clicar, só deixa de ganhar o bônus. Lim
 | Forja | Refina o item (+N fica no próprio item, item novo começa em +0, sucesso crítico +2) e fabrica item novo do slot escolhido com raridade sorteada | Ouro + material do tipo do item | ×1,3 a ×1,5 por nível de refino | Implementado |
 | Venda e desmonte | Item guardado vira ouro ou material da forja | Item | Abre espaço e financia a forja | Implementado |
 | Bestiário | Marcos em 10, 100, 1.000 derrotas por tipo | Batalhas | +25% contra o tipo, +2% geral por marco | Implementado |
-| Taverna própria | Base que gera ouro sozinha | Ouro + madeira + pedra | Ouro/s e buffs | Futuro |
+| Taverna própria | 4 prédios com nível: Balcão (2% do ouro de uma vitória por segundo, por nível, também com o jogo fechado, guardado até 12 h), Cozinha (+3% de dano), Quartos (+3% de AFK) e Adega (+3% de ouro) por nível. Fica na Ascensão | Ouro (custo geométrico) | Ouro/s e bônus permanentes | Implementado |
 | Expedições | Followers fora de uso em missões com timer | Tempo + followers | Materiais, cristais | Futuro |
 | Coleta no mapa | Minerar, colher, pescar com mini-clicker | Tempo no mapa | Material | Futuro |
 | Alquimia | Poções | Ervas + drops | Buffs temporários grandes | Futuro |

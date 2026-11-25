@@ -46,6 +46,7 @@ namespace ALotOfDamage.Ferramentas
             CriarAssetSeFaltar<BalanceamentoDaCampanha>();
             CriarAssetSeFaltar<BalanceamentoDasConquistas>();
             CriarAssetSeFaltar<BalanceamentoDasReliquias>();
+            CriarAssetSeFaltar<BalanceamentoDaTaverna>();
             AssetDatabase.SaveAssets();
         }
 
@@ -137,6 +138,7 @@ namespace ALotOfDamage.Ferramentas
             janelas.AddComponent<JanelaDasConquistas>();
             janelas.AddComponent<JanelaDosFollowers>();
             janelas.AddComponent<JanelaDasReliquias>();
+            janelas.AddComponent<JanelaDaTaverna>();
             var vitrine = new GameObject("Vitrine do herói").AddComponent<VitrineDoHeroi>();
             vitrine.herois = herois;
             vitrine.brilho = herois.GetComponent<BrilhoDasArmas>();

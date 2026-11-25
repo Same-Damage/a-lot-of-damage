@@ -64,6 +64,8 @@ namespace ALotOfDamage.Infrastructure
         public ParametrosDosItens ParametrosDosItens { get; }
         public IReadOnlyList<DefinicaoDeConquista> Conquistas { get; }
         public IReadOnlyList<DefinicaoDeReliquia> Reliquias { get; }
+        public IReadOnlyList<DefinicaoDePredio> Predios { get; }
+        public double LimiteDaTavernaEmHoras { get; }
         public ParametrosDasReliquias ParametrosDasReliquias { get; }
         public ParametrosDasConquistas ParametrosDasConquistas { get; }
         public IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
@@ -90,6 +92,9 @@ namespace ALotOfDamage.Infrastructure
             var reliquias = BalanceamentoDasReliquias.Carregar();
             Reliquias = reliquias.reliquias;
             ParametrosDasReliquias = reliquias.parametros;
+            var taverna = BalanceamentoDaTaverna.Carregar();
+            Predios = taverna.predios;
+            LimiteDaTavernaEmHoras = taverna.limiteEmHoras;
         }
     }
 
