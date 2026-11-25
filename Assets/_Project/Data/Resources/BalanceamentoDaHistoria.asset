@@ -1,0 +1,158 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59599cab5957e6d429b0c97d4bbdae30, type: 3}
+  m_Name: BalanceamentoDaHistoria
+  m_EditorClassIdentifier: ALotOfDamage.Infraestrutura::ALotOfDamage.Infrastructure.BalanceamentoDaHistoria
+  liberacoes:
+  - Sistema: 1
+    Estagio: 3
+  - Sistema: 2
+    Estagio: 5
+  - Sistema: 3
+    Estagio: 7
+  - Sistema: 4
+    Estagio: 10
+  - Sistema: 5
+    Estagio: 12
+  - Sistema: 6
+    Estagio: 15
+  - Sistema: 7
+    Estagio: 18
+  - Sistema: 8
+    Estagio: 21
+  - Sistema: 9
+    Estagio: 24
+  - Sistema: 10
+    Estagio: 50
+  capitulos:
+  - Numero: 1
+    Nome: O Porto de Partida
+    EstagioFinal: 30
+    NomeDoChefeFinal: Almirante Espectral
+    MultiplicadorDoChefeFinal: 3
+    Cenas:
+    - Id: cap1_inicio
+      Estagio: 1
+      Falas:
+      - Quem: "Capit\xE3 Marina"
+        Texto: "Acordou, finalmente! Voc\xEA foi o \xFAnico que sobreviveu ao naufr\xE1gio."
+      - Quem: "Capit\xE3 Marina"
+        Texto: "Desde que a Coroa Celeste se partiu, os mares ficaram cheios de monstros. Esta ilha tamb\xE9m."
+      - Quem: "Capit\xE3 Marina"
+        Texto: Meu navio precisa de reparos. Limpe os campos para mim e eu te levo para onde quiser.
+    - Id: cap1_forja
+      Estagio: 3
+      Falas:
+      - Quem: Ferreira Brunhilda
+        Texto: "Essa l\xE2mina n\xE3o aguenta nem uma gosma. Traga ouro e presas e eu deixo ela digna de um her\xF3i."
+      - Quem: Narrador
+        Texto: "A Forja est\xE1 aberta: refine seus itens e fabrique novos."
+    - Id: cap1_inventario
+      Estagio: 5
+      Falas:
+      - Quem: "Capit\xE3 Marina"
+        Texto: "Um chefe guardava esta trilha! Olhe s\xF3 o que ele deixou cair."
+      - Quem: "Capit\xE3 Marina"
+        Texto: Os monstros carregam equipamentos de quem eles venceram. Guarde, equipe e venda o que sobrar.
+      - Quem: Narrador
+        Texto: "O Invent\xE1rio est\xE1 aberto."
+    - Id: cap1_bestiario
+      Estagio: 7
+      Falas:
+      - Quem: "S\xE1bio Odran"
+        Texto: "Cada criatura tem seus pontos fracos. Quanto mais voc\xEA enfrenta, mais aprende sobre ela."
+      - Quem: Narrador
+        Texto: "O Besti\xE1rio est\xE1 aberto: derrotar um tipo de monstro muitas vezes d\xE1 b\xF4nus permanentes."
+    - Id: cap1_followers
+      Estagio: 10
+      Falas:
+      - Quem: "Or\xE1culo dos Pactos"
+        Texto: "Viajante... criaturas e her\xF3is de todas as ilhas atendem ao chamado dos cristais."
+      - Quem: "Or\xE1culo dos Pactos"
+        Texto: "Fa\xE7a um pacto e algu\xE9m lutar\xE1 ao seu lado."
+      - Quem: Narrador
+        Texto: "Os Followers est\xE3o abertos: invoque companheiros com cristais."
+    - Id: cap1_bosque
+      Estagio: 11
+      Falas:
+      - Quem: "Capit\xE3 Marina"
+        Texto: "Al\xE9m dos campos fica o Bosque Sombrio. Dizem que um fragmento da coroa caiu l\xE1 dentro."
+      - Quem: "Capit\xE3 Marina"
+        Texto: "Tome cuidado. As \xE1rvores l\xE1 t\xEAm olhos."
+    - Id: cap1_conquistas
+      Estagio: 12
+      Falas:
+      - Quem: Narrador
+        Texto: "Seus feitos come\xE7am a ser contados nas tavernas do porto."
+      - Quem: Narrador
+        Texto: "As Conquistas est\xE3o abertas: cada meta cumprida d\xE1 cristais e fortalece todo o seu dano."
+    - Id: cap1_reliquias
+      Estagio: 15
+      Falas:
+      - Quem: "S\xE1bio Odran"
+        Texto: "Estes cacos brilhantes... s\xE3o fragmentos da Coroa Celeste! Os chefes os carregam sem saber."
+      - Quem: "S\xE1bio Odran"
+        Texto: "Junte os cacos e eu monto rel\xEDquias com o poder que restou neles."
+      - Quem: Narrador
+        Texto: "As Rel\xEDquias est\xE3o abertas: chefes d\xE3o fragmentos para montar e melhorar rel\xEDquias."
+    - Id: cap1_taverna
+      Estagio: 18
+      Falas:
+      - Quem: Taverneira Rosa
+        Texto: "O porto est\xE1 renascendo gra\xE7as a voc\xEA. Que tal cuidar desta taverna velha?"
+      - Quem: Taverneira Rosa
+        Texto: "Clientes pagam at\xE9 quando voc\xEA est\xE1 longe, e uma boa cozinha deixa qualquer um mais forte."
+      - Quem: Narrador
+        Texto: "A Taverna est\xE1 aberta."
+    - Id: cap1_ruinas
+      Estagio: 21
+      Falas:
+      - Quem: "Capit\xE3 Marina"
+        Texto: "O navio est\xE1 pronto! Vamos \xE0s Ru\xEDnas Antigas, do outro lado da ba\xEDa."
+      - Quem: "Capit\xE3 Marina"
+        Texto: "E seus companheiros que est\xE3o parados podem navegar comigo em expedi\xE7\xF5es pelas ilhas pr\xF3ximas."
+      - Quem: Narrador
+        Texto: "As Expedi\xE7\xF5es est\xE3o abertas."
+    - Id: cap1_alquimia
+      Estagio: 24
+      Falas:
+      - Quem: Alquimista Vex
+        Texto: "Ervas-lunares, cogumelos rubros, min\xE9rio celeste... a ilha est\xE1 cheia de ingredientes."
+      - Quem: Alquimista Vex
+        Texto: "Traga para mim e eu preparo po\xE7\xF5es que nem o Rei Ca\xEDdo conhece."
+      - Quem: Narrador
+        Texto: "A Alquimia est\xE1 aberta: colha ingredientes no mapa golpeando os pontos de coleta."
+    - Id: cap1_chefe
+      Estagio: 30
+      Falas:
+      - Quem: "Capit\xE3 Marina"
+        Texto: "Aquele navio-fantasma nas ru\xEDnas... \xE9 o Almirante Espectral. Ele guarda o maior fragmento da ilha."
+      - Quem: "Capit\xE3 Marina"
+        Texto: "Derrote-o e o caminho para o mar aberto estar\xE1 livre."
+    - Id: cap1_fim
+      Estagio: 31
+      Falas:
+      - Quem: "Capit\xE3 Marina"
+        Texto: "Voc\xEA conseguiu! O fragmento \xE9 seu."
+      - Quem: "Rei Ca\xEDdo"
+        Texto: "...Um fragmento a menos para mim. Aproveite enquanto pode, her\xF3i."
+      - Quem: "Capit\xE3 Marina"
+        Texto: "Meu barco n\xE3o chega \xE0s ilhas do c\xE9u. Para seguir os fragmentos, vamos precisar de uma nave a\xE9rea."
+      - Quem: Narrador
+        Texto: "Fim do Cap\xEDtulo 1. Os est\xE1gios seguem: fique mais forte para o que vem pela frente."
+    - Id: ascensao
+      Estagio: 50
+      Falas:
+      - Quem: "Or\xE1culo dos Pactos"
+        Texto: "Sua alma j\xE1 carrega o peso de muitas batalhas. Voc\xEA pode renascer mais forte."
+      - Quem: Narrador
+        Texto: "A Ascens\xE3o est\xE1 aberta: recomece em troca de Almas, que multiplicam todo o dano para sempre."

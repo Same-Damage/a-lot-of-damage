@@ -12,6 +12,7 @@ namespace ALotOfDamage.UI
         protected override string Titulo => "Taverna";
         protected override Key Tecla => Key.T;
         protected override IconeDoHud Icone => IconeDoHud.Taverna;
+        protected override SistemaDoJogo? Sistema => SistemaDoJogo.Taverna;
         protected override int Ordem => 8;
         protected override int Linhas => catalogo.Predios.Count + 1;
         protected override float AlturaDaLinha => 84;

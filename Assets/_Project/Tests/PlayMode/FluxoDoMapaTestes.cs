@@ -26,6 +26,16 @@ namespace ALotOfDamage.Testes
             yield return null;
         }
 
+        // Os sistemas abrem por estágio (história): leva o maior estágio alcançado até depois de todas as liberações
+        static IEnumerator LiberarTodosOsSistemas()
+        {
+            var p = EscopoDoJogo.Instancia.Container.Resolve<IRepositorioDeProgresso>().Carregar();
+            var parametros = new ParametrosDaCampanha { VitoriasParaAvancar = 1, ChefeACada = 0 };
+            while (p.EstagioMaximo < 60) p.AvancarCampanha(parametros, false);
+            // as janelas conferem a liberação uma vez por segundo
+            yield return new WaitForSecondsRealtime(1.2f);
+        }
+
         [UnityTest]
         public IEnumerator Mapa_abre_com_o_escopo_do_jogo_montado()
         {
@@ -101,6 +111,7 @@ namespace ALotOfDamage.Testes
         public IEnumerator Todas_as_janelas_do_mapa_abrem_sem_erro()
         {
             yield return Carregar(FluxoDeEncontro.CenaDoMapa);
+            yield return LiberarTodosOsSistemas();
             var janelas = Object.FindObjectsByType<JanelaDoJogo>();
             Assert.Greater(janelas.Length, 1);
             foreach (var janela in janelas)
@@ -119,7 +130,7 @@ namespace ALotOfDamage.Testes
         public IEnumerator Menu_mostra_os_outros_icones_so_quando_aberto()
         {
             yield return Carregar(FluxoDeEncontro.CenaDoMapa);
-            for (int i = 0; i < 3; i++) yield return null;
+            yield return LiberarTodosOsSistemas();
             var menu = Object.FindAnyObjectByType<MenuDoMapa>();
             int fechado = menu.GetComponentsInChildren<UnityEngine.UI.Button>().Length;
             Assert.AreEqual(MenuDoMapa.Principais + 1, fechado);

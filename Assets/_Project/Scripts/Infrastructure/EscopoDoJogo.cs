@@ -61,6 +61,9 @@ namespace ALotOfDamage.Infrastructure
             builder.Register<ConsultarTaverna>(Lifetime.Singleton);
             builder.Register<ListarExpedicoes>(Lifetime.Singleton);
             builder.Register<ColetarRecurso>(Lifetime.Singleton);
+            builder.Register<ConsultarLiberacao>(Lifetime.Singleton);
+            builder.Register<ProximaCena>(Lifetime.Singleton);
+            builder.Register<MarcarCenaVista>(Lifetime.Singleton);
             builder.Register<ListarPocoes>(Lifetime.Singleton);
             builder.Register<PrepararPocao>(Lifetime.Singleton);
             builder.Register<IniciarExpedicao>(Lifetime.Singleton);

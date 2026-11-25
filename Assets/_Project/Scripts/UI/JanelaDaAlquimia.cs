@@ -14,6 +14,7 @@ namespace ALotOfDamage.UI
         protected override string Titulo => "Alquimia";
         protected override Key Tecla => Key.L;
         protected override IconeDoHud Icone => IconeDoHud.Alquimia;
+        protected override SistemaDoJogo? Sistema => SistemaDoJogo.Alquimia;
         protected override int Ordem => 10;
         protected override int Linhas => catalogo.Pocoes.Count;
         protected override float AlturaDaLinha => 96;

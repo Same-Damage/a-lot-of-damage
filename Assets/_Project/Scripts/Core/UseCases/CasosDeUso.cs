@@ -1024,6 +1024,41 @@ namespace ALotOfDamage.Core
         }
     }
 
+    public class ConsultarLiberacao : CasoDeUso
+    {
+        public ConsultarLiberacao(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public bool Executar(SistemaDoJogo sistema) =>
+            RegrasDosCapitulos.Liberado(catalogo.Liberacoes, sistema, repositorio.Carregar().EstagioMaximo);
+    }
+
+    // Primeira cena de história ainda não vista cujo estágio já foi alcançado (null se não há)
+    public class ProximaCena : CasoDeUso
+    {
+        public ProximaCena(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public DefinicaoDeCena Executar()
+        {
+            var p = repositorio.Carregar();
+            foreach (var capitulo in catalogo.Capitulos)
+                foreach (var cena in capitulo.Cenas)
+                    if (cena.Estagio <= p.EstagioMaximo && !p.CenaVista(cena.Id)) return cena;
+            return null;
+        }
+    }
+
+    public class MarcarCenaVista : CasoDeUso
+    {
+        public MarcarCenaVista(IRepositorioDeProgresso r, ICatalogo c) : base(r, c) { }
+
+        public void Executar(string id)
+        {
+            var p = repositorio.Carregar();
+            p.MarcarCenaVista(id);
+            repositorio.Salvar(p);
+        }
+    }
+
     // Vida e recompensa do inimigo conforme o estágio atual da campanha
     public class CalcularInimigo : CasoDeUso
     {
@@ -1035,9 +1070,17 @@ namespace ALotOfDamage.Core
         internal static InimigoDaBatalha Para(Progresso p, ICatalogo c, DefinicaoDeMonstro m, bool chefe)
         {
             double vida = RegrasDaCampanha.VidaDoInimigo(c.Campanha, p.Estagio, m?.MultiplicadorDeVida ?? 1, chefe);
+            string nome = (chefe ? "Chefe " : "") + (m?.Nome ?? "Inimigo");
+            // o último chefe do capítulo tem nome próprio e é mais forte
+            var capitulo = RegrasDosCapitulos.Capitulo(c.Capitulos, p.Estagio);
+            if (chefe && capitulo != null && capitulo.EstagioFinal == p.Estagio && !string.IsNullOrEmpty(capitulo.NomeDoChefeFinal))
+            {
+                nome = capitulo.NomeDoChefeFinal;
+                vida *= capitulo.MultiplicadorDoChefeFinal;
+            }
             return new InimigoDaBatalha
             {
-                Nome = (chefe ? "Chefe " : "") + (m?.Nome ?? "Inimigo"),
+                Nome = nome,
                 Vida = vida,
                 Ouro = RegrasDaCampanha.Ouro(c.Campanha, vida),
                 Chefe = chefe,
@@ -1179,8 +1222,10 @@ namespace ALotOfDamage.Core
             saida.Clear();
             var p = repositorio.Carregar();
 
+            bool conquistasAbertas = RegrasDosCapitulos.Liberado(catalogo.Liberacoes, SistemaDoJogo.Conquistas, p.EstagioMaximo);
             foreach (var c in catalogo.Conquistas)
             {
+                if (!conquistasAbertas) break;
                 int atingidos = RegrasDasConquistas.DegrausAtingidos(c, RegrasDasConquistas.Valor(c.Meta, p, catalogo.Bestiario));
                 if (atingidos > p.ConquistasColetadas(c.Id))
                     saida.Add(new Pendencia { Tipo = TipoDePendencia.Conquista, Texto = $"Conquista pronta: {c.Nome}" });
@@ -1203,8 +1248,10 @@ namespace ALotOfDamage.Core
                 saida.Add(new Pendencia { Tipo = TipoDePendencia.Upgrade, Texto = $"Upgrade pronto: {u.Nome}" });
             }
 
+            bool forjaAberta = RegrasDosCapitulos.Liberado(catalogo.Liberacoes, SistemaDoJogo.Forja, p.EstagioMaximo);
             foreach (var item in p.Equipados)
             {
+                if (!forjaAberta) break;
                 var t = catalogo.Item(item.TipoId);
                 if (t == null || RegrasDaForja.CustoEmOuro(t, item.Nivel) > p.Ouro || RegrasDaForja.CustoEmMaterial(t, item.Nivel) > p.Material(t.MaterialId)) continue;
                 saida.Add(new Pendencia { Tipo = TipoDePendencia.Forja, Texto = $"Forja pronta: {t.Nome} +{item.Nivel + 1}" });

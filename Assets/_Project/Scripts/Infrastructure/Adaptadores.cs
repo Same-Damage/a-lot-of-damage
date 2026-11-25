@@ -70,6 +70,8 @@ namespace ALotOfDamage.Infrastructure
         public int VagasDeExpedicao { get; }
         public IReadOnlyList<DefinicaoDeRecurso> Recursos { get; }
         public IReadOnlyList<DefinicaoDePocao> Pocoes { get; }
+        public IReadOnlyList<LiberacaoDeSistema> Liberacoes { get; }
+        public IReadOnlyList<DefinicaoDeCapitulo> Capitulos { get; }
         public ParametrosDasReliquias ParametrosDasReliquias { get; }
         public ParametrosDasConquistas ParametrosDasConquistas { get; }
         public IReadOnlyList<DefinicaoDeRegiao> Regioes { get; }
@@ -92,6 +94,9 @@ namespace ALotOfDamage.Infrastructure
             Regioes = campanha.regioes;
             Recursos = campanha.recursos;
             Pocoes = campanha.pocoes;
+            var historia = BalanceamentoDaHistoria.Carregar();
+            Liberacoes = historia.liberacoes;
+            Capitulos = historia.capitulos;
             var conquistas = BalanceamentoDasConquistas.Carregar();
             Conquistas = conquistas.conquistas;
             ParametrosDasConquistas = conquistas.parametros;
